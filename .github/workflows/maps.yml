@@ -1,0 +1,21 @@
+name: fetch-yard-maps
+on:
+  push:
+    branches: [maps]
+    paths: ['tools/maps.json', 'tools/fetch_map.py', '.github/workflows/maps.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pillow
+      - run: python tools/fetch_map.py
+      - run: |
+          git config user.name "spark-maps-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add maps
+          git commit -m "Update yard satellite maps" || exit 0
+          git push
