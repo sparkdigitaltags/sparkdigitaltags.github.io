@@ -4,6 +4,7 @@ def tile(lat, lon, z):
     n = 2 ** z; x = (lon + 180) / 360 * n
     y = (1 - math.log(math.tan(math.radians(lat)) + 1 / math.cos(math.radians(lat))) / math.pi) / 2 * n
     return x, y
+import os; os.makedirs('maps', exist_ok=True)
 cfg = json.load(open('tools/maps.json'))
 for m in cfg:
     z = m['zoom']; cx, cy = tile(m['lat'], m['lon'], z)
