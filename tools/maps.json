@@ -1,1 +1,26 @@
-[{"name":"colleyville","lat":32.865849,"lon":-97.173091,"zoom":19,"tiles_w":6,"tiles_h":5}]
+[
+ {
+  "name": "colleyville",
+  "lat": 32.865849,
+  "lon": -97.173091,
+  "zoom": 19,
+  "tiles_w": 6,
+  "tiles_h": 5
+ },
+ {
+  "name": "colleyville_z20",
+  "lat": 32.865832,
+  "lon": -97.173018,
+  "zoom": 20,
+  "tiles_w": 5,
+  "tiles_h": 6
+ },
+ {
+  "name": "colleyville_z21",
+  "lat": 32.865832,
+  "lon": -97.173018,
+  "zoom": 21,
+  "tiles_w": 8,
+  "tiles_h": 10
+ }
+]
