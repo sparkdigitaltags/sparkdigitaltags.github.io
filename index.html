@@ -165,7 +165,7 @@ function tag(u){
 
 
 /* Team only unit location. The page never holds locations or PINs; the Apps Script checks the store PIN on every call. */
-const LOC_API = "";
+const LOC_API = "https://script.google.com/macros/s/AKfycbxcj7HnpGxRFSILwbOjYf-9j11h1KSAHLnhmYvpJvZ6g2sukb_9ldyFG-rN2LoWCZfA/exec";
 const ZN = {DOCK:"Dock",F1:"Floor 1",F2:"Floor 2",F3:"Floor 3",F4:"Floor 4",C1:"Canopy 1",C2:"Canopy 2",C3:"Canopy 3",L1:"Lot 1",L2:"Lot 2",L3:"Lot 3",WH1:"Warehouse 1",WH2:"Warehouse 2",WH3:"Warehouse 3"};
 const MAPS = {Colleyville:{P:{C1:[48.4,11.3],C2:[53,15.5],C3:[57.3,19.5],DOCK:[54.6,44],F1:[30,37.1],F2:[22.9,31.6],F3:[36.5,23.4],F4:[44.7,29.2],L1:[77.5,38.8],L2:[84.9,45.5],L3:[58.7,79.6],WH1:[87.6,58.9],WH2:[87.8,73.5],WH3:[87.2,85.9]}}};
 const ls = {get:k=>{try{return localStorage.getItem(k)}catch(e){return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}, del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
