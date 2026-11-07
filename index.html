@@ -93,6 +93,18 @@ li::marker{color:var(--gold-deep)}
 .lmsg{font-size:13px;color:var(--fire);min-height:1em}
 .full{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.85);display:grid;place-items:center;padding:12px}
 .full .locmap{max-width:860px;width:100%;max-height:100%;overflow:auto}
+
+.sharegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sbtn{display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--display);font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:15px;padding:12px 6px;border-radius:10px;border:0;color:#fff;text-decoration:none;text-align:center;line-height:1.1}
+.sbtn small{display:block;font-family:var(--body);font-weight:500;text-transform:none;letter-spacing:0;font-size:11px;opacity:.9}
+.sbtn.fb{background:#1877F2}.sbtn.ig{background:#C13584}.sbtn.tt{background:#111}.sbtn.yt{background:#E62117}.sbtn.mk{background:#0A5BB5}.sbtn.eb{background:#3a3a3a}.sbtn.any{background:var(--ok)}
+.sbtn[aria-pressed="true"]{outline:4px solid var(--gold);outline-offset:2px}
+.lmsg.ok{color:var(--ok)}
+.sbtn[disabled]{background:var(--line);color:var(--muted);cursor:not-allowed}
+.capbox{width:100%;min-height:150px;font:inherit;font-size:14px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);resize:vertical}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:14px}
+.chk input{width:20px;height:20px;margin-top:1px;flex:none}
+.rules{font-size:12px;color:var(--muted);margin:0;padding-left:16px}
 </style>
 
 </head>
@@ -151,6 +163,7 @@ function tag(u){
       ${SHARE_BASE.startsWith("http") ? `<button class="copy copyall" id="clink" data-label="Copy link to this tag">Copy link to this tag</button>` : ""}
     </section>
     <section class="locsec" id="locsec" hidden></section>
+    <section class="locsec" id="sharesec" hidden></section>
     <section class="sect">
       <div class="lists">
         <div><h2>Key features</h2><ul>${u.feats.map(f=>`<li>${esc(f)}</li>`).join("")}</ul></div>
@@ -247,7 +260,8 @@ function locShow(u, r){
   const lm = document.getElementById("lmap");
   if (lm) lm.onclick = () => { const o = document.createElement("div"); o.className="full"; o.innerHTML = `<div class="locmap">${mapSvg(u.store, r.loc)}</div>`; o.onclick=()=>o.remove(); document.body.appendChild(o); };
   document.getElementById("lupd").onclick = () => locEdit(u, r);
-  document.getElementById("lout").onclick = () => { signOut(u.store); locSignin(u); };
+  document.getElementById("lout").onclick = () => { signOut(u.store); document.getElementById("sharesec").hidden = true; locSignin(u); };
+  if (r.name) shareInit(u, r.name);
 }
 function locEdit(u, r){
   const box = document.getElementById("locsec");
@@ -267,6 +281,84 @@ function locEdit(u, r){
       try { const s = await api({action:"set", store:u.store, unit:u.unit, pin:getPin(u.store), code:getCode(), loc:pick});
         if (s.ok) locShow(u, s); else if (ERRS[s.error] && s.error!=="nostore") { signOut(u.store); locSignin(u, ERRS[s.error]); } else msg.textContent = "Could not save. Try again.";
       } catch(e){ msg.textContent = "Could not connect. Check your signal and try again."; }
+    };
+  };
+  draw();
+}
+
+/* Team only social sharing. Compliance rules (Brandon Nov 7 2026):
+   MAP: no price in any post when the unit's price is hidden online. No Was or You Save in posts.
+   Truth in Lending: no payment, rate, term or down payment in posts; only "financing available, on approved credit".
+   FTC endorsement rules: posting from a personal account adds a clear "I work at" disclosure.
+   Marketplace and eBay listings stay off until Brandon approves each brand (MARKET_OK). */
+const MARKET_OK = {};   // e.g. {"SCAG":true} once the manufacturer allows marketplace listings
+const PLAT = [
+  {k:"fb", n:"Facebook", sub:"Page or profile post", open:link=>"https://www.facebook.com/sharer/sharer.php?u="+encodeURIComponent(link)},
+  {k:"ig", n:"Instagram", sub:"Photo and caption", app:true, open:()=>"https://www.instagram.com/"},
+  {k:"tt", n:"TikTok", sub:"Photo post", app:true, open:()=>"https://www.tiktok.com/upload"},
+  {k:"yt", n:"YouTube", sub:"Shorts need a video", app:true, open:()=>"https://studio.youtube.com/"},
+  {k:"mk", n:"Marketplace", sub:"FB listing", market:true, open:()=>"https://www.facebook.com/marketplace/create/item"},
+  {k:"eb", n:"eBay", sub:"Listing", market:true, open:()=>"https://www.ebay.com/sl/sell"}
+];
+function shareLink(u, k){ return SHARE_BASE + "?s=" + k + "#" + u.id; }
+function caption(u, k, personal){
+  const dba = (u.dba || "LSM Outdoor Power") + " " + u.store;
+  const tag = s => "#" + String(s).replace(/[^A-Za-z0-9]/g, "");
+  const price = (!u.maphide && u.now) ? `${u.fire ? "Fire Sale price" : "Price"}: ${u.now} plus tax.${u.fire ? " This unit only, while supplies last." : ""}` : "Message us or stop by for today's price.";
+  const lines = [
+    `${u.brand} ${u.name}`,
+    `Model ${u.model}. In stock now at ${dba}.`,
+    price,
+    `Financing available, on approved credit. Lease to own options also available.`,
+    u.photo ? `Photo is a manufacturer photo. The unit in store may vary.` : "",
+    personal ? `I work at ${dba}.` : "",
+    `Details: ${shareLink(u, k)}`,
+    [tag(u.brand), tag(u.store), "#OutdoorPower", "#LawnCare"].concat(personal ? ["#employee"] : []).join(" ")
+  ];
+  if (k === "eb" || k === "mk") lines.splice(lines.length-1, 1);   // listing sites: no hashtags
+  return lines.filter(Boolean).join("\n");
+}
+async function photoFile(u){
+  if (!u.photo) return null;
+  try { const b = await (await fetch(u.photo)).blob(); return new File([b], `${u.brand}_${u.model}`.replace(/[^A-Za-z0-9_]/g,"") + ".jpg", {type:"image/jpeg"}); } catch(e){ return null; }
+}
+function shareInit(u, name){
+  const box = document.getElementById("sharesec"); if (!box) return;
+  box.hidden = false;
+  let plat = "fb", personal = false;
+  const draw = () => {
+    const P = PLAT.find(p => p.k === plat);
+    box.innerHTML = `<h2>Post this unit</h2>
+      <div class="sharegrid">${PLAT.map(p => {
+        const blocked = p.market && !MARKET_OK[u.brand.toUpperCase()];
+        return `<button class="sbtn ${p.k}" data-p="${p.k}" ${blocked ? "disabled" : ""} aria-pressed="${p.k===plat}"><span>${p.n}<small>${blocked ? "Not approved for " + esc(u.brand) + " yet" : p.sub}</small></span></button>`; }).join("")}</div>
+      <label class="chk"><input type="checkbox" id="spers" ${personal?"checked":""}> <span>I'm posting from my own personal account. Adds "I work at ${esc((u.dba||"LSM Outdoor Power")+" "+u.store)}", which the FTC requires.</span></label>
+      <textarea class="capbox" id="scap" aria-label="Post caption">${esc(caption(u, plat, personal))}</textarea>
+      <button class="copy copyall" id="sgo" data-label="${P.app ? "Share photo and caption to " + P.n : "Copy caption and open " + P.n}">${P.app ? "Share photo and caption to " + P.n : "Copy caption and open " + P.n}</button>
+      <ul class="rules">
+        <li>Don't add a price, Was price, savings, monthly payment, rate or down payment to the caption.</li>
+        <li>Only post units that are on the floor today. Don't promise delivery or holds.</li>
+        <li>Use the manufacturer photo or your own photo of this exact unit.</li>
+      </ul>
+      <div class="lmsg" id="smsg"></div>`;
+    box.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { plat = b.dataset.p; draw(); });
+    document.getElementById("spers").onchange = e => { personal = e.target.checked; draw(); };
+    document.getElementById("sgo").onclick = async e => {
+      const text = document.getElementById("scap").value, msg = document.getElementById("smsg");
+      const bad = /\$\s?\d|\b\d+(\.\d+)?\s?%|\/mo\b|per month|apr\b|down payment|was\s+\$|you save/i;
+      if (u.maphide && bad.test(text)) { msg.textContent = "This unit's price can't go online. Remove prices, payments and rates from the caption."; return; }
+      if (!u.maphide && /\/mo\b|per month|apr\b|down payment|\b\d+(\.\d+)?\s?%|was\s+\$|you save/i.test(text)) { msg.textContent = "Remove payments, rates, Was prices and savings from the caption."; return; }
+      try { api({action:"share", store:u.store, unit:u.unit, pin:getPin(u.store), code:getCode(), platform:P.n}); } catch(_){}
+      if (P.app && navigator.share) {
+        const f = await photoFile(u);
+        const data = {text, url: shareLink(u, P.k)};
+        if (f && navigator.canShare && navigator.canShare({files:[f]})) data.files = [f];
+        try { await navigator.share(data); msg.className = "lmsg ok"; msg.textContent = "Pick " + P.n + " in the share menu. Your caption is attached."; return; } catch(err){ if (err && err.name === "AbortError") return; }
+      }
+      copyText(e.currentTarget, text);
+      if (P.app) { const f = await photoFile(u); if (f) { const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); } }
+      window.open(P.open(shareLink(u, P.k)), "_blank", "noopener");
+      msg.className = "lmsg ok"; msg.textContent = "Caption copied" + (P.app ? " and photo saved" : "") + ". Paste it into " + P.n + ".";
     };
   };
   draw();
