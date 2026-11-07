@@ -118,6 +118,7 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .chk{display:flex;gap:8px;align-items:flex-start;font-size:14px}
 .chk input{width:20px;height:20px;margin-top:1px;flex:none}
 .rules{font-size:12px;color:var(--muted);margin:0;padding-left:16px}
+.top3{border:2px solid #C8102E;border-radius:10px;padding:10px 12px;margin:0 0 14px;background:#fff5f5}.top3 .t3h{font-weight:800;color:#C8102E;margin-bottom:4px}.top3 ol{margin:0;padding-left:20px}.top3 li{margin:4px 0}.top3 small{color:#666;margin-left:4px}
 </style>
 
 </head>
@@ -326,6 +327,8 @@ function locEdit(u, r){
    Truth in Lending: no payment, rate, term or down payment in posts; only "financing available, on approved credit".
    FTC endorsement rules: posting from a personal account adds a clear "I work at" disclosure.
    Marketplace and eBay listings stay off until Brandon approves each brand (MARKET_OK). */
+// Top 3 Fire Sale units per store by SPIFF (weekly Fire Sale list). Amounts stay private; only unit ids here.
+const TOP3 = {"Colleyville":["colleyville-84440-cf0232","colleyville-109625-1d14fb","colleyville-107600-e537c5"],"Denton":["denton-77236-95ecb9","denton-77126-8230bd","denton-77094-6a11b1"],"Keller":["keller-72708-7435c9","keller-73839-d344a8","keller-78308-381974"],"Burleson":["burleson-76353-d9d7e8","burleson-84914-828864","burleson-73862-f28cff"],"Farmers Branch":["farmersbranch-78713-30e0a3","farmersbranch-84904-13ba99","farmersbranch-81799-86ee21"],"Tyler":["tyler-30206-551009","tyler-30605-a3aa74","tyler-35829-a1d4d7"],"Renfro":["renfro-113337-97919b","renfro-113333-af29d7","renfro-114162-204844"],"Weatherford":["weatherford-31237-dd49dd","weatherford-31243-03fc35","weatherford-20412-ba7004"],"Springtown":["springtown-20414-7ce35e","springtown-19882-45e8c3","springtown-19878-845dfb"],"Lewisville":["lewisville-115299-a1b3d1","lewisville-114719-de6353","lewisville-115208-702f3c"],"Waco":["waco-53075-e91a70","waco-58010-9f04ef","waco-57009-08ec5d"],"Gatesville":["gatesville-31006-d38a19","gatesville-30988-aa71a1","gatesville-31218-5812a3"]};
 const MARKET_OK = {};
 // Group leaders disclose the parent company, never a single store brand (Brandon Nov 7 2026)
 const CORP = ["Brandon Anderson", "Josh Anderson", "Justin Houston"];
@@ -366,7 +369,9 @@ function shareInit(u, name){
   let plat = "fb", personal = false;
   const draw = () => {
     const P = PLAT.find(p => p.k === plat);
-    box.innerHTML = `<h2>Post this unit</h2>
+    const top = (TOP3[u.store] || []).filter(i => byId[i]);
+    const topHtml = top.length ? `<div class="top3"><div class="t3h">Post these ${top.length} Fire Sale units first</div><ol>${top.map(i => { const t = byId[i]; return `<li>${i === u.id ? `<b>${esc(t.brand + " " + t.name)}</b> (this unit)` : `<a href="#${i}">${esc(t.brand + " " + t.name)}</a>`}<small> Unit ${esc(t.unit)}</small></li>`; }).join("")}</ol></div>` : "";
+    box.innerHTML = topHtml + `<h2>Post this unit</h2>
       <div class="sharegrid">${PLAT.map(p => {
         const blocked = p.market && !MARKET_OK[u.brand.toUpperCase()];
         return `<button class="sbtn ${p.k}" data-p="${p.k}" ${blocked ? "disabled" : ""} aria-pressed="${p.k===plat}"><span>${p.n}<small>${blocked ? "Not approved for " + esc(u.brand) + " yet" : p.sub}</small></span></button>`; }).join("")}</div>
