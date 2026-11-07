@@ -326,7 +326,10 @@ function locEdit(u, r){
    Truth in Lending: no payment, rate, term or down payment in posts; only "financing available, on approved credit".
    FTC endorsement rules: posting from a personal account adds a clear "I work at" disclosure.
    Marketplace and eBay listings stay off until Brandon approves each brand (MARKET_OK). */
-const MARKET_OK = {};   // e.g. {"SCAG":true} once the manufacturer allows marketplace listings
+const MARKET_OK = {};
+// Group leaders disclose the parent company, never a single store brand (Brandon Nov 7 2026)
+const CORP = ["Brandon Anderson", "Josh Anderson", "Justin Houston"];
+const SPARK_URL = "https://www.sparkdealers.com";   // e.g. {"SCAG":true} once the manufacturer allows marketplace listings
 const PLAT = [
   {k:"fb", n:"Facebook", sub:"Page or profile post", open:link=>"https://www.facebook.com/sharer/sharer.php?u="+encodeURIComponent(link)},
   {k:"ig", n:"Instagram", sub:"Photo and caption", app:true, open:()=>"https://www.instagram.com/"},
@@ -336,7 +339,7 @@ const PLAT = [
   {k:"eb", n:"eBay", sub:"Listing", market:true, open:()=>"https://www.ebay.com/sl/sell"}
 ];
 function shareLink(u, k){ return SHARE_BASE + "?s=" + k + "#" + u.id; }
-function caption(u, k, personal){
+function caption(u, k, personal, who){
   const dba = (u.dba || "LSM Outdoor Power") + " " + u.store;
   const tag = s => "#" + String(s).replace(/[^A-Za-z0-9]/g, "");
   const price = (!u.maphide && u.now) ? `${u.fire ? "Fire Sale price" : "Price"}: ${u.now} plus tax.${u.fire ? " This unit only, while supplies last." : ""}` : "Message us or stop by for today's price.";
@@ -346,7 +349,7 @@ function caption(u, k, personal){
     price,
     `Financing available, on approved credit. Lease to own options also available.`,
     u.photo ? `Photo is a manufacturer photo. The unit in store may vary.` : "",
-    personal ? `I work at ${dba}.` : "",
+    personal ? (CORP.includes(who) ? `I work for Spark Dealer Group: ${SPARK_URL}` : `I work at ${dba}.`) : "",
     `Details: ${shareLink(u, k)}`,
     [tag(u.brand), tag(u.store), "#OutdoorPower", "#LawnCare"].concat(personal ? ["#employee"] : []).join(" ")
   ];
@@ -367,8 +370,8 @@ function shareInit(u, name){
       <div class="sharegrid">${PLAT.map(p => {
         const blocked = p.market && !MARKET_OK[u.brand.toUpperCase()];
         return `<button class="sbtn ${p.k}" data-p="${p.k}" ${blocked ? "disabled" : ""} aria-pressed="${p.k===plat}"><span>${p.n}<small>${blocked ? "Not approved for " + esc(u.brand) + " yet" : p.sub}</small></span></button>`; }).join("")}</div>
-      <label class="chk"><input type="checkbox" id="spers" ${personal?"checked":""}> <span>I'm posting from my own personal account. Adds "I work at ${esc((u.dba||"LSM Outdoor Power")+" "+u.store)}", which the FTC requires.</span></label>
-      <textarea class="capbox" id="scap" aria-label="Post caption">${esc(caption(u, plat, personal))}</textarea>
+      <label class="chk"><input type="checkbox" id="spers" ${personal?"checked":""}> <span>I'm posting from my own personal account. Adds ${CORP.includes(name) ? `"I work for <a href="${SPARK_URL}" target="_blank" rel="noopener">Spark Dealer Group</a>"` : `"I work at ${esc((u.dba||"LSM Outdoor Power")+" "+u.store)}"`}, which the FTC requires.</span></label>
+      <textarea class="capbox" id="scap" aria-label="Post caption">${esc(caption(u, plat, personal, name))}</textarea>
       <button class="copy copyall" id="sgo" data-label="${P.app ? "Share photo and caption to " + P.n : "Copy caption and open " + P.n}">${P.app ? "Share photo and caption to " + P.n : "Copy caption and open " + P.n}</button>
       <ul class="rules">
         <li>Don't add a price, Was price, savings, monthly payment, rate or down payment to the caption.</li>
@@ -398,6 +401,21 @@ function shareInit(u, name){
   };
   draw();
 }
+
+/* Emergency shut off: only Brandon can flip it, from his private Sheet. If the check can't be reached, tags stay up. */
+async function killCheck(){
+  if (!LOC_API) return;
+  try {
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 3500);
+    const r = await fetch(LOC_API + "?action=status", {signal: ctl.signal}).then(x => x.json()); clearTimeout(t);
+    if (r && r.live === false) {
+      document.body.innerHTML = `<main style="max-width:520px;margin:15vh auto;padding:0 16px;text-align:center;font-family:system-ui,sans-serif">
+        <h1 style="font-size:24px;margin:0 0 8px">This tag is temporarily unavailable</h1>
+        <p style="color:#555;margin:0">Please ask any team member for help with this unit.</p></main>`;
+    }
+  } catch(e){}
+}
+killCheck();
 
 function lookup(){
   app.innerHTML = `<article class="card"><div class="sect"><h2>Scan a tag to see a unit</h2><p>Use your phone camera to scan the Spark code on the back of any Spark price tag. That unit's digital tag opens here.</p></div></article>`;
