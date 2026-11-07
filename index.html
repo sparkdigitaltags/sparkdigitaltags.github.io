@@ -209,7 +209,7 @@ function locSignin(u, msg){
   const box = document.getElementById("locsec");
   box.innerHTML = `<h2>Unit location</h2>
     <button class="copy copyall" id="lsign">Team sign in</button>
-    <form id="lform" hidden><div style="display:grid;gap:8px"><input id="lpin" type="password" inputmode="numeric" autocomplete="off" placeholder="${esc(u.store)} store PIN" aria-label="Store PIN"><input id="lcode" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Your code: last 4 of your cell" aria-label="Your code, the last 4 digits of your cell"><button class="copy copyall" type="submit">Sign in</button></div></form>
+    <form id="lform" hidden><div style="display:grid;gap:8px"><input id="lpin" type="text" inputmode="numeric" autocomplete="off" placeholder="${esc(u.store)} store PIN" aria-label="Store PIN"><input id="lcode" type="text" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Your code: last 4 of your cell" aria-label="Your code, the last 4 digits of your cell"><button class="copy copyall" type="submit">Sign in</button></div></form>
     <div class="lmsg" id="lmsg">${msg?esc(msg):""}</div>`;
   const f = document.getElementById("lform");
   document.getElementById("lsign").onclick = e => { e.currentTarget.hidden = true; f.hidden = false; document.getElementById("lpin").focus(); };
