@@ -98,6 +98,15 @@ li::marker{color:var(--gold-deep)}
 .tprice .tlbl{font-size:12px;font-weight:700;color:var(--fire)}
 .tprice .tnow{font-family:var(--display);font-weight:800;font-size:36px;line-height:1}
 .tprice .tmeta{font-size:13px;color:var(--ink)}
+/* Fit any phone: nothing may force the page wider than the screen */
+html,body{max-width:100%;overflow-x:hidden}
+.wrap{grid-template-columns:minmax(0,1fr)}
+.wrap>*,.card,.card>*,.sect,.price,.apply,.locsec{min-width:0}
+h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
+.capbox,.locsec input,.lookup input{font-size:16px}
+.hero,.price,.sect,.apply,.locsec,.fields{grid-template-columns:minmax(0,1fr)}
+.hero>*,.fields>*{min-width:0}
+.photo img{max-width:100%;height:auto}
 .sharegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .sbtn{display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--display);font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:15px;padding:12px 6px;border-radius:10px;border:0;color:#fff;text-decoration:none;text-align:center;line-height:1.1}
 .sbtn small{display:block;font-family:var(--body);font-weight:500;text-transform:none;letter-spacing:0;font-size:11px;opacity:.9}
