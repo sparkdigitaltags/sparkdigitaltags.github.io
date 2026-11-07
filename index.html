@@ -172,6 +172,9 @@ const ls = {get:k=>{try{return localStorage.getItem(k)}catch(e){return null}}, s
 let MEM = {};
 const pinKey = st => "sparkpin:" + st;
 const getPin = st => MEM[st] || ls.get(pinKey(st));
+const getCode = () => MEM._code || ls.get("sparkcode");
+const signOut = st => { delete MEM[st]; delete MEM._code; ls.del(pinKey(st)); ls.del("sparkcode"); };
+const ERRS = {locked:"Too many wrong tries. Try again in an hour.", nostore:"Location tracking is not set up for this store yet.", pin:"That store PIN did not work.", code:"That code is not active for this store. Ask your manager."};
 function mapSvg(store, sel){
   const m = MAPS[store]; if (!m) return "";
   const pins = Object.entries(m.P).map(([k,[x,y]])=>{const X=x*8.6,Y=y*10.1,on=k===sel,w=(k.length>3?74:k.length>2?60:44)*(on?1.3:1),h=on?44:34;
@@ -200,30 +203,31 @@ function locInit(u){
   const box = document.getElementById("locsec");
   if (!box || !LOC_API) return;
   box.hidden = false;
-  if (getPin(u.store)) locLoad(u); else locSignin(u);
+  if (getPin(u.store) && getCode()) locLoad(u); else locSignin(u);
 }
 function locSignin(u, msg){
   const box = document.getElementById("locsec");
   box.innerHTML = `<h2>Unit location</h2>
     <button class="copy copyall" id="lsign">Team sign in</button>
-    <form id="lform" hidden><div class="lrow"><input id="lpin" type="password" inputmode="numeric" autocomplete="off" placeholder="${esc(u.store)} store PIN" aria-label="Store PIN"><button class="copy" type="submit">Go</button></div></form>
+    <form id="lform" hidden><div style="display:grid;gap:8px"><input id="lpin" type="password" inputmode="numeric" autocomplete="off" placeholder="${esc(u.store)} store PIN" aria-label="Store PIN"><input id="lcode" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Your code: last 4 of your cell" aria-label="Your code, the last 4 digits of your cell"><button class="copy copyall" type="submit">Sign in</button></div></form>
     <div class="lmsg" id="lmsg">${msg?esc(msg):""}</div>`;
   const f = document.getElementById("lform");
   document.getElementById("lsign").onclick = e => { e.currentTarget.hidden = true; f.hidden = false; document.getElementById("lpin").focus(); };
   if (msg) { document.getElementById("lsign").hidden = true; f.hidden = false; }
-  f.onsubmit = async e => { e.preventDefault(); const pin = document.getElementById("lpin").value.trim(); if (!pin) return;
+  f.onsubmit = async e => { e.preventDefault(); const pin = document.getElementById("lpin").value.trim(), code = document.getElementById("lcode").value.trim();
+    if (!pin || !/^\d{4}$/.test(code)) { document.getElementById("lmsg").textContent = "Enter the store PIN and the last 4 of your cell."; return; }
     document.getElementById("lmsg").textContent = "Checking...";
-    try { const r = await api({action:"check", store:u.store, pin}); 
-      if (r.ok) { MEM[u.store]=pin; ls.set(pinKey(u.store), pin); locLoad(u); }
-      else locSignin(u, r.error==="locked" ? "Too many wrong PINs. Try again in an hour." : r.error==="nostore" ? "Location tracking is not set up for this store yet." : "That PIN did not work. Try again.");
+    try { const r = await api({action:"check", store:u.store, pin, code}); 
+      if (r.ok) { MEM[u.store]=pin; MEM._code=code; ls.set(pinKey(u.store), pin); ls.set("sparkcode", code); locLoad(u); }
+      else locSignin(u, ERRS[r.error] || "That did not work. Try again.");
     } catch(err){ document.getElementById("lmsg").textContent = "Could not connect. Check your signal and try again."; } };
 }
 function when(iso){ if(!iso) return ""; const d=new Date(iso); return d.toLocaleDateString([], {month:"short",day:"numeric"})+" "+d.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }
 async function locLoad(u){
   const box = document.getElementById("locsec");
   box.innerHTML = `<h2>Unit location</h2><div class="locmeta">Loading...</div>`;
-  let r; try { r = await api({action:"get", store:u.store, unit:u.unit, pin:getPin(u.store)}); } catch(e){ box.innerHTML = `<h2>Unit location</h2><div class="lmsg">Could not connect. Check your signal and reload.</div>`; return; }
-  if (!r.ok) { delete MEM[u.store]; ls.del(pinKey(u.store)); return locSignin(u, r.error==="locked" ? "Too many wrong PINs. Try again in an hour." : "Please enter the store PIN again."); }
+  let r; try { r = await api({action:"get", store:u.store, unit:u.unit, pin:getPin(u.store), code:getCode()}); } catch(e){ box.innerHTML = `<h2>Unit location</h2><div class="lmsg">Could not connect. Check your signal and reload.</div>`; return; }
+  if (!r.ok) { signOut(u.store); return locSignin(u, ERRS[r.error] || "Please sign in again."); }
   locShow(u, r);
 }
 function locShow(u, r){
@@ -234,32 +238,30 @@ function locShow(u, r){
       <div class="locmeta">${r.by ? "Set by " + esc(r.by) + (r.at ? ", " + when(r.at) : "") : ""}</div>`
       : `<div class="locmeta">No location set for this unit yet.</div>`}
     ${map}
-    <div class="lrow"><button class="copy" id="lupd">${r.loc ? "Update location" : "Set location"}</button><button class="ghost" id="lout">Sign out</button></div>`;
+    <div class="lrow"><button class="copy" id="lupd">${r.loc ? "Update location" : "Set location"}</button><button class="ghost" id="lout">Sign out</button></div>
+    ${r.name ? `<div class="locmeta">Signed in as ${esc(r.name)}</div>` : ""}`;
   const lm = document.getElementById("lmap");
   if (lm) lm.onclick = () => { const o = document.createElement("div"); o.className="full"; o.innerHTML = `<div class="locmap">${mapSvg(u.store, r.loc)}</div>`; o.onclick=()=>o.remove(); document.body.appendChild(o); };
   document.getElementById("lupd").onclick = () => locEdit(u, r);
-  document.getElementById("lout").onclick = () => { delete MEM[u.store]; ls.del(pinKey(u.store)); locSignin(u); };
+  document.getElementById("lout").onclick = () => { signOut(u.store); locSignin(u); };
 }
 function locEdit(u, r){
   const box = document.getElementById("locsec");
   let pick = r.loc || "";
-  const name = ls.get("sparkname") || "";
   const draw = () => {
     box.innerHTML = `<h2>Where is this unit now?</h2>
       ${MAPS[u.store] ? `<div class="locmap" id="lmap">${mapSvg(u.store, pick)}</div><div class="locmeta">Tap a spot on the map or a button below.</div>` : ""}
       <div class="zgrid">${Object.keys(ZN).map(k=>`<button class="zbtn${k===pick?" on":""}" data-z="${k}" aria-label="${ZN[k]}">${k}</button>`).join("")}</div>
-      <input id="lname" placeholder="Your first name" autocomplete="given-name" value="${esc(name)}" aria-label="Your first name">
       <div class="lrow"><button class="copy" id="lsave">Save ${pick?esc(pick):""}</button><button class="ghost" id="lcancel">Cancel</button></div>
       <div class="lmsg" id="lmsg"></div>`;
-    box.querySelectorAll("[data-z]").forEach(b => b.onclick = () => { pick = b.dataset.z; const n=document.getElementById("lname").value; draw(); document.getElementById("lname").value=n; });
+    box.querySelectorAll("[data-z]").forEach(b => b.onclick = () => { pick = b.dataset.z; draw(); });
     document.getElementById("lcancel").onclick = () => locShow(u, r);
     document.getElementById("lsave").onclick = async () => {
-      const by = document.getElementById("lname").value.trim(), msg = document.getElementById("lmsg");
+      const msg = document.getElementById("lmsg");
       if (!pick) { msg.textContent = "Pick a location first."; return; }
-      if (!by) { msg.textContent = "Add your first name so we know who moved it."; return; }
-      ls.set("sparkname", by); msg.textContent = "Saving...";
-      try { const s = await api({action:"set", store:u.store, unit:u.unit, pin:getPin(u.store), loc:pick, by});
-        if (s.ok) locShow(u, s); else msg.textContent = s.error==="pin" ? "Your PIN expired. Sign out and sign in again." : "Could not save. Try again.";
+      msg.textContent = "Saving...";
+      try { const s = await api({action:"set", store:u.store, unit:u.unit, pin:getPin(u.store), code:getCode(), loc:pick});
+        if (s.ok) locShow(u, s); else if (ERRS[s.error] && s.error!=="nostore") { signOut(u.store); locSignin(u, ERRS[s.error]); } else msg.textContent = "Could not save. Try again.";
       } catch(e){ msg.textContent = "Could not connect. Check your signal and try again."; }
     };
   };
