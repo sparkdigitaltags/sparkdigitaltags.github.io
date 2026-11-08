@@ -1,0 +1,75 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>LSM Tag Dashboard</title>
+<style>
+:root{--red:#C8102E;--ink:#1d1d1f;--mut:#666;--line:#e5e5e5;--bg:#f6f6f4}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:#111;color:#fff;padding:14px 16px}header h1{margin:0;font-size:19px}header p{margin:2px 0 0;color:#bbb;font-size:13px}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.signin{max-width:360px;margin:12vh auto;background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+input,select,button{font:inherit;font-size:16px}input{width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;margin:6px 0 12px}
+button{background:var(--red);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.bar select{padding:8px;border-radius:10px;border:1px solid #ccc;background:#fff}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border-radius:12px;padding:12px 14px}.kpi b{display:block;font-size:26px}.kpi span{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.card{background:#fff;border-radius:12px;padding:12px 14px;min-width:0}.card h2{font-size:15px;margin:0 0 8px}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.barc{height:6px;background:var(--red);border-radius:3px;margin-top:3px}
+.need{background:#fff8e1;color:#5c4400;border-radius:12px;padding:12px 14px}.mut{color:var(--mut);font-size:13px}.err{color:var(--red)}
+</style></head><body>
+<header><h1>LSM Digital Tag Dashboard</h1><p>Moves, posts, scans and lender QR scans by store and person</p></header>
+<main id="app"></main>
+<script>
+const API = "https://script.google.com/macros/s/AKfycbxcj7HnpGxRFSILwbOjYf-9j11h1KSAHLnhmYvpJvZ6g2sukb_9ldyFG-rN2LoWCZfA/exec";
+const LSM = ["Burleson","Colleyville","Denton","Farmers Branch","Keller","Lewisville","Renfro"];
+const app = document.getElementById("app");
+let D = null, range = "7", store = "All LSM";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function code(){ try { return localStorage.getItem("sparkcode") || ""; } catch(e){ return ""; } }
+function signin(msg){
+  app.innerHTML = `<form class="signin" id="f"><h2 style="margin-top:0">Sign in</h2><p class="mut">Dashboard is for Brandon only. Enter your personal code.</p>
+  <input id="c" type="text" inputmode="numeric" maxlength="4" placeholder="Your code" value="${esc(code())}"><button>Open dashboard</button><p class="err">${esc(msg||"")}</p></form>`;
+  document.getElementById("f").onsubmit = e => { e.preventDefault(); const c = document.getElementById("c").value.trim(); try { localStorage.setItem("sparkcode", c); } catch(_){} load(c); };
+}
+async function load(c){
+  app.innerHTML = `<p class="mut">Loading...</p>`;
+  try {
+    const r = await fetch(API + "?" + new URLSearchParams({action:"dash", store:"Keller", pin:"", code:c})).then(x => x.json());
+    if (!r.ok) return signin(r.error === "owner" ? "This dashboard is for Brandon only." : "Code not accepted.");
+    D = r; draw();
+  } catch(e){ signin("Could not reach the server. Try again."); }
+}
+function inRange(t){ if (range === "all") return true; return (Date.now() - new Date(t)) <= Number(range) * 864e5; }
+function inStore(s){ return store === "All LSM" ? LSM.includes(s) : s === store; }
+function count(rows, keyFn){ const m = {}; rows.forEach(r => { const k = keyFn(r); if (k) m[k] = (m[k] || 0) + 1; }); return Object.entries(m).sort((a,b) => b[1]-a[1]); }
+function table(title, rows, head){ const max = rows.length ? rows[0][1] : 1;
+  return `<div class="card"><h2>${title}</h2>${rows.length ? `<table><tr><th>${head}</th><th class="n">Count</th></tr>${rows.slice(0,15).map(([k,v]) => `<tr><td>${esc(k)}<div class="barc" style="width:${Math.max(4, v/max*100)}%"></div></td><td class="n">${v}</td></tr>`).join("")}</table>` : `<p class="mut">Nothing yet.</p>`}</div>`; }
+function draw(){
+  const mv = D.moves.filter(r => inRange(r[0]) && inStore(r[1]));
+  const ps = D.posts.filter(r => inRange(r[0]) && inStore(r[1]));
+  const ev = D.events.filter(r => inRange(r[0]) && inStore(r[2]));
+  const scans = ev.filter(r => r[1] === "scan"), gos = ev.filter(r => r[1] === "go"), steps = ev.filter(r => r[1] === "step");
+  const sess = {}; steps.forEach(r => { const k = (r[6]||"?") + "|" + r[3]; const s = sess[k] || (sess[k] = {who:r[6]||"Unknown", app:false}); if (String(r[5]).startsWith("app")) s.app = true; });
+  const stalled = Object.values(sess).filter(s => !s.app);
+  app.innerHTML = `<div class="bar"><select id="st">${["All LSM"].concat(LSM).map(s => `<option ${s===store?"selected":""}>${s}</option>`).join("")}</select>
+    <select id="rg">${[["1","Today"],["7","Last 7 days"],["30","Last 30 days"],["all","All time"]].map(([v,n]) => `<option value="${v}" ${v===range?"selected":""}>${n}</option>`).join("")}</select>
+    <button id="rf">Refresh</button></div>
+  <div class="kpis"><div class="kpi"><b>${mv.length}</b><span>Units moved</span></div><div class="kpi"><b>${ps.length}</b><span>Posts</span></div>
+    <div class="kpi"><b>${stalled.length}</b><span>Posts started, then stopped</span></div><div class="kpi"><b>${scans.length}</b><span>Digital tag scans</span></div><div class="kpi"><b>${gos.length}</b><span>Lender QR scans</span></div></div>
+  <div class="grid">
+    ${table("Who moves the most units", count(mv, r => r[3]), "Person")}
+    ${table("Who posts the most", count(ps, r => r[4]), "Person")}
+    ${table("Posts by store", count(ps, r => r[1]), "Store")}
+    ${table("Posts by platform", count(ps, r => r[3]), "Platform")}
+    ${table("Started a post, then stopped", count(stalled, s => s.who), "Person")}
+    ${table("Digital tag scans", count(scans, r => r[2] + (r[6] ? " (staff)" : " (customer)")), "Store")}
+    ${table("Lender QR scans by lender", count(gos, r => r[2] + ", " + r[5]), "Store and lender")}
+    ${table("Lender QR scans by tag", count(gos, r => r[2] + ", " + (r[4] || "unknown tag")), "Store and tag")}
+    <div class="need"><h2 style="margin:0 0 6px;font-size:15px">Coming next</h2><b>Who sells the most:</b> needs the weekly DMS sold units report with salesperson.<br><b>Who used financing:</b> needs funded deal reports from Sheffield, Terrace and Koalafi.<br><b>Likes:</b> needs store Facebook Page and Instagram access through Meta.</div>
+  </div><p class="mut" style="margin-top:12px">Lender QR scans only count tags printed with the new tracking QR codes.</p>`;
+  document.getElementById("st").onchange = e => { store = e.target.value; draw(); };
+  document.getElementById("rg").onchange = e => { range = e.target.value; draw(); };
+  document.getElementById("rf").onclick = () => load(code());
+}
+code() ? load(code()) : signin();
+</script></body></html>

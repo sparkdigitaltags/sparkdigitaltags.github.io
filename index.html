@@ -119,6 +119,7 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .chk input{width:20px;height:20px;margin-top:1px;flex:none}
 .rules{font-size:12px;color:var(--muted);margin:0;padding-left:16px}
 .top3{border:2px solid #C8102E;border-radius:10px;padding:10px 12px;margin:0 0 14px;background:#fff5f5}.top3 .t3h{font-weight:800;color:#C8102E;margin-bottom:4px}.top3 ol{margin:0;padding-left:20px}.top3 li{margin:4px 0}.top3 small{color:#666;margin-left:4px}
+.pvw{margin:12px 0}.pvh{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555;margin-bottom:6px}.pvcard{border:1px solid #ddd;border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}.pvwho{display:flex;align-items:center;gap:8px;padding:10px 12px}.pvav{width:32px;height:32px;border-radius:50%;background:#C8102E;color:#fff;display:grid;place-items:center;font-weight:800}.pvtext{white-space:pre-wrap;padding:0 12px 10px;font-size:14px;line-height:1.4}.pvimg{display:block;width:100%;max-height:360px;object-fit:contain;background:#f4f4f4}.pvnone{padding:18px 12px;background:#fff8e1;color:#7a5b00;font-size:13px}.caplab{display:block;font-size:12px;font-weight:700;color:#555;margin:6px 0 4px}
 </style>
 
 </head>
@@ -195,6 +196,8 @@ function tag(u){
 
 
 /* Team only unit location. The page never holds locations or PINs; the Apps Script checks the store PIN on every call. */
+const SID = Math.random().toString(36).slice(2,10);
+function track(t, o){ try { if (!LOC_API) return; const p = Object.assign({action:"ev", t, sid:SID}, o||{}); fetch(LOC_API + "?" + new URLSearchParams(p), {mode:"no-cors", keepalive:true}); } catch(e){} }
 const LOC_API = "https://script.google.com/macros/s/AKfycbxcj7HnpGxRFSILwbOjYf-9j11h1KSAHLnhmYvpJvZ6g2sukb_9ldyFG-rN2LoWCZfA/exec";
 const ZN = {DOCK:"Dock",F1:"Floor 1",F2:"Floor 2",F3:"Floor 3",F4:"Floor 4",C1:"Canopy 1",C2:"Canopy 2",C3:"Canopy 3",L1:"Lot 1",L2:"Lot 2",L3:"Lot 3",WH1:"Warehouse 1",WH2:"Warehouse 2",WH3:"Warehouse 3"};
 const MAPS = {Colleyville:{P:{C1:[48.4,11.3],C2:[53,15.5],C3:[57.3,19.5],DOCK:[54.6,44],F1:[30,37.1],F2:[22.9,31.6],F3:[36.5,23.4],F4:[44.7,29.2],L1:[77.5,38.8],L2:[84.9,45.5],L3:[58.7,79.6],WH1:[87.6,58.9],WH2:[87.8,73.5],WH3:[87.2,85.9]}}};
@@ -242,6 +245,8 @@ async function api(params){
   return r.json();
 }
 function locInit(u){
+  const signed = !!(getCode() && (isAll() || getPin(u.store)));
+  track("scan", Object.assign({store:u.store, unit:u.unit, d: signed ? "staff" : "customer"}, signed ? {pin:getPin(u.store)||"", code:getCode()} : {}));
   const box = document.getElementById("locsec");
   if (!box || !LOC_API) return;
   box.hidden = false;
@@ -328,7 +333,7 @@ function locEdit(u, r){
    FTC endorsement rules: posting from a personal account adds a clear "I work at" disclosure.
    Marketplace and eBay listings stay off until Brandon approves each brand (MARKET_OK). */
 // Top 3 Fire Sale units per store by SPIFF (weekly Fire Sale list). Amounts stay private; only unit ids here.
-const TOP3 = {"Colleyville":["colleyville-84440-cf0232","colleyville-109625-1d14fb","colleyville-107600-e537c5"],"Denton":["denton-77236-95ecb9","denton-77126-8230bd","denton-77094-6a11b1"],"Keller":["keller-72708-7435c9","keller-73839-d344a8","keller-78308-381974"],"Burleson":["burleson-76353-d9d7e8","burleson-84914-828864","burleson-73862-f28cff"],"Farmers Branch":["farmersbranch-78713-30e0a3","farmersbranch-84904-13ba99","farmersbranch-81799-86ee21"],"Tyler":["tyler-30206-551009","tyler-30605-a3aa74","tyler-35829-a1d4d7"],"Renfro":["renfro-113337-97919b","renfro-113333-af29d7","renfro-114162-204844"],"Weatherford":["weatherford-31237-dd49dd","weatherford-31243-03fc35","weatherford-20412-ba7004"],"Springtown":["springtown-20414-7ce35e","springtown-19882-45e8c3","springtown-19878-845dfb"],"Lewisville":["lewisville-115299-a1b3d1","lewisville-114719-de6353","lewisville-115208-702f3c"],"Waco":["waco-53075-e91a70","waco-58010-9f04ef","waco-57009-08ec5d"],"Gatesville":["gatesville-31006-d38a19","gatesville-30988-aa71a1","gatesville-31218-5812a3"]};
+const TOP3 = {"Colleyville":["colleyville-84440-cf0232","colleyville-109625-1d14fb","colleyville-107600-e537c5","colleyville-109623-af1c83","colleyville-109621-149fc2","colleyville-108193-28b121","colleyville-107606-2fbea4","colleyville-109619-c7768a","colleyville-108012-ad32d5","colleyville-108182-2ce34d","colleyville-108183-71d1a1","colleyville-108870-816e1c"],"Denton":["denton-77236-95ecb9","denton-77126-8230bd","denton-77094-6a11b1","denton-83258-07b099","denton-82357-0d152d","denton-84913-26fcf4","denton-77095-6c79d0","denton-73860-b9210b","denton-22041-292864","denton-73859-3f15c8","denton-73687-79470d","denton-76388-72d3e4"],"Keller":["keller-72708-7435c9","keller-73839-d344a8","keller-78308-381974","keller-71603-d97d01","keller-81417-de6397","keller-75051-548f1e","keller-81626-ce551a","keller-84668-5ae862","keller-81817-3951b9","keller-84402-759ac6","keller-82356-e420d0","keller-84911-874d95"],"Burleson":["burleson-76353-d9d7e8","burleson-84914-828864","burleson-73862-f28cff","burleson-84853-e6252c","burleson-81803-dc2c7e","burleson-86040-f8e390","burleson-86007-142569","burleson-109227-bf67db","burleson-79329-d8c002","burleson-175254-6ad230","burleson-109238-927543","burleson-109263-afacfd"],"Farmers Branch":["farmersbranch-78713-30e0a3","farmersbranch-84904-13ba99","farmersbranch-81799-86ee21","farmersbranch-109622-d8e16c","farmersbranch-109240-afd1ff","farmersbranch-109225-fce43e","farmersbranch-106827-a12fdd","farmersbranch-177075-42d6cd","farmersbranch-64138-a4d2a3","farmersbranch-172190-2a0600","farmersbranch-180538-a34cbf"],"Tyler":["tyler-30206-551009","tyler-30605-a3aa74","tyler-35829-a1d4d7","tyler-31515-c2e34c","tyler-31509-f230b4","tyler-32795-dc9684","tyler-32688-bf6224","tyler-31442-ef03d5","tyler-31434-bd04da","tyler-31431-6fa5e7","tyler-31426-00f4c4","tyler-32187-2d6f2d"],"Renfro":["renfro-113337-97919b","renfro-113333-af29d7","renfro-114162-204844","renfro-113348-3670ed","renfro-113353-979912","renfro-114167-67ca22","renfro-114163-657259","renfro-113358-c005d4","renfro-112612-ad34f9","renfro-112614-6267a9","renfro-112613-5198fe","renfro-113327-fe6d61"],"Weatherford":["weatherford-31237-dd49dd","weatherford-31243-03fc35","weatherford-20412-ba7004","weatherford-32759-3128f6","weatherford-19866-055c13","weatherford-31374-8b7473","weatherford-32768-1e5426","weatherford-32890-b668a7","weatherford-31489-62fee2","weatherford-31473-bb8aff","weatherford-31832-75b5ff","weatherford-30542-27cd6f"],"Springtown":["springtown-20414-7ce35e","springtown-19882-45e8c3","springtown-19878-845dfb","springtown-31391-57c32d","springtown-31502-ac07c2","springtown-30932-9917b4","springtown-31007-a14a4e","springtown-36687-e4e3b6","springtown-36688-011b3a","springtown-31217-63a999","springtown-32185-fb3d66","springtown-31944-00ee06"],"Lewisville":["lewisville-115299-a1b3d1","lewisville-114719-de6353","lewisville-115208-702f3c","lewisville-115229-9933af","lewisville-114726-0d90ae","lewisville-107616-ec700c","lewisville-115209-67e02a","lewisville-115207-64d9fc","lewisville-115295-f73492","lewisville-115245-3f0384","lewisville-115204-810e23","lewisville-115322-72c8ba"],"Waco":["waco-53075-e91a70","waco-58010-9f04ef","waco-57009-08ec5d","waco-57044-36e74b","waco-57609-c5c8b9","waco-57983-0478f6","waco-55958-bd0238","waco-55655-ab5ce9","waco-55939-881ec3","waco-56142-173e93","waco-58012-279dbd","waco-61748-89c94d"],"Gatesville":["gatesville-31006-d38a19","gatesville-30988-aa71a1","gatesville-31218-5812a3","gatesville-31786-6abe4f"]};
 const MARKET_OK = {};
 // Group leaders disclose the parent company, never a single store brand (Brandon Nov 7 2026)
 const CORP = ["Brandon Anderson", "Josh Anderson", "Justin Houston"];
@@ -366,16 +371,28 @@ async function photoFile(u){
 function shareInit(u, name){
   const box = document.getElementById("sharesec"); if (!box) return;
   box.hidden = false;
-  let plat = "fb", personal = false;
+  let plat = "fb", personal = false, started = false, recent = null;
+  const step = (d) => { if (d !== "open" && !started) step("open"); if (d === "open") { if (started) return; started = true; } track("step", {store:u.store, unit:u.unit, d, pin:getPin(u.store)||"", code:getCode()}); };
+  try { api({action:"top", store:u.store, pin:getPin(u.store), code:getCode()}).then(r => { if (r && r.ok) { recent = r.units; draw(); } }).catch(()=>{}); } catch(_){}
+  const rotated = () => {          // a unit drops off after a post until the store makes 5 other posts
+    const list = (TOP3[u.store] || []).filter(i => byId[i]);
+    if (!recent) return list.slice(0, 3);
+    return list.filter(i => { const k = recent.lastIndexOf(String(byId[i].unit)); return k < 0 || (recent.length - 1 - k) >= 5; }).slice(0, 3);
+  };
   const draw = () => {
     const P = PLAT.find(p => p.k === plat);
-    const top = (TOP3[u.store] || []).filter(i => byId[i]);
+    const top = rotated();
     const topHtml = top.length ? `<div class="top3"><div class="t3h">Post these for the highest spiff!</div><ol>${top.map(i => { const t = byId[i]; return `<li>${i === u.id ? `<b>${esc(t.brand + " " + t.name)}</b> (this unit)` : `<a href="#${i}">${esc(t.brand + " " + t.name)}</a>`}<small> Unit ${esc(t.unit)}</small></li>`; }).join("")}</ol></div>` : "";
     box.innerHTML = topHtml + `<h2>Post this unit</h2>
       <div class="sharegrid">${PLAT.map(p => {
         const blocked = p.market && !MARKET_OK[u.brand.toUpperCase()];
         return `<button class="sbtn ${p.k}" data-p="${p.k}" ${blocked ? "disabled" : ""} aria-pressed="${p.k===plat}"><span>${p.n}<small>${blocked ? "Not approved for " + esc(u.brand) + " yet" : p.sub}</small></span></button>`; }).join("")}</div>
       <label class="chk"><input type="checkbox" id="spers" ${personal?"checked":""}> <span>I'm posting from my own personal account. Adds ${CORP.includes(name) ? `"I work for <a href="${SPARK_URL}" target="_blank" rel="noopener">Spark Dealer Group</a>"` : `"I work at ${esc((u.dba||"LSM Outdoor Power")+" "+u.store)}"`}, which the FTC requires.</span></label>
+      <div class="pvw"><div class="pvh">Preview of your post on ${esc(P.n)}</div>
+        <div class="pvcard"><div class="pvwho"><span class="pvav">${esc((personal ? name : (u.dba || "LSM")).slice(0,1))}</span><b>${esc(personal ? name : (u.dba || "LSM Outdoor Power") + " " + u.store)}</b></div>
+        <div class="pvtext" id="pvtext">${esc(caption(u, plat, personal, name))}</div>
+        ${u.photo ? `<img class="pvimg" src="${u.photo}" alt="Photo that will be posted">` : `<div class="pvnone">No photo on file. Take your own photo of this exact unit to post.</div>`}</div></div>
+      <label class="caplab" for="scap">Edit the caption</label>
       <textarea class="capbox" id="scap" aria-label="Post caption">${esc(caption(u, plat, personal, name))}</textarea>
       <button class="copy copyall" id="sgo" data-label="${P.app ? "Share photo and caption to " + P.n : "Copy caption and open " + P.n}">${P.app ? "Share photo and caption to " + P.n : "Copy caption and open " + P.n}</button>
       <ul class="rules">
@@ -384,23 +401,26 @@ function shareInit(u, name){
         <li>Use the manufacturer photo or your own photo of this exact unit.</li>
       </ul>
       <div class="lmsg" id="smsg"></div>`;
-    box.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { plat = b.dataset.p; draw(); });
-    document.getElementById("spers").onchange = e => { personal = e.target.checked; draw(); };
+    box.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { plat = b.dataset.p; step("platform:" + PLAT.find(p => p.k === plat).n); draw(); });
+    document.getElementById("spers").onchange = e => { personal = e.target.checked; step("open"); draw(); };
+    document.getElementById("scap").oninput = e => { step("open"); document.getElementById("pvtext").textContent = e.target.value; };
     document.getElementById("sgo").onclick = async e => {
       const text = document.getElementById("scap").value, msg = document.getElementById("smsg");
       const bad = /\$\s?\d|\b\d+(\.\d+)?\s?%|\/mo\b|per month|apr\b|down payment|was\s+\$|you save/i;
       if (u.maphide && bad.test(text)) { msg.textContent = "This unit's price can't go online. Remove prices, payments and rates from the caption."; return; }
       if (!u.maphide && /\/mo\b|per month|apr\b|down payment|\b\d+(\.\d+)?\s?%|was\s+\$|you save/i.test(text)) { msg.textContent = "Remove payments, rates, Was prices and savings from the caption."; return; }
+      step("copy:" + P.n);
       try { api({action:"share", store:u.store, unit:u.unit, pin:getPin(u.store), code:getCode(), platform:P.n}); } catch(_){}
+      if (recent) recent.push(String(u.unit));
       if (P.app && navigator.share) {
         const f = await photoFile(u);
         const data = {text, url: shareLink(u, P.k)};
         if (f && navigator.canShare && navigator.canShare({files:[f]})) data.files = [f];
-        try { await navigator.share(data); msg.className = "lmsg ok"; msg.textContent = "Pick " + P.n + " in the share menu. Your caption is attached."; return; } catch(err){ if (err && err.name === "AbortError") return; }
+        try { await navigator.share(data); step("app:" + P.n); msg.className = "lmsg ok"; msg.textContent = "Pick " + P.n + " in the share menu. Your caption is attached."; return; } catch(err){ if (err && err.name === "AbortError") return; }
       }
       copyText(e.currentTarget, text);
       if (P.app) { const f = await photoFile(u); if (f) { const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); } }
-      window.open(P.open(shareLink(u, P.k)), "_blank", "noopener");
+      window.open(P.open(shareLink(u, P.k)), "_blank", "noopener"); step("app:" + P.n);
       msg.className = "lmsg ok"; msg.textContent = "Caption copied" + (P.app ? " and photo saved" : "") + ". Paste it into " + P.n + ".";
     };
   };
