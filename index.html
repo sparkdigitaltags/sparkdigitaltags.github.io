@@ -370,7 +370,7 @@ function shareInit(u, name){
   const draw = () => {
     const P = PLAT.find(p => p.k === plat);
     const top = (TOP3[u.store] || []).filter(i => byId[i]);
-    const topHtml = top.length ? `<div class="top3"><div class="t3h">Post these ${top.length} Fire Sale units first</div><ol>${top.map(i => { const t = byId[i]; return `<li>${i === u.id ? `<b>${esc(t.brand + " " + t.name)}</b> (this unit)` : `<a href="#${i}">${esc(t.brand + " " + t.name)}</a>`}<small> Unit ${esc(t.unit)}</small></li>`; }).join("")}</ol></div>` : "";
+    const topHtml = top.length ? `<div class="top3"><div class="t3h">Post these for the highest spiff!</div><ol>${top.map(i => { const t = byId[i]; return `<li>${i === u.id ? `<b>${esc(t.brand + " " + t.name)}</b> (this unit)` : `<a href="#${i}">${esc(t.brand + " " + t.name)}</a>`}<small> Unit ${esc(t.unit)}</small></li>`; }).join("")}</ol></div>` : "";
     box.innerHTML = topHtml + `<h2>Post this unit</h2>
       <div class="sharegrid">${PLAT.map(p => {
         const blocked = p.market && !MARKET_OK[u.brand.toUpperCase()];
