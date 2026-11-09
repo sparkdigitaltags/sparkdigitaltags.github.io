@@ -343,7 +343,7 @@ function locSignin(u, msg){
     if (!/^\d{4}$/.test(code)) { document.getElementById("lmsg").textContent = "Enter the store PIN and the last 4 of your cell."; return; }
     document.getElementById("lmsg").textContent = "Checking...";
     try { const r = await api({action:"check", store:u.store, pin, code}); 
-      if (r.ok) { keepKey(r); MEM._code=code; ls.set("sparkcode", code); if (r.all) { MEM._all=true; ls.set("sparkall","1"); } else { MEM[u.store]=pin; ls.set(pinKey(u.store), pin); } locLoad(u); }
+      if (r.ok) { keepKey(r); MEM._code=code; ls.set("sparkcode", code); if (r.all) { MEM._all=true; ls.set("sparkall","1"); } else { MEM[u.store]=pin; ls.set(pinKey(u.store), pin); (r.stores||[]).forEach(st => { MEM[st]=pin; ls.set(pinKey(st), pin); }); } locLoad(u); }
       else locSignin(u, ERRS[r.error] || "That did not work. Try again.");
     } catch(err){ document.getElementById("lmsg").textContent = "Could not connect. Check your signal and try again."; } };
 }
