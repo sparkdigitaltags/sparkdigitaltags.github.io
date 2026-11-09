@@ -142,7 +142,7 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .sbtn.fb{background:#1877F2}.sbtn.ig{background:#C13584}.sbtn.tt{background:#111}.sbtn.yt{background:#E62117}.sbtn.mk{background:#0A5BB5}.sbtn.eb{background:#3a3a3a}.sbtn.any{background:var(--ok)}
 .sbtn[aria-pressed="true"]{outline:4px solid var(--gold);outline-offset:2px}
 .lmsg.ok{color:var(--ok)}
-.mtog{display:flex;gap:6px;margin:10px 0 0}.mtog button{flex:1;padding:9px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:14px}.mtog button[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.mtog{display:flex;gap:6px;margin:10px 0 0}.mtog button{flex:1;padding:9px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:14px}.mtog button[disabled]{background:var(--line);color:var(--muted);border-color:var(--line);cursor:not-allowed}.mtog button small{display:block;font-size:11px;font-weight:500}.mtog button[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
 .vbox{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 0}.vbtn{display:block;text-align:center;padding:12px 6px;border-radius:10px;background:#111;color:#fff;font-weight:800;font-size:14px;cursor:pointer}.vbtn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line)}.vtip{margin:6px 0 0}
 .mkf{margin:12px 0 0;padding:10px;border:1px solid var(--line);border-radius:10px}.mkr{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.mkr:first-of-type{border-top:0}.mkr small{display:block;font-size:11px;color:var(--muted)}.mkr .copy{width:auto;padding:6px 12px;margin:0}
 .sbtn[disabled]{background:var(--line);color:var(--muted);cursor:not-allowed}
@@ -561,6 +561,7 @@ function leadInit(u){
    eBay stays off until Brandon approves each brand (MARKET_OK). Videos stay on the phone and go only to the app the person picks. */
 // Top 3 Fire Sale units per store by SPIFF (weekly Fire Sale list). Amounts stay private; only unit ids here.
 const TOP3 = {"Colleyville":["colleyville-84440-cf0232","colleyville-109625-1d14fb","colleyville-107600-e537c5","colleyville-109623-af1c83","colleyville-109621-149fc2","colleyville-108193-28b121","colleyville-107606-2fbea4","colleyville-109619-c7768a","colleyville-108012-ad32d5","colleyville-108182-2ce34d","colleyville-108183-71d1a1","colleyville-108870-816e1c"],"Denton":["denton-77236-95ecb9","denton-77126-8230bd","denton-77094-6a11b1","denton-83258-07b099","denton-82357-0d152d","denton-84913-26fcf4","denton-77095-6c79d0","denton-73860-b9210b","denton-22041-292864","denton-73859-3f15c8","denton-73687-79470d","denton-76388-72d3e4"],"Keller":["keller-72708-7435c9","keller-73839-d344a8","keller-78308-381974","keller-71603-d97d01","keller-81417-de6397","keller-75051-548f1e","keller-81626-ce551a","keller-84668-5ae862","keller-81817-3951b9","keller-84402-759ac6","keller-82356-e420d0","keller-84911-874d95"],"Burleson":["burleson-76353-d9d7e8","burleson-84914-828864","burleson-73862-f28cff","burleson-84853-e6252c","burleson-81803-dc2c7e","burleson-86040-f8e390","burleson-86007-142569","burleson-109227-bf67db","burleson-79329-d8c002","burleson-175254-6ad230","burleson-109238-927543","burleson-109263-afacfd"],"Farmers Branch":["farmersbranch-78713-30e0a3","farmersbranch-84904-13ba99","farmersbranch-81799-86ee21","farmersbranch-109622-d8e16c","farmersbranch-109240-afd1ff","farmersbranch-109225-fce43e","farmersbranch-106827-a12fdd","farmersbranch-177075-42d6cd","farmersbranch-64138-a4d2a3","farmersbranch-172190-2a0600","farmersbranch-180538-a34cbf"],"Tyler":["tyler-30206-551009","tyler-30605-a3aa74","tyler-35829-a1d4d7","tyler-31515-c2e34c","tyler-31509-f230b4","tyler-32795-dc9684","tyler-32688-bf6224","tyler-31442-ef03d5","tyler-31434-bd04da","tyler-31431-6fa5e7","tyler-31426-00f4c4","tyler-32187-2d6f2d"],"Renfro":["renfro-113337-97919b","renfro-113333-af29d7","renfro-114162-204844","renfro-113348-3670ed","renfro-113353-979912","renfro-114167-67ca22","renfro-114163-657259","renfro-113358-c005d4","renfro-112612-ad34f9","renfro-112614-6267a9","renfro-112613-5198fe","renfro-113327-fe6d61"],"Weatherford":["weatherford-31237-dd49dd","weatherford-31243-03fc35","weatherford-20412-ba7004","weatherford-32759-3128f6","weatherford-19866-055c13","weatherford-31374-8b7473","weatherford-32768-1e5426","weatherford-32890-b668a7","weatherford-31489-62fee2","weatherford-31473-bb8aff","weatherford-31832-75b5ff","weatherford-30542-27cd6f"],"Springtown":["springtown-20414-7ce35e","springtown-19882-45e8c3","springtown-19878-845dfb","springtown-31391-57c32d","springtown-31502-ac07c2","springtown-30932-9917b4","springtown-31007-a14a4e","springtown-36687-e4e3b6","springtown-36688-011b3a","springtown-31217-63a999","springtown-32185-fb3d66","springtown-31944-00ee06"],"Lewisville":["lewisville-115299-a1b3d1","lewisville-114719-de6353","lewisville-115208-702f3c","lewisville-115229-9933af","lewisville-114726-0d90ae","lewisville-107616-ec700c","lewisville-115209-67e02a","lewisville-115207-64d9fc","lewisville-115295-f73492","lewisville-115245-3f0384","lewisville-115204-810e23","lewisville-115322-72c8ba"],"Waco":["waco-53075-e91a70","waco-58010-9f04ef","waco-57009-08ec5d","waco-57044-36e74b","waco-57609-c5c8b9","waco-57983-0478f6","waco-55958-bd0238","waco-55655-ab5ce9","waco-55939-881ec3","waco-56142-173e93","waco-58012-279dbd","waco-61748-89c94d"],"Gatesville":["gatesville-31006-d38a19","gatesville-30988-aa71a1","gatesville-31218-5812a3","gatesville-31786-6abe4f"]};
+const VIDEO_ON = false;   // video posting built but held until Brandon turns it on (Nov 9 2026); buttons show "Coming soon"
 const MARKET_OK = {};   // eBay stays off until Brandon approves a brand
 // Facebook Marketplace is on for every brand (Brandon Nov 9 2026) except brands listed here. Units priced below MAP can't be listed.
 const MARKET_OFF = {"STIHL": "STIHL not cleared for Marketplace"};
@@ -568,10 +569,10 @@ const MARKET_OFF = {"STIHL": "STIHL not cleared for Marketplace"};
 const CORP = ["Brandon Anderson", "Josh Anderson", "Justin Houston"];
 const SPARK_URL = "https://www.sparkdealers.com";   // e.g. {"SCAG":true} once the manufacturer allows marketplace listings
 const PLAT = [
-  {k:"fb", n:"Facebook", sub:"Post or Reel", vid:true, open:link=>"https://www.facebook.com/sharer/sharer.php?u="+encodeURIComponent(link), vopen:()=>"https://www.facebook.com/reels/create"},
-  {k:"ig", n:"Instagram", sub:"Photo or Reel", vid:true, app:true, open:()=>"https://www.instagram.com/"},
-  {k:"tt", n:"TikTok", sub:"Photo or video", vid:true, app:true, open:()=>"https://www.tiktok.com/upload"},
-  {k:"yt", n:"YouTube", sub:"Shorts video", vid:true, vonly:true, app:true, open:()=>"https://studio.youtube.com/"},
+  {k:"fb", n:"Facebook", sub:"Post or Reel", offsub:"Page or profile post", vid:true, open:link=>"https://www.facebook.com/sharer/sharer.php?u="+encodeURIComponent(link), vopen:()=>"https://www.facebook.com/reels/create"},
+  {k:"ig", n:"Instagram", sub:"Photo or Reel", offsub:"Photo and caption", vid:true, app:true, open:()=>"https://www.instagram.com/"},
+  {k:"tt", n:"TikTok", sub:"Photo or video", offsub:"Photo post", vid:true, app:true, open:()=>"https://www.tiktok.com/upload"},
+  {k:"yt", n:"YouTube", sub:"Shorts video", vid:true, vonly:true, offsub:"Shorts need a video", app:true, open:()=>"https://studio.youtube.com/"},
   {k:"mk", n:"Marketplace", sub:"FB listing", vid:true, mkt:true, open:()=>"https://www.facebook.com/marketplace/create/item"},
   {k:"eb", n:"eBay", sub:"Listing", market:true, open:()=>"https://www.ebay.com/sl/sell"}
 ];
@@ -612,7 +613,7 @@ function shareInit(u, name){
   };
   const draw = () => {
     const P = PLAT.find(p => p.k === plat);
-    if (P.vonly) media = "video"; else if (!P.vid) media = "photo";
+    if (!VIDEO_ON) media = "photo"; else if (P.vonly) media = "video"; else if (!P.vid) media = "photo";
     if (P.mkt) personal = true;      // Marketplace listings come from a personal profile
     const V = media === "video";
     const top = rotated();
@@ -620,8 +621,8 @@ function shareInit(u, name){
     box.innerHTML = topHtml + `<h2>Post this unit</h2>
       <div class="sharegrid">${PLAT.map(p => {
         const why = p.mkt ? mkBlock() : (p.market && !MARKET_OK[u.brand.toUpperCase()] ? "Not approved for " + u.brand + " yet" : "");
-        return `<button class="sbtn ${p.k}" data-p="${p.k}" ${why ? "disabled" : ""} aria-pressed="${p.k===plat}"><span>${p.n}<small>${why ? esc(why) : p.sub}</small></span></button>`; }).join("")}</div>
-      ${P.vid ? `<div class="mtog" role="group" aria-label="Photo or video">${P.vonly ? "" : `<button data-m="photo" aria-pressed="${!V}">Photo</button>`}<button data-m="video" aria-pressed="${V}">Video</button></div>` : ""}
+        return `<button class="sbtn ${p.k}" data-p="${p.k}" ${why ? "disabled" : ""} aria-pressed="${p.k===plat}"><span>${p.n}<small>${why ? esc(why) : (!VIDEO_ON && p.offsub) ? p.offsub : p.sub}</small></span></button>`; }).join("")}</div>
+      ${P.vid ? `<div class="mtog" role="group" aria-label="Photo or video">${P.vonly && VIDEO_ON ? "" : `<button data-m="photo" aria-pressed="${!V}">Photo</button>`}${VIDEO_ON ? `<button data-m="video" aria-pressed="${V}">Video</button>` : `<button disabled aria-disabled="true">Video<small>Coming soon</small></button>`}</div>` : ""}
       ${V ? `<div class="vbox"><label class="vbtn">Record a video<input type="file" accept="video/*" capture="environment" id="vrec" hidden></label><label class="vbtn alt">Choose a video<input type="file" accept="video/*" id="vpick" hidden></label></div>
         <p class="fine vtip">Hold the phone upright. Keep it under 60 seconds. Show this exact unit, walk around it and start it if you can. Don't say prices, payments or rates out loud.</p>` : ""}
       ${P.mkt ? `<div class="mkf"><div class="pvh">Marketplace listing fields</div>
