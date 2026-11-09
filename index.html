@@ -479,7 +479,7 @@ function leadInit(u){
       if (pref === "Email" && !email) { m.textContent = "Add your email so we can reach you that way."; return; }
       if (!document.getElementById("lc").checked) { m.textContent = "Please check the box so we're allowed to contact you."; return; }
       m.textContent = "Sending...";
-      try { const r = await api({action:"lead", store:u.store, unit:u.unit, model:(u.brand + " " + u.model).trim(), name, phone, email, pref, consent:"1", sid:SID});
+      try { const r = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"lead", store:u.store, unit:u.unit, model:(u.brand + " " + u.model).trim(), name, phone, email, pref, consent:"1", sid:SID}).toString()}).then(x => x.json());   // POST keeps the customer's details out of the web address
         if (r.ok) box.innerHTML = `<h2>Got it, thanks ${esc(name.split(" ")[0])}</h2><p class="fine" style="margin:0">The ${esc(u.store)} team will reach out soon about this unit.</p>`;
         else m.textContent = r.error === "busy" ? "We're getting a lot of requests. Please ask any team member or call the store." : "That didn't go through. Please check your info and try again.";
       } catch(err){ m.textContent = "Could not connect. Check your signal and try again."; }
