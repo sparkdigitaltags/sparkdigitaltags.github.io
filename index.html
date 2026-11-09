@@ -241,7 +241,7 @@ const LAYOUTS = {
  <polygon points="40,455 100,425 345,630 285,705" fill="#d4cfca"/><polygon points="635,140 770,0 860,0 860,90 770,278" fill="#d4cfca"/>
  <polygon points="148,335 300,172 445,292 378,362 270,458" fill="#fff" stroke="#2c2725" stroke-width="3"/>
  <polygon points="270,458 378,362 582,575 492,668" fill="#fff" stroke="#2c2725" stroke-width="3"/>
- <text x="300" y="300" text-anchor="middle" ${_F} font-size="20" fill="#4a4340">STORE</text>
+ <text x="300" y="300" text-anchor="middle" ${_F} font-size="20" fill="#4a4340" transform="rotate(42 300 300)">STORE</text>
  <polygon points="378,95 415,72 535,200 495,238" fill="#3f6fb3" opacity=".9"/>
  <polygon points="690,530 772,522 806,945 712,958" fill="#f4ede0" stroke="#2c2725" stroke-width="3"/>
  <line x1="701" y1="668" x2="783" y2="660" stroke="#2c2725" stroke-width="2"/><line x1="707" y1="805" x2="793" y2="797" stroke="#2c2725" stroke-width="2"/>`,
@@ -278,7 +278,7 @@ const LAYOUTS = {
   labels: [["F1", "Floor", 27.9, 29.2], ["L1", "Lot", 81.1, 36.8], ["WH1", "Warehouse", 69.3, 21.0], ["SHOP", "Shop", 57.8, 37.3]] },
  "Lakeland": { vb: [400, 739], bg: _R(0,0,400,739,PV) + _R(0,0,400,30,G) + _R(0,700,400,739,RD) + _T(200,725,"CREATIVE DR",{c:"#fff",s:15}) + _R(370,330,400,700,NB) + _R(290,40,360,110,"#efe7d6") + _R(45,45,210,590,W,1) + _T(127,70,"STORE",{s:15}),
   labels: [["F1", "Floor", 31.8, 44.7], ["L1", "Lot", 70.0, 33.8], ["WH1", "Warehouse", 31.8, 21.7], ["SHOP", "Shop", 31.8, 69.0]] },
- "Belleview": { vb: [450, 401], bg: _R(0,0,450,401,G) + _R(240,120,450,401,TR) + _P("0,150 190,0 260,0 0,215",RD) + _T(90,105,"SE STETSON RD",{c:"#fff",r:-40,s:13}) + _P("0,240 120,401 0,401",RD) + _R(300,40,420,230,"#efe7d6") + _P("160,230 300,170 330,330 230,350",PV) + _P("75,195 170,85 255,175 160,290",W,1) + _T(205,250,"STORE",{s:14,r:-40}),
+ "Belleview": { vb: [450, 401], bg: _R(0,0,450,401,G) + _R(240,120,450,401,TR) + _P("0,150 190,0 260,0 0,215",RD) + _T(90,105,"SE STETSON RD",{c:"#fff",r:-40,s:13}) + _P("0,240 120,401 0,401",RD) + _R(300,40,420,230,"#efe7d6") + _P("160,230 300,170 330,330 230,350",PV) + _P("75,195 170,85 255,175 160,290",W,1) + _T(150,160,"STORE",{s:14,r:46}),
   labels: [["F1", "Floor", 33.3, 53.6], ["L1", "Lot", 80.0, 24.9], ["WH1", "Warehouse", 84.4, 52.4], ["SHOP", "Shop", 52.2, 37.4]] },
  "Lake Hamilton": { vb: [800, 540], bg: _R(0,0,800,540,G) + _R(0,0,170,200,TR) + _R(655,0,800,540,RD) + _T(728,270,"US 27",{c:"#fff",r:90,s:18}) + _R(280,0,480,180,PV) + _R(230,285,655,350,PV) + _R(490,180,550,290,"#d9c9ad") + _R(48,200,158,270,NB) + _R(0,355,95,460,NB) + _R(178,385,285,455,NB) + _R(355,345,490,460,NB) + `<ellipse cx="125" cy="505" rx="95" ry="30" fill="#7d8f7a"/>` + _R(282,5,340,55,OB,1) + _R(455,125,480,180,OB,1) + _R(262,155,288,205,"#e7b3a6",1) + _R(320,195,490,285,W,1) + _T(405,212,"STORE",{s:15}),
   labels: [["F1", "Floor", 48.1, 45.9], ["L1", "Lot", 47.5, 16.7], ["WH1", "Warehouse", 38.8, 5.6], ["SHOP", "Shop", 65.2, 43.0]] },
@@ -289,6 +289,16 @@ const LAYOUTS = {
  "San Antonio": { vb: [487, 301], bg: _R(0,0,487,301,TR) + _R(0,0,22,301,RD) + _T(11,150,"BANDERA RD",{c:"#fff",r:90,s:11}) + _R(0,272,487,301,"#e8e3da") + _P("22,15 110,0 140,0 40,40",PV) + _P("40,30 65,30 65,85 40,85",G) + _R(40,85,155,155,PV) + _R(40,155,70,240,PV) + _P("330,20 487,30 487,240 340,230","#e3d3b5") + _R(230,0,260,35,NB) + _R(318,168,336,215,NB) + _R(232,123,300,170,NB,1) + _P("185,135 225,135 225,170 205,170 205,215 165,215 165,175 185,175",W,1) + _T(195,128,"STORE",{s:10}),
   labels: [["F1", "Floor", 38.6, 64.8], ["L1", "Lot", 20.5, 39.9], ["WH1", "Warehouse", 55.4, 34.9], ["SHOP", "Shop", 84.2, 43.2]] }
 };
+// Square up maps whose satellite view came in at an angle (Nov 9 2026): rot turns the drawing so the store sits straight; crop trims the empty corners (fraction per side)
+const ROT = {"Colleyville":[-42,.08],"Belleview":[-46,.16],"Waco":[30.5,.1],"Louisville":[7.9,.05]};
+Object.entries(ROT).forEach(([st,[r,cr]]) => { const d = LAYOUTS[st]; if (!d) return;
+  const [W,H] = d.vb || [860,1010], a = r*Math.PI/180, c = Math.cos(a), s = Math.sin(a);
+  const BW = Math.abs(W*c)+Math.abs(H*s), BH = Math.abs(W*s)+Math.abs(H*c), cx = BW*cr, cy = BH*cr, NW = Math.round(BW-2*cx), NH = Math.round(BH-2*cy);
+  const P = (x,y) => { const dx=x-W/2, dy=y-H/2; return [BW/2+dx*c-dy*s-cx, BH/2+dx*s+dy*c-cy]; };
+  const base = (d.bg.match(/fill="(#[0-9a-fA-F]{3,6})"/)||[])[1] || G;
+  d.bg = `<rect width="${NW}" height="${NH}" fill="${base}"/><g transform="translate(${BW/2-W/2-cx} ${BH/2-H/2-cy}) rotate(${r} ${W/2} ${H/2})">${d.bg}</g>`;
+  d.labels = d.labels.map(([k,n,x,y]) => { const [X,Y] = P(x*W/100, y*H/100); return [k,n,Math.round(X/NW*1000)/10,Math.round(Y/NH*1000)/10]; });
+  d.vb = [NW,NH]; });
 const GENERIC = { bg: `<rect width="860" height="1010" fill="${G}"/><rect x="0" y="900" width="860" height="110" fill="${RD}"/>
  <rect x="60" y="120" width="740" height="760" fill="${PV}"/><rect x="170" y="200" width="380" height="300" fill="${W}" stroke="#2c2725" stroke-width="3"/>
  <rect x="600" y="200" width="160" height="300" fill="${OB}" stroke="#2c2725" stroke-width="3"/>
