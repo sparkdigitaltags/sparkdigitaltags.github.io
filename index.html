@@ -100,6 +100,17 @@ li::marker{color:var(--gold-deep)}
 .labrow .req{font-size:12px;color:var(--muted);min-width:64px;text-align:center}
 .labrow .del{padding:8px 10px;font-size:13px}
 .addf{display:flex;gap:8px;margin:6px 0 10px}.addf input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;border-radius:8px;border:2px solid var(--line)}
+.leadsec{padding:14px 16px;display:grid;gap:10px;border-top:1px solid var(--line)}
+.leadsec h2{font-family:var(--display);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:14px;margin:0;color:var(--muted)}
+.leadf{display:grid;gap:8px}
+.leadf input[type=text],.leadf input:not([type]),.leadf input[type=tel],.leadf input[type=email]{font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);width:100%;box-sizing:border-box}
+.lpref{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.lpref label{display:block}.lpref input{position:absolute;opacity:0;pointer-events:none}
+.lpref span{display:block;text-align:center;padding:9px 4px;border-radius:8px;border:2px solid var(--line);font-weight:700}
+.lpref input:checked+span{border-color:var(--gold);background:var(--chip)}
+.lpref input:focus-visible+span{outline:2px solid var(--gold);outline-offset:2px}
+.lconsent{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--muted);line-height:1.4}
+.lconsent input{width:20px;height:20px;flex:none;margin-top:1px}
 .full{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.85);display:grid;place-items:center;padding:12px}
 .full .locmap{max-width:860px;width:100%;max-height:100%;overflow:auto}
 
@@ -180,6 +191,7 @@ function tag(u){
       ${(DATA.lenders[u.store]||[]).map(l=>`<a class="lend ${l.k}" href="${l.url}" target="_blank" rel="noopener"><span><span class="tier">${esc(l.tier)}</span><br><span class="ttl">${esc(l.title)}</span><br><span class="sub">${esc(l.sub)}</span></span><span class="go">Apply</span></a>`).join("")}
       <p class="fine">Each option opens that lender's secure application for ${esc(u.dba || "LSM Outdoor Power")} ${esc(u.store)}. Financing and leasing are subject to approval.</p>
     </section>
+    <section class="leadsec" id="leadsec"></section>
     <section class="sect">
       <h2>For our team</h2>
       <div class="fields">${fields.map(([k,v],i)=>`<div class="field"><span class="k">${k}</span><span class="v">${esc(v)}</span><button class="copy" id="c${i}" data-label="Copy" data-v="${esc(v)}">Copy</button></div>`).join("")}</div>
@@ -200,6 +212,7 @@ function tag(u){
   document.getElementById("call").addEventListener("click", e => copyText(e.currentTarget, all));
   const cl = document.getElementById("clink"); if (cl) cl.addEventListener("click", e => copyText(e.currentTarget, SHARE_BASE + "#" + u.id));
   locInit(u);
+  leadInit(u);
   window.scrollTo(0,0);
 }
 
@@ -435,6 +448,44 @@ function mapEdit(u, r){
     };
   };
   draw();
+}
+
+/* Customer lead form (Nov 9 2026). The customer asks the store to hold the unit or reach out.
+   Saved to the Leads tab and emailed to the store right away. Contact consent is required before sending. */
+function leadInit(u){
+  const box = document.getElementById("leadsec"); if (!box || !LOC_API) return;
+  const biz = (u.dba || "LSM Outdoor Power") + " " + u.store;
+  const closed = () => { box.innerHTML = `<button class="copy copyall" id="leadopen">Hold this unit or have us call you</button>`;
+    document.getElementById("leadopen").onclick = () => { open(); track("step", {store:u.store, unit:u.unit, d:"lead:open"}); }; };
+  const open = (msg) => {
+    box.innerHTML = `<h2>Interested in this one?</h2>
+      <p class="fine" style="margin:0">Leave your info and the ${esc(u.store)} team will reach out about this ${esc(u.brand)} ${esc(u.model)}.</p>
+      <form id="leadf" class="leadf" novalidate>
+        <input id="ln" autocomplete="name" maxlength="60" placeholder="Your name" aria-label="Your name">
+        <input id="lp" type="tel" inputmode="tel" autocomplete="tel" placeholder="Mobile phone" aria-label="Mobile phone">
+        <input id="le" type="email" inputmode="email" autocomplete="email" maxlength="80" placeholder="Email (optional)" aria-label="Email, optional">
+        <div class="lpref" role="radiogroup" aria-label="Best way to reach you">${["Call","Text","Email"].map((t,i)=>`<label><input type="radio" name="lpref" value="${t}"${i===0?" checked":""}><span>${t}</span></label>`).join("")}</div>
+        <label class="lconsent"><input type="checkbox" id="lc"><span>I agree that ${esc(biz)} may contact me about this unit by call, text or email at the number and email above. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.</span></label>
+        <button class="copy copyall" type="submit">Send</button>
+        <div class="lmsg" id="lmsg2">${msg ? esc(msg) : ""}</div>
+      </form>`;
+    document.getElementById("leadf").onsubmit = async e => {
+      e.preventDefault();
+      const name = document.getElementById("ln").value.trim(), phone = document.getElementById("lp").value.replace(/\D/g, "").slice(-10), email = document.getElementById("le").value.trim();
+      const pref = (box.querySelector('input[name="lpref"]:checked') || {}).value || "Call", m = document.getElementById("lmsg2");
+      if (!name) { m.textContent = "Please enter your name."; return; }
+      if (phone.length !== 10) { m.textContent = "Please enter a 10 digit phone number."; return; }
+      if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { m.textContent = "That email doesn't look right."; return; }
+      if (pref === "Email" && !email) { m.textContent = "Add your email so we can reach you that way."; return; }
+      if (!document.getElementById("lc").checked) { m.textContent = "Please check the box so we're allowed to contact you."; return; }
+      m.textContent = "Sending...";
+      try { const r = await api({action:"lead", store:u.store, unit:u.unit, model:(u.brand + " " + u.model).trim(), name, phone, email, pref, consent:"1", sid:SID});
+        if (r.ok) box.innerHTML = `<h2>Got it, thanks ${esc(name.split(" ")[0])}</h2><p class="fine" style="margin:0">The ${esc(u.store)} team will reach out soon about this unit.</p>`;
+        else m.textContent = r.error === "busy" ? "We're getting a lot of requests. Please ask any team member or call the store." : "That didn't go through. Please check your info and try again.";
+      } catch(err){ m.textContent = "Could not connect. Check your signal and try again."; }
+    };
+  };
+  closed();
 }
 
 /* Team only social sharing. Compliance rules (Brandon Nov 7 2026):
