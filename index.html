@@ -91,6 +91,15 @@ li::marker{color:var(--gold-deep)}
 .lrow{display:flex;gap:8px}.lrow>*{flex:1}
 .ghost{font-family:var(--display);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink)}
 .lmsg{font-size:13px;color:var(--fire);min-height:1em}
+.zbtn small{display:block;font-family:var(--body,inherit);font-weight:600;font-size:11px;opacity:.8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mapedit svg{cursor:crosshair}
+.lablist{display:grid;gap:6px;margin:10px 0}
+.labrow{display:flex;gap:8px;align-items:center}
+.labrow .lab{flex:1;text-align:left;font:inherit;font-size:15px;padding:9px 10px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.labrow.on .lab{border-color:var(--fire)}
+.labrow .req{font-size:12px;color:var(--muted);min-width:64px;text-align:center}
+.labrow .del{padding:8px 10px;font-size:13px}
+.addf{display:flex;gap:8px;margin:6px 0 10px}.addf input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;border-radius:8px;border:2px solid var(--line)}
 .full{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.85);display:grid;place-items:center;padding:12px}
 .full .locmap{max-width:860px;width:100%;max-height:100%;overflow:auto}
 
@@ -199,8 +208,83 @@ function tag(u){
 const SID = Math.random().toString(36).slice(2,10);
 function track(t, o){ try { if (!LOC_API) return; const p = Object.assign({action:"ev", t, sid:SID}, o||{}); fetch(LOC_API + "?" + new URLSearchParams(p), {mode:"no-cors", keepalive:true}); } catch(e){} }
 const LOC_API = "https://script.google.com/macros/s/AKfycbxcj7HnpGxRFSILwbOjYf-9j11h1KSAHLnhmYvpJvZ6g2sukb_9ldyFG-rN2LoWCZfA/exec";
-const ZN = {DOCK:"Dock",F1:"Floor 1",F2:"Floor 2",F3:"Floor 3",F4:"Floor 4",C1:"Canopy 1",C2:"Canopy 2",C3:"Canopy 3",L1:"Lot 1",L2:"Lot 2",L3:"Lot 3",WH1:"Warehouse 1",WH2:"Warehouse 2",WH3:"Warehouse 3"};
-const MAPS = {Colleyville:{P:{C1:[48.4,11.3],C2:[53,15.5],C3:[57.3,19.5],DOCK:[54.6,44],F1:[30,37.1],F2:[22.9,31.6],F3:[36.5,23.4],F4:[44.7,29.2],L1:[77.5,38.8],L2:[84.9,45.5],L3:[58.7,79.6],WH1:[87.6,58.9],WH2:[87.8,73.5],WH3:[87.2,85.9]}}};
+/* Store diagrams (Nov 9 2026). Traced from satellite view. Backgrounds are drawn in an 860x1010 box.
+   Labels: [code, name, x%, y%]. Every store keeps the four required labels: F1 Floor, L1 Lot, WH1 Warehouse, SHOP Shop.
+   ISRs and managers can move labels and add new ones; their saved layout (Maps tab) overrides these defaults. */
+const REQ = [["F1","Floor"],["L1","Lot"],["WH1","Warehouse"],["SHOP","Shop"]];
+const ZN = {DOCK:"Dock",F1:"Floor",F2:"Floor 2",F3:"Floor 3",F4:"Floor 4",C1:"Canopy 1",C2:"Canopy 2",C3:"Canopy 3",L1:"Lot",L2:"Lot 2",L3:"Lot 3",WH1:"Warehouse",WH2:"Warehouse 2",WH3:"Warehouse 3",SHOP:"Shop"};
+const _F = 'font-family="Arial Narrow,Arial,sans-serif" font-weight="700"';
+const _S = (inner) => `<g transform="scale(1.0763 1.0756)">${inner}</g>`;   // satellite traces are in 799x939 screen space
+const _R = (x1,y1,x2,y2,f,st) => `<rect x="${x1}" y="${y1}" width="${x2-x1}" height="${y2-y1}" fill="${f}"${st?' stroke="#2c2725" stroke-width="3"':''}/>`;
+const _P = (pts,f,st) => `<polygon points="${pts}" fill="${f}"${st?' stroke="#2c2725" stroke-width="3"':''}/>`;
+const _T = (x,y,t,o) => `<text x="${x}" y="${y}" text-anchor="middle" ${_F} font-size="${(o&&o.s)||19}" fill="${(o&&o.c)||'#4a4340'}"${o&&o.r?` transform="rotate(${o.r} ${x} ${y})"`:''}>${t}</text>`;
+const G="#cfdcbf", RD="#5d5a58", PV="#e3dccf", NB="#d4cfca", W="#fff", OB="#f4ede0", TR="#a9bb92";
+const LAYOUTS = {
+ Colleyville: { bg: `<rect width="860" height="1010" fill="#cfdcbf"/><polygon points="0,0 352,0 0,365" fill="#5d5a58"/>
+ <line x1="0" y1="180" x2="176" y2="0" stroke="#e9e2c8" stroke-width="3" stroke-dasharray="18 14"/>
+ <text ${_F} font-size="22" fill="#fff" transform="translate(70,190) rotate(-46)">COLLEYVILLE BLVD</text>
+ <polygon points="330,118 430,60 640,140 770,330 690,520 690,975 560,975 470,690 582,575 445,292 300,172" fill="#e3dccf"/>
+ <polygon points="40,455 100,425 345,630 285,705" fill="#d4cfca"/><polygon points="635,140 770,0 860,0 860,90 770,278" fill="#d4cfca"/>
+ <polygon points="148,335 300,172 445,292 378,362 270,458" fill="#fff" stroke="#2c2725" stroke-width="3"/>
+ <polygon points="270,458 378,362 582,575 492,668" fill="#fff" stroke="#2c2725" stroke-width="3"/>
+ <text x="300" y="300" text-anchor="middle" ${_F} font-size="20" fill="#4a4340">STORE</text>
+ <polygon points="378,95 415,72 535,200 495,238" fill="#3f6fb3" opacity=".9"/>
+ <polygon points="690,530 772,522 806,945 712,958" fill="#f4ede0" stroke="#2c2725" stroke-width="3"/>
+ <line x1="701" y1="668" x2="783" y2="660" stroke="#2c2725" stroke-width="2"/><line x1="707" y1="805" x2="793" y2="797" stroke="#2c2725" stroke-width="2"/>`,
+  labels: [["C1","Canopy 1",48.4,11.3],["C2","Canopy 2",53,15.5],["C3","Canopy 3",57.3,19.5],["DOCK","Dock",54.6,44],["F1","Floor",30,37.1],["F2","Floor 2",22.9,31.6],["F3","Floor 3",36.5,23.4],["F4","Floor 4",44.7,29.2],["L1","Lot",77.5,38.8],["L2","Lot 2",84.9,45.5],["L3","Lot 3",58.7,79.6],["WH1","Warehouse",87.6,58.9],["WH2","Warehouse 2",87.8,73.5],["WH3","Warehouse 3",87.2,85.9],["SHOP","Shop",50,52]] },
+ Keller: { bg: `<rect width="860" height="1010" fill="${G}"/>` + _S(
+   `<line x1="150" y1="0" x2="128" y2="939" stroke="#8a7d6f" stroke-width="10" stroke-dasharray="4 10"/>` + _R(0,40,40,270,NB) +
+   _P("265,30 470,30 560,330 690,880 265,880",PV) + _P("545,0 700,0 799,560 799,939 735,939",RD) +
+   _T(668,470,"N MAIN ST",{c:"#fff",r:77,s:22}) + _R(278,0,360,400,W,1) + _R(390,368,495,404,OB,1) + _R(285,400,500,540,W,1) +
+   _T(392,520,"STORE") + _R(265,545,460,870,"#efe7d6") + _T(140,470,"RAIL",{c:"#6b5f53",r:-88,s:16}) ) ,
+  labels: [["F1","Floor",48.8,50.1],["L1","Lot",45.1,74.5],["WH1","Warehouse",40,21.3],["SHOP","Shop",55.1,41.1]] },
+ Burleson: { bg: `<rect width="860" height="1010" fill="${G}"/>` + _S(
+   _P("480,0 799,0 799,690 560,690 470,200",TR) + _P("110,200 470,200 560,720 250,755 170,420",PV) +
+   _P("10,0 80,0 260,760 185,760",RD) + _R(0,755,799,830,RD) + _T(150,330,"SYBLE JEAN DR",{c:"#fff",r:74,s:20}) + _T(520,800,"CROWLEY RD (FM 1187)",{c:"#fff",s:20}) +
+   _P("195,60 395,25 422,160 222,198",NB) + _P("318,320 430,300 478,520 362,542",W,1) + _P("305,468 358,460 362,542 465,532 470,580 345,600",OB,1) +
+   _T(420,505,"STORE",{r:-12}) ),
+  labels: [["F1","Floor",49.4,44.7],["L1","Lot",53.8,67.6],["WH1","Warehouse",47.6,26.6],["SHOP","Shop",43.2,59.6]] },
+ Denton: { bg: `<rect width="860" height="1010" fill="${G}"/>` + _S(
+   _R(0,0,240,939,"#ddd6c8") + _R(15,450,190,590,NB) + _R(130,60,215,330,NB) + _R(240,0,300,939,RD) +
+   _P("300,0 799,0 799,560 300,560",PV) + `<line x1="310" y1="540" x2="799" y2="570" stroke="#6b5f53" stroke-width="3"/>` +
+   _R(350,640,540,740,NB) + _R(265,795,375,920,NB) + _R(505,805,578,865,NB) +
+   _R(352,378,418,505,W,1) + _R(425,437,608,512,W,1) + _R(520,140,570,245,"#e7b3a6",1) + _R(513,256,553,305,"#e7b3a6",1) + _R(490,355,590,405,OB,1) +
+   _T(385,395,"STORE",{s:16}) ),
+  labels: [["F1","Floor",48.2,47.5],["L1","Lot",52.6,26.6],["WH1","Warehouse",65.1,50.6],["SHOP","Shop",68.2,20.8]] },
+ "Farmers Branch": { bg: `<rect width="860" height="1010" fill="${PV}"/>` + _S(
+   _P("0,0 60,0 150,939 0,939",RD) + _T(60,470,"N STEMMONS FWY",{c:"#fff",r:84,s:22}) +
+   _R(95,555,235,700,G) + _P("120,775 560,775 560,860 130,860",G) + _R(220,72,680,305,NB) + _R(690,80,770,225,NB) + _R(478,578,799,750,NB) +
+   _R(358,373,542,530,W,1) + `<rect x="542" y="390" width="110" height="132" fill="#efe7d6" stroke="#2c2725" stroke-width="2" stroke-dasharray="8 6"/>` +
+   _T(405,522,"STORE") ),
+  labels: [["F1","Floor",52.6,47.5],["L1","Lot",74.7,48.5],["WH1","Warehouse",62,42.6],["SHOP","Shop",62,53.8]] },
+ Lewisville: { bg: `<rect width="860" height="1010" fill="${PV}"/>` + _S(
+   _R(0,800,799,880,G) + _P("0,880 799,820 799,939 0,939",RD) + _T(400,905,"STATE HWY 121",{c:"#fff",r:-4,s:22}) +
+   [[20,95,152,168],[192,100,326,172],[340,100,475,172],[505,100,674,172],[686,100,799,170],[0,250,110,418],[195,255,262,765],[530,250,652,455],[530,470,588,680],[598,365,636,488],[730,250,799,355],[690,515,799,628],[8,525,85,790]].map(r=>_R(...r,NB)).join("") +
+   _R(340,253,452,690,NB) + _R(340,690,452,765,W,1) + _T(396,240,"BUILDING",{s:16}) + _T(396,785,"LSM SUITE",{s:16}) ),
+  labels: [["F1","Floor",49.4,77.2],["L1","Lot",37.5,77.7],["WH1","Warehouse",49.4,64.4],["SHOP","Shop",49.4,70.8]] },
+ Renfro: { bg: `<rect width="860" height="1010" fill="${G}"/>` + _S(
+   _P("0,130 690,130 690,830 530,830 260,600 0,420",PV) + _P("0,470 580,939 390,939 0,640",RD) + _T(170,690,"E RENFRO ST",{c:"#fff",r:38,s:22}) +
+   _R(70,185,250,280,NB) + _R(305,185,487,280,NB) + _R(510,185,565,330,OB,1) + _R(622,185,665,360,OB,1) +
+   _R(285,385,510,548,W,1) + _R(605,395,670,825,W,1) + _T(397,400,"STORE") ),
+  labels: [["F1","Floor",45.1,47.9],["L1","Lot",53.8,68.2],["WH1","Warehouse",79.7,63.9],["SHOP","Shop",57.6,53.8]] },
+};
+const GENERIC = { bg: `<rect width="860" height="1010" fill="${G}"/><rect x="0" y="900" width="860" height="110" fill="${RD}"/>
+ <rect x="60" y="120" width="740" height="760" fill="${PV}"/><rect x="170" y="200" width="380" height="300" fill="${W}" stroke="#2c2725" stroke-width="3"/>
+ <rect x="600" y="200" width="160" height="300" fill="${OB}" stroke="#2c2725" stroke-width="3"/>
+ ${_T(360,240,"BUILDING")}${_T(430,60,"Layout not drawn yet. Move the labels to match your store.",{s:22})}`,
+  labels: [["F1","Floor",34,36],["L1","Lot",50,76],["WH1","Warehouse",79,30],["SHOP","Shop",79,44]] };
+const MAPLIVE = {};   // store -> labels saved by the team
+function layoutOf(store){ const d = LAYOUTS[store] || GENERIC; let L = (MAPLIVE[store] || d.labels).map(a => a.slice());
+  REQ.forEach(([c,n],i) => { if (!L.some(a => a[0] === c)) { const g = GENERIC.labels[i]; L.push([c, n, g[2], g[3]]); } });
+  return {bg: d.bg, labels: L, drawn: !!LAYOUTS[store]}; }
+function zname(store, code){ const l = layoutOf(store).labels.find(a => a[0] === code); return l ? l[1] : (ZN[code] || ""); }
+async function mapLoad(store){ if (MAPLIVE[store] || !LOC_API) return; try { const r = await api({action:"map", store}); if (r.ok && Array.isArray(r.labels) && r.labels.length) MAPLIVE[store] = r.labels; } catch(e){} }
+function mapSvg(store, sel, opt){
+  const lay = layoutOf(store), edit = opt && opt.edit; if (opt && opt.labels) lay.labels = opt.labels;
+  const pins = lay.labels.map(([k,n,x,y]) => { const X=x*8.6, Y=y*10.1, on=k===sel, nm=edit||lay.labels.length<=8, t=nm?n:k, fs=nm?(on?30:25):(on?24:19), w=Math.max(44, t.length*fs*0.56+26), h=fs*1.75;
+    return `<g class="zp" data-z="${esc(k)}"><rect x="${X-w/2}" y="${Y-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="${on?"#C8102E":"#6d6662"}" stroke="#fff" stroke-width="3" opacity="${sel&&!on?.8:1}"/><text x="${X}" y="${Y+fs*0.36}" text-anchor="middle" ${_F} font-size="${fs}" fill="#fff">${esc(t)}</text></g>`; }).join("");
+  return `<svg viewBox="0 0 860 1010" role="img" aria-label="${esc(store)} store map${sel?", "+esc(zname(store,sel))+" highlighted":""}">${lay.bg}${pins}</svg>`;
+}
 const ls = {get:k=>{try{return localStorage.getItem(k)}catch(e){return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}, del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
 let MEM = {};
 const pinKey = st => "sparkpin:" + st;
@@ -220,25 +304,6 @@ async function teamPrice(u){
   } catch(e){ return null; }
 }
 const ERRS = {locked:"Too many wrong tries. Try again in an hour.", nostore:"Location tracking is not set up for this store yet.", pin:"That store PIN did not work.", code:"That code is not active for this store. Ask your manager."};
-function mapSvg(store, sel){
-  const m = MAPS[store]; if (!m) return "";
-  const pins = Object.entries(m.P).map(([k,[x,y]])=>{const X=x*8.6,Y=y*10.1,on=k===sel,w=(k.length>3?74:k.length>2?60:44)*(on?1.3:1),h=on?44:34;
-    return `<g class="zp" data-z="${k}"><rect x="${X-w/2}" y="${Y-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="${on?"#C8102E":"#6d6662"}" stroke="#fff" stroke-width="3" opacity="${sel&&!on?.75:1}"/><text x="${X}" y="${Y+(on?9:7)}" text-anchor="middle" font-family="Arial Narrow,Arial,sans-serif" font-weight="700" font-size="${on?24:19}" fill="#fff">${k}</text></g>`}).join("");
-  return `<svg viewBox="0 0 860 1010" role="img" aria-label="${store} store map${sel?", "+ZN[sel]+" highlighted":""}">
- <rect width="860" height="1010" fill="#cfdcbf"/><polygon points="0,0 352,0 0,365" fill="#5d5a58"/>
- <line x1="0" y1="180" x2="176" y2="0" stroke="#e9e2c8" stroke-width="3" stroke-dasharray="18 14"/>
- <text font-family="Arial Narrow,Arial,sans-serif" font-weight="700" font-size="22" fill="#fff" transform="translate(70,190) rotate(-46)">COLLEYVILLE BLVD</text>
- <polygon points="330,118 430,60 640,140 770,330 690,520 690,975 560,975 470,690 582,575 445,292 300,172" fill="#e3dccf"/>
- <polygon points="40,455 100,425 345,630 285,705" fill="#d4cfca"/><polygon points="635,140 770,0 860,0 860,90 770,278" fill="#d4cfca"/>
- <polygon points="148,335 300,172 445,292 378,362 270,458" fill="#fff" stroke="#2c2725" stroke-width="3"/>
- <polygon points="270,458 378,362 582,575 492,668" fill="#fff" stroke="#2c2725" stroke-width="3"/>
- <text x="300" y="300" text-anchor="middle" font-family="Arial Narrow,Arial,sans-serif" font-weight="700" font-size="20" fill="#4a4340">STORE</text>
- <text x="430" y="525" text-anchor="middle" transform="rotate(41 430 525)" font-family="Arial Narrow,Arial,sans-serif" font-weight="700" font-size="20" fill="#4a4340">SHOP</text>
- <polygon points="378,95 415,72 535,200 495,238" fill="#3f6fb3" opacity=".9"/>
- <polygon points="690,530 772,522 806,945 712,958" fill="#f4ede0" stroke="#2c2725" stroke-width="3"/>
- <line x1="701" y1="668" x2="783" y2="660" stroke="#2c2725" stroke-width="2"/><line x1="707" y1="805" x2="793" y2="797" stroke="#2c2725" stroke-width="2"/>
- ${pins}</svg>`;
-}
 async function api(params){
   const q = new URLSearchParams(params).toString();
   const r = await fetch(LOC_API + "?" + q, {method:"GET"});
@@ -273,24 +338,26 @@ function when(iso){ if(!iso) return ""; const d=new Date(iso); return d.toLocale
 async function locLoad(u){
   const box = document.getElementById("locsec");
   box.innerHTML = `<h2>Unit location</h2><div class="locmeta">Loading...</div>`;
-  let r; try { r = await api({action:"get", store:u.store, unit:u.unit, pin:getPin(u.store), code:getCode()}); } catch(e){ box.innerHTML = `<h2>Unit location</h2><div class="lmsg">Could not connect. Check your signal and reload.</div>`; return; }
+  let r; try { [r] = await Promise.all([api({action:"get", store:u.store, unit:u.unit, pin:getPin(u.store), code:getCode()}), mapLoad(u.store)]); } catch(e){ box.innerHTML = `<h2>Unit location</h2><div class="lmsg">Could not connect. Check your signal and reload.</div>`; return; }
   if (!r.ok) { signOut(u.store); return locSignin(u, ERRS[r.error] || "Please sign in again."); }
   keepKey(r);
   locShow(u, r);
 }
 function locShow(u, r){
   const box = document.getElementById("locsec");
-  const map = MAPS[u.store] ? `<div class="locmap" id="lmap">${mapSvg(u.store, r.loc)}</div>` : "";
+  const map = `<div class="locmap" id="lmap">${mapSvg(u.store, r.loc)}</div>`;
   box.innerHTML = `<h2>Unit location</h2>
-    ${r.loc ? `<div class="locbadge"><span class="code">${esc(r.loc)}</span><span class="nm">${esc(ZN[r.loc]||"")}</span></div>
+    ${r.loc ? `<div class="locbadge"><span class="code">${esc(r.loc)}</span><span class="nm">${esc(zname(u.store, r.loc))}</span></div>
       <div class="locmeta">${r.by ? "Set by " + esc(r.by) + (r.at ? ", " + when(r.at) : "") : ""}</div>`
       : `<div class="locmeta">No location set for this unit yet.</div>`}
     ${map}
     <div class="lrow"><button class="copy" id="lupd">${r.loc ? "Update location" : "Set location"}</button><button class="ghost" id="lout">Sign out</button></div>
+    ${r.canMap ? `<button class="ghost" id="lmapedit" style="width:100%;margin-top:8px">Edit store map labels</button>` : ""}
     ${r.name ? `<div class="locmeta">Signed in as ${esc(r.name)}</div>` : ""}`;
   const lm = document.getElementById("lmap");
   if (lm) lm.onclick = () => { const o = document.createElement("div"); o.className="full"; o.innerHTML = `<div class="locmap">${mapSvg(u.store, r.loc)}</div>`; o.onclick=()=>o.remove(); document.body.appendChild(o); };
   document.getElementById("lupd").onclick = () => locEdit(u, r);
+  const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r);
   document.getElementById("lout").onclick = () => { signOut(u.store); document.getElementById("sharesec").hidden = true; locSignin(u); };
   if (r.name) shareInit(u, r.name);
   if (u.enc) teamPrice(u).then(tp => {
@@ -309,9 +376,9 @@ function locEdit(u, r){
   let pick = r.loc || "";
   const draw = () => {
     box.innerHTML = `<h2>Where is this unit now?</h2>
-      ${MAPS[u.store] ? `<div class="locmap" id="lmap">${mapSvg(u.store, pick)}</div><div class="locmeta">Tap a spot on the map or a button below.</div>` : ""}
-      <div class="zgrid">${Object.keys(ZN).map(k=>`<button class="zbtn${k===pick?" on":""}" data-z="${k}" aria-label="${ZN[k]}">${k}</button>`).join("")}</div>
-      <div class="lrow"><button class="copy" id="lsave">Save ${pick?esc(pick):""}</button><button class="ghost" id="lcancel">Cancel</button></div>
+      <div class="locmap" id="lmap">${mapSvg(u.store, pick)}</div><div class="locmeta">Tap a spot on the map or a button below.</div>
+      <div class="zgrid">${layoutOf(u.store).labels.map(([k,n])=>`<button class="zbtn${k===pick?" on":""}" data-z="${esc(k)}" aria-label="${esc(n)}">${esc(k)}<small>${esc(n)}</small></button>`).join("")}</div>
+      <div class="lrow"><button class="copy" id="lsave">Save ${pick?esc(zname(u.store,pick)):""}</button><button class="ghost" id="lcancel">Cancel</button></div>
       <div class="lmsg" id="lmsg"></div>`;
     box.querySelectorAll("[data-z]").forEach(b => b.onclick = () => { pick = b.dataset.z; draw(); });
     document.getElementById("lcancel").onclick = () => locShow(u, r);
@@ -322,6 +389,49 @@ function locEdit(u, r){
       try { const s = await api({action:"set", store:u.store, unit:u.unit, pin:getPin(u.store), code:getCode(), loc:pick});
         if (s.ok) locShow(u, s); else if (ERRS[s.error] && s.error!=="nostore") { signOut(u.store); locSignin(u, ERRS[s.error]); } else msg.textContent = "Could not save. Try again.";
       } catch(e){ msg.textContent = "Could not connect. Check your signal and try again."; }
+    };
+  };
+  draw();
+}
+
+/* Store map label editor (Nov 9 2026). ISRs and managers move labels and add new ones.
+   Floor, Lot, Warehouse and Shop are required at every store, so they can be moved but not removed. */
+function mapEdit(u, r){
+  const box = document.getElementById("locsec");
+  let L = layoutOf(u.store).labels.map(a => a.slice()), sel = "";
+  const isReq = c => REQ.some(q => q[0] === c);
+  const newCode = n => { const w = n.toUpperCase().replace(/[^A-Z0-9 ]/g, "").trim().split(/\s+/).filter(Boolean);
+    let b = (w.length > 1 ? w.map(x => x[0]).join("") : (w[0] || "X")).slice(0, 4), c = b, i = 2;
+    while (L.some(a => a[0] === c)) c = b.slice(0, 3) + i++; return c; };
+  const draw = (msg) => {
+    box.innerHTML = `<h2>Store map labels</h2>
+      <div class="locmeta">Tap a label, then tap the spot where it belongs. Floor, Lot, Warehouse and Shop stay on every store map.</div>
+      <div class="locmap mapedit" id="emap">${mapSvg(u.store, sel, {edit:true, labels:L})}</div>
+      <div class="lablist">${L.map(([k,n]) => `<div class="labrow${k===sel?" on":""}"><button class="lab" data-s="${esc(k)}"><b>${esc(k)}</b> ${esc(n)}</button>${isReq(k) ? `<span class="req">Required</span>` : `<button class="ghost del" data-d="${esc(k)}">Remove</button>`}</div>`).join("")}</div>
+      <form id="addf" class="addf"><input id="addn" maxlength="24" placeholder="New label, like Down Below" aria-label="New label name"><button class="copy" type="submit">Add</button></form>
+      <div class="lrow"><button class="copy" id="msave">Save map</button><button class="ghost" id="mcancel">Cancel</button></div>
+      <div class="lmsg" id="lmsg">${msg ? esc(msg) : ""}</div>`;
+    const svg = box.querySelector("#emap svg");
+    svg.onclick = e => {
+      const g = e.target.closest(".zp"); if (g) { sel = g.dataset.z; return draw(); }
+      if (!sel) return draw("Tap a label first.");
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const a = L.find(x => x[0] === sel); a[2] = Math.round(Math.min(97, Math.max(3, p.x / 8.6)) * 10) / 10; a[3] = Math.round(Math.min(97, Math.max(3, p.y / 10.1)) * 10) / 10;
+      draw(a[1] + " moved. Tap Save map when you're done.");
+    };
+    box.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { sel = b.dataset.s; draw(); document.getElementById("emap").scrollIntoView({block:"center", behavior:"smooth"}); });
+    box.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { L = L.filter(a => a[0] !== b.dataset.d); if (sel === b.dataset.d) sel = ""; draw(); });
+    document.getElementById("addf").onsubmit = e => { e.preventDefault(); const n = document.getElementById("addn").value.trim().replace(/\s+/g, " ");
+      if (!n) return; if (L.length >= 40) return draw("That's the most labels one map can hold.");
+      if (L.some(a => a[1].toLowerCase() === n.toLowerCase())) return draw("There's already a label with that name.");
+      const c = newCode(n); L.push([c, n, 50, 50]); sel = c; draw(n + " added in the middle of the map. Tap where it belongs."); };
+    document.getElementById("mcancel").onclick = () => locShow(u, r);
+    document.getElementById("msave").onclick = async () => {
+      const m = document.getElementById("lmsg"); m.textContent = "Saving...";
+      try { const s = await api({action:"setmap", store:u.store, unit:u.unit, pin:getPin(u.store), code:getCode(), labels:JSON.stringify(L)});
+        if (s.ok) { MAPLIVE[u.store] = s.labels || L; locShow(u, r); }
+        else m.textContent = s.error === "role" ? "Only the ISR or a manager can change the store map." : "Could not save. Try again.";
+      } catch(e){ m.textContent = "Could not connect. Check your signal and try again."; }
     };
   };
   draw();
