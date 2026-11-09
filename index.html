@@ -93,6 +93,7 @@ li::marker{color:var(--gold-deep)}
 .lmsg{font-size:13px;color:var(--fire);min-height:1em}
 .zbtn small{display:block;font-family:var(--body,inherit);font-weight:600;font-size:11px;opacity:.8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mapedit svg{cursor:crosshair}
+.locmap svg{max-height:72vh;display:block;margin:0 auto}
 .lablist{display:grid;gap:6px;margin:10px 0}
 .labrow{display:flex;gap:8px;align-items:center}
 .labrow .lab{flex:1;text-align:left;font:inherit;font-size:15px;padding:9px 10px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
@@ -245,42 +246,42 @@ const LAYOUTS = {
  <polygon points="690,530 772,522 806,945 712,958" fill="#f4ede0" stroke="#2c2725" stroke-width="3"/>
  <line x1="701" y1="668" x2="783" y2="660" stroke="#2c2725" stroke-width="2"/><line x1="707" y1="805" x2="793" y2="797" stroke="#2c2725" stroke-width="2"/>`,
   labels: [["C1","Canopy 1",48.4,11.3],["C2","Canopy 2",53,15.5],["C3","Canopy 3",57.3,19.5],["DOCK","Dock",54.6,44],["F1","Floor",30,37.1],["F2","Floor 2",22.9,31.6],["F3","Floor 3",36.5,23.4],["F4","Floor 4",44.7,29.2],["L1","Lot",77.5,38.8],["L2","Lot 2",84.9,45.5],["L3","Lot 3",58.7,79.6],["WH1","Warehouse",87.6,58.9],["WH2","Warehouse 2",87.8,73.5],["WH3","Warehouse 3",87.2,85.9],["SHOP","Shop",50,52]] },
- Keller: { bg: `<rect width="860" height="1010" fill="${G}"/>` + _S(
-   `<line x1="150" y1="0" x2="128" y2="939" stroke="#8a7d6f" stroke-width="10" stroke-dasharray="4 10"/>` + _R(0,40,40,270,NB) +
-   _P("265,30 470,30 560,330 690,880 265,880",PV) + _P("545,0 700,0 799,560 799,939 735,939",RD) +
-   _T(668,470,"N MAIN ST",{c:"#fff",r:77,s:22}) + _R(278,0,360,400,W,1) + _R(390,368,495,404,OB,1) + _R(285,400,500,540,W,1) +
-   _T(392,520,"STORE") + _R(265,545,460,870,"#efe7d6") + _T(140,470,"RAIL",{c:"#6b5f53",r:-88,s:16}) ) ,
-  labels: [["F1","Floor",48.8,50.1],["L1","Lot",45.1,74.5],["WH1","Warehouse",40,21.3],["SHOP","Shop",55.1,41.1]] },
- Burleson: { bg: `<rect width="860" height="1010" fill="${G}"/>` + _S(
-   _P("480,0 799,0 799,690 560,690 470,200",TR) + _P("110,200 470,200 560,720 250,755 170,420",PV) +
-   _P("10,0 80,0 260,760 185,760",RD) + _R(0,755,799,830,RD) + _T(150,330,"SYBLE JEAN DR",{c:"#fff",r:74,s:20}) + _T(520,800,"CROWLEY RD (FM 1187)",{c:"#fff",s:20}) +
-   _P("195,60 395,25 422,160 222,198",NB) + _P("318,320 430,300 478,520 362,542",W,1) + _P("305,468 358,460 362,542 465,532 470,580 345,600",OB,1) +
-   _T(420,505,"STORE",{r:-12}) ),
-  labels: [["F1","Floor",49.4,44.7],["L1","Lot",53.8,67.6],["WH1","Warehouse",47.6,26.6],["SHOP","Shop",43.2,59.6]] },
- Denton: { bg: `<rect width="860" height="1010" fill="${G}"/>` + _S(
-   _R(0,0,240,939,"#ddd6c8") + _R(15,450,190,590,NB) + _R(130,60,215,330,NB) + _R(240,0,300,939,RD) +
-   _P("300,0 799,0 799,560 300,560",PV) + `<line x1="310" y1="540" x2="799" y2="570" stroke="#6b5f53" stroke-width="3"/>` +
-   _R(350,640,540,740,NB) + _R(265,795,375,920,NB) + _R(505,805,578,865,NB) +
-   _R(352,378,418,505,W,1) + _R(425,437,608,512,W,1) + _R(520,140,570,245,"#e7b3a6",1) + _R(513,256,553,305,"#e7b3a6",1) + _R(490,355,590,405,OB,1) +
-   _T(385,395,"STORE",{s:16}) ),
-  labels: [["F1","Floor",48.2,47.5],["L1","Lot",52.6,26.6],["WH1","Warehouse",65.1,50.6],["SHOP","Shop",68.2,20.8]] },
- "Farmers Branch": { bg: `<rect width="860" height="1010" fill="${PV}"/>` + _S(
-   _P("0,0 60,0 150,939 0,939",RD) + _T(60,470,"N STEMMONS FWY",{c:"#fff",r:84,s:22}) +
-   _R(95,555,235,700,G) + _P("120,775 560,775 560,860 130,860",G) + _R(220,72,680,305,NB) + _R(690,80,770,225,NB) + _R(478,578,799,750,NB) +
-   _R(358,373,542,530,W,1) + `<rect x="542" y="390" width="110" height="132" fill="#efe7d6" stroke="#2c2725" stroke-width="2" stroke-dasharray="8 6"/>` +
-   _T(405,522,"STORE") ),
-  labels: [["F1","Floor",52.6,47.5],["L1","Lot",74.7,48.5],["WH1","Warehouse",62,42.6],["SHOP","Shop",62,53.8]] },
  Lewisville: { bg: `<rect width="860" height="1010" fill="${PV}"/><g transform="translate(10 -345) scale(2.3)">` +
    _R(108,150,265,325,NB) + _R(108,325,265,385,W,1) + _R(75,385,285,420,"#d9c9ad") +
    _T(186,407,"LSM OUTDOOR POWER",{s:10}) + _T(50,250,"PARKING",{s:10,c:"#8a8178"}) + _T(318,250,"PARKING",{s:10,c:"#8a8178"}) +
    `<line x1="-20" y1="455" x2="400" y2="440" stroke="#6b5f53" stroke-width="1.5" stroke-dasharray="5 4"/>` +
    _R(-20,470,400,560,G) + _R(-20,560,400,620,RD) + _T(186,580,"STATE HWY 121",{c:"#fff",s:12}) + `</g>`,
   labels: [["F1","Floor",41.3,46.7],["L1","Lot",14.5,41],["WH1","Warehouse",50.9,31.9],["SHOP","Shop",61.3,46.7]] },
- Renfro: { bg: `<rect width="860" height="1010" fill="${G}"/>` + _S(
-   _P("0,130 690,130 690,830 530,830 260,600 0,420",PV) + _P("0,470 580,939 390,939 0,640",RD) + _T(170,690,"E RENFRO ST",{c:"#fff",r:38,s:22}) +
-   _R(70,185,250,280,NB) + _R(305,185,487,280,NB) + _R(510,185,565,330,OB,1) + _R(622,185,665,360,OB,1) +
-   _R(285,385,510,548,W,1) + _R(605,395,670,825,W,1) + _T(397,400,"STORE") ),
-  labels: [["F1","Floor",45.1,47.9],["L1","Lot",53.8,68.2],["WH1","Warehouse",79.7,63.9],["SHOP","Shop",57.6,53.8]] },
+ "Farmers Branch": { vb: [660, 384], bg: _R(0,0,660,384,PV) + _R(600,60,660,320,G) + _R(175,315,315,384,G) + _R(355,365,660,384,NB) + _R(190,90,440,315,W,1) + `<rect x="440" y="110" width="150" height="180" fill="#efe7d6" stroke="#2c2725" stroke-width="2" stroke-dasharray="8 6"/>` + _T(95,200,"PARKING",{s:16,c:"#8a8178"}) + _T(315,110,"STORE",{s:18}),
+  labels: [["F1", "Floor", 42.4, 52.1], ["L1", "Lot", 78.0, 52.1], ["WH1", "Warehouse", 59.1, 36.5], ["SHOP", "Shop", 59.1, 71.6]] },
+ "Keller": { vb: [446, 863], bg: _R(0,0,446,863,G) + _R(0,0,55,863,TR) + _P("60,40 255,40 300,300 330,600 330,830 60,830",PV) + _P("265,0 446,0 446,863 395,863",RD) + _T(375,430,"N MAIN ST",{c:"#fff",r:78,s:20}) + _R(140,60,240,330,"#efe7d6") + _R(60,550,225,830,"#efe7d6") + _R(62,90,137,440,W,1) + _R(160,410,245,437,OB,1) + _R(72,437,255,550,W,1) + _T(165,540,"STORE",{s:16}),
+  labels: [["F1", "Floor", 37.0, 56.8], ["L1", "Lot", 31.4, 81.1], ["WH1", "Warehouse", 22.4, 29.0], ["SHOP", "Shop", 46.0, 49.1]] },
+ "Denton": { vb: [304, 993], bg: _R(0,0,304,993,G) + _R(0,0,304,25,RD) + _T(152,18,"W UNIVERSITY DR (US 380)",{c:"#fff",s:13}) + _P("25,60 285,60 285,560 25,560","#e3d3b5") + _R(130,780,300,970,"#e3d3b5") + _R(55,520,250,640,TR) + _R(55,640,110,700,NB) + _R(130,700,160,722,NB) + _R(12,745,55,830,NB) + _R(10,830,48,900,NB) + _R(275,175,290,235,OB,1) + _R(130,295,160,390,"#e7b3a6",1) + _R(60,465,100,520,W,1) + _R(100,480,160,520,W,1) + _T(80,458,"STORE",{s:11}),
+  labels: [["F1", "Floor", 26.3, 49.8], ["L1", "Lot", 59.2, 20.1], ["WH1", "Warehouse", 43.4, 50.4], ["SHOP", "Shop", 47.7, 34.2]] },
+ "Waco": { vb: [686, 620], bg: _R(0,0,686,620,G) + _R(40,140,150,450,TR) + _P("100,40 420,40 660,250 640,330 560,330 230,560 130,560 100,230","#e3d3b5") + _P("420,40 686,-10 686,60 450,110",RD) + _T(570,60,"N STATE HWY 6",{c:"#fff",r:-14,s:16}) + _R(180,470,260,560,PV) + _R(575,470,686,600,NB) + _R(500,450,545,500,NB) + `<ellipse cx="395" cy="525" rx="28" ry="14" fill="#7d8f7a"/>` + _P("235,430 510,268 565,330 290,495",W,1) + _T(330,462,"STORE",{s:16,r:-30}),
+  labels: [["F1", "Floor", 64.9, 56.5], ["L1", "Lot", 48.1, 30.6], ["WH1", "Warehouse", 46.6, 71.8], ["SHOP", "Shop", 73.6, 50.8]] },
+ "Burleson": { vb: [771, 965], bg: _R(0,0,771,965,PV) + _R(540,0,771,700,TR) + _P("0,40 60,40 250,965 180,965",RD) + _R(0,925,771,965,RD) + _T(120,500,"SYBLE JEAN DR",{c:"#fff",r:76,s:20}) + _T(500,950,"CROWLEY RD (FM 1187)",{c:"#fff",s:16}) + _R(220,90,480,285,NB) + _R(160,330,350,410,"#efe7d6") + _R(455,700,540,820,"#efe7d6") + _R(360,400,545,640,W,1) + _R(345,595,460,750,OB,1) + _T(452,420,"STORE",{s:16}),
+  labels: [["F1", "Floor", 58.6, 53.9], ["L1", "Lot", 64.9, 79.3], ["WH1", "Warehouse", 33.1, 38.3], ["SHOP", "Shop", 51.9, 71.5]] },
+ "Renfro": { vb: [438, 807], bg: _R(0,0,438,807,PV) + _R(125,665,270,760,G) + _P("0,600 320,807 180,807 0,705",RD) + _T(110,705,"E RENFRO ST",{c:"#fff",r:33,s:16}) + _R(60,65,250,160,NB) + _R(270,65,332,210,OB,1) + _R(380,65,420,240,OB,1) + _R(270,260,380,450,"#efe7d6") + _R(50,262,270,440,W,1) + _R(380,270,432,690,W,1) + _T(160,280,"STORE",{s:16}),
+  labels: [["F1", "Floor", 29.7, 43.4], ["L1", "Lot", 45.7, 66.9], ["WH1", "Warehouse", 92.7, 59.5], ["SHOP", "Shop", 52.5, 51.4]] },
+ "Augusta": { vb: [885, 608], bg: _R(0,0,885,608,TR) + _P("40,110 480,40 520,400 480,560 80,520 40,330","#e3d3b5") + _R(600,40,760,560,PV) + _P("0,30 560,0 560,40 0,90",RD) + _T(150,62,"BALFOUR ST",{c:"#fff",r:-4,s:16}) + _P("740,0 830,0 885,330 885,608 820,608",RD) + _T(830,300,"PEACH ORCHARD RD",{c:"#fff",r:78,s:16}) + _R(60,150,320,330,"#efe7d6") + _R(320,395,400,515,OB,1) + _R(500,85,600,215,W,1) + _R(495,215,700,545,W,1) + _T(600,240,"STORE",{s:16}),
+  labels: [["F1", "Floor", 67.8, 59.2], ["L1", "Lot", 21.5, 39.5], ["WH1", "Warehouse", 40.7, 74.8], ["SHOP", "Shop", 62.1, 24.7]] },
+ "Waynesboro": { vb: [779, 601], bg: _R(0,0,779,601,PV) + _R(0,0,70,601,G) + _R(700,0,779,601,TR) + _P("0,330 40,330 80,601 0,601",RD) + _T(35,520,"HWY 121",{c:"#fff",r:80,s:14}) + _R(470,45,560,70,NB) + _P("485,135 660,80 690,135 510,215",OB,1) + _R(310,215,495,420,W,1) + _R(490,355,565,415,OB,1) + _T(400,235,"STORE",{s:16}),
+  labels: [["F1", "Floor", 50.7, 53.2], ["L1", "Lot", 57.8, 83.2], ["WH1", "Warehouse", 75.1, 25.0], ["SHOP", "Shop", 67.7, 64.1]] },
+ "Sarasota": { vb: [566, 769], bg: _R(0,0,566,769,PV) + _R(0,690,566,769,RD) + _T(283,735,"CLARK RD",{c:"#fff",s:18}) + _R(0,40,40,230,NB) + _R(520,280,566,560,NB) + _R(90,50,185,270,"#efe7d6") + _R(385,50,470,515,"#efe7d6") + _R(185,50,385,270,W,1) + _R(135,270,460,515,W,1) + _T(300,290,"STORE",{s:16}),
+  labels: [["F1", "Floor", 53.0, 55.9], ["L1", "Lot", 75.6, 39.0], ["WH1", "Warehouse", 50.4, 19.5], ["SHOP", "Shop", 35.3, 61.1]] },
+ "Bradenton": { vb: [720, 400], bg: _R(0,0,720,400,PV) + _R(0,0,30,400,RD) + _T(15,200,"1ST ST E",{c:"#fff",r:90,s:14}) + _R(40,320,720,400,G) + _R(400,290,720,400,TR) + _R(345,195,480,300,"#efe7d6") + _R(185,45,345,305,W,1) + _R(375,40,705,195,OB,1) + _T(265,65,"STORE",{s:16}),
+  labels: [["F1", "Floor", 36.8, 42.5], ["L1", "Lot", 15.3, 42.5], ["WH1", "Warehouse", 75.0, 28.7], ["SHOP", "Shop", 58.3, 62.5]] },
+ "Naples": { vb: [708, 546], bg: _R(0,0,708,546,G) + _R(0,0,708,40,RD) + _T(330,28,"LOIS ST",{c:"#fff",s:16}) + _R(640,40,708,546,RD) + _T(675,300,"SHADOWLAWN DR",{c:"#fff",r:90,s:16}) + _R(140,70,610,250,"#bdb6aa") + _R(40,170,140,470,PV) + _R(140,410,445,470,PV) + _R(140,250,445,410,W,1) + `<line x1="292" y1="250" x2="292" y2="410" stroke="#2c2725" stroke-width="2"/>` + _T(292,272,"STORE",{s:16}),
+  labels: [["F1", "Floor", 32.5, 62.3], ["L1", "Lot", 53.7, 29.3], ["WH1", "Warehouse", 12.7, 54.9], ["SHOP", "Shop", 52.3, 62.3]] },
+ "Tampa": { vb: [592, 857], bg: _R(0,0,592,857,PV) + _R(0,0,592,30,RD) + _T(150,22,"CURRIE DAVIS DR",{c:"#fff",s:14}) + _R(0,30,20,857,RD) + _R(240,445,575,725,NB) + _R(240,725,575,850,NB) + _R(150,400,285,425,"#e7b3a6") + _R(385,230,575,390,"#efe7d6") + _R(315,135,500,230,OB,1) + _R(30,100,300,390,W,1) + _R(300,235,385,395,W,1) + _T(165,120,"STORE",{s:16}),
+  labels: [["F1", "Floor", 27.9, 29.2], ["L1", "Lot", 81.1, 36.8], ["WH1", "Warehouse", 69.3, 21.0], ["SHOP", "Shop", 57.8, 37.3]] },
+ "Lakeland": { vb: [400, 739], bg: _R(0,0,400,739,PV) + _R(0,0,400,30,G) + _R(0,700,400,739,RD) + _T(200,725,"CREATIVE DR",{c:"#fff",s:15}) + _R(370,330,400,700,NB) + _R(290,40,360,110,"#efe7d6") + _R(45,45,210,590,W,1) + _T(127,70,"STORE",{s:15}),
+  labels: [["F1", "Floor", 31.8, 44.7], ["L1", "Lot", 70.0, 33.8], ["WH1", "Warehouse", 31.8, 21.7], ["SHOP", "Shop", 31.8, 69.0]] },
+ "Belleview": { vb: [450, 401], bg: _R(0,0,450,401,G) + _R(240,120,450,401,TR) + _P("0,150 190,0 260,0 0,215",RD) + _T(90,105,"SE STETSON RD",{c:"#fff",r:-40,s:13}) + _P("0,240 120,401 0,401",RD) + _R(300,40,420,230,"#efe7d6") + _P("160,230 300,170 330,330 230,350",PV) + _P("75,195 170,85 255,175 160,290",W,1) + _T(205,250,"STORE",{s:14,r:-40}),
+  labels: [["F1", "Floor", 33.3, 53.6], ["L1", "Lot", 80.0, 24.9], ["WH1", "Warehouse", 84.4, 52.4], ["SHOP", "Shop", 52.2, 37.4]] },
+ "Lake Hamilton": { vb: [800, 540], bg: _R(0,0,800,540,G) + _R(0,0,170,200,TR) + _R(655,0,800,540,RD) + _T(728,270,"US 27",{c:"#fff",r:90,s:18}) + _R(280,0,480,180,PV) + _R(230,285,655,350,PV) + _R(490,180,550,290,"#d9c9ad") + _R(48,200,158,270,NB) + _R(0,355,95,460,NB) + _R(178,385,285,455,NB) + _R(355,345,490,460,NB) + `<ellipse cx="125" cy="505" rx="95" ry="30" fill="#7d8f7a"/>` + _R(282,5,340,55,OB,1) + _R(455,125,480,180,OB,1) + _R(262,155,288,205,"#e7b3a6",1) + _R(320,195,490,285,W,1) + _T(405,212,"STORE",{s:15}),
+  labels: [["F1", "Floor", 48.1, 45.9], ["L1", "Lot", 47.5, 16.7], ["WH1", "Warehouse", 38.8, 5.6], ["SHOP", "Shop", 65.2, 43.0]] }
 };
 const GENERIC = { bg: `<rect width="860" height="1010" fill="${G}"/><rect x="0" y="900" width="860" height="110" fill="${RD}"/>
  <rect x="60" y="120" width="740" height="760" fill="${PV}"/><rect x="170" y="200" width="380" height="300" fill="${W}" stroke="#2c2725" stroke-width="3"/>
@@ -290,14 +291,15 @@ const GENERIC = { bg: `<rect width="860" height="1010" fill="${G}"/><rect x="0" 
 const MAPLIVE = {};   // store -> labels saved by the team
 function layoutOf(store){ const d = LAYOUTS[store] || GENERIC; let L = (MAPLIVE[store] || d.labels).map(a => a.slice());
   REQ.forEach(([c,n],i) => { if (!L.some(a => a[0] === c)) { const g = GENERIC.labels[i]; L.push([c, n, g[2], g[3]]); } });
-  return {bg: d.bg, labels: L, drawn: !!LAYOUTS[store]}; }
+  return {bg: d.bg, labels: L, drawn: !!LAYOUTS[store], vb: d.vb || [860, 1010]}; }
 function zname(store, code){ const l = layoutOf(store).labels.find(a => a[0] === code); return l ? l[1] : (ZN[code] || ""); }
 async function mapLoad(store){ if (MAPLIVE[store] || !LOC_API) return; try { const r = await api({action:"map", store}); if (r.ok && Array.isArray(r.labels) && r.labels.length) MAPLIVE[store] = r.labels; } catch(e){} }
 function mapSvg(store, sel, opt){
   const lay = layoutOf(store), edit = opt && opt.edit; if (opt && opt.labels) lay.labels = opt.labels;
-  const pins = lay.labels.map(([k,n,x,y]) => { const X=x*8.6, Y=y*10.1, on=k===sel, nm=edit||lay.labels.length<=8, t=nm?n:k, fs=nm?(on?30:25):(on?24:19), w=Math.max(44, t.length*fs*0.56+26), h=fs*1.75;
-    return `<g class="zp" data-z="${esc(k)}"><rect x="${X-w/2}" y="${Y-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="${on?"#C8102E":"#6d6662"}" stroke="#fff" stroke-width="3" opacity="${sel&&!on?.8:1}"/><text x="${X}" y="${Y+fs*0.36}" text-anchor="middle" ${_F} font-size="${fs}" fill="#fff">${esc(t)}</text></g>`; }).join("");
-  return `<svg viewBox="0 0 860 1010" role="img" aria-label="${esc(store)} store map${sel?", "+esc(zname(store,sel))+" highlighted":""}">${lay.bg}${pins}</svg>`;
+  const [VW, VH] = lay.vb, Z = VW / 860;   // each map keeps its satellite view's shape; pins scale with it
+  const pins = lay.labels.map(([k,n,x,y]) => { const X=x*VW/100, Y=y*VH/100, on=k===sel, nm=edit||lay.labels.length<=8, t=nm?n:k, fs=(nm?(on?30:25):(on?24:19))*Z, w=Math.max(44*Z, t.length*fs*0.56+26*Z), h=fs*1.75;
+    return `<g class="zp" data-z="${esc(k)}"><rect x="${X-w/2}" y="${Y-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="${on?"#C8102E":"#6d6662"}" stroke="#fff" stroke-width="${3*Z}" opacity="${sel&&!on?.8:1}"/><text x="${X}" y="${Y+fs*0.36}" text-anchor="middle" ${_F} font-size="${fs}" fill="#fff">${esc(t)}</text></g>`; }).join("");
+  return `<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${esc(store)} store map${sel?", "+esc(zname(store,sel))+" highlighted":""}">${lay.bg}${pins}</svg>`;
 }
 const ls = {get:k=>{try{return localStorage.getItem(k)}catch(e){return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}, del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
 let MEM = {};
@@ -430,7 +432,7 @@ function mapEdit(u, r){
       const g = e.target.closest(".zp"); if (g) { sel = g.dataset.z; return draw(); }
       if (!sel) return draw("Tap a label first.");
       const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse());
-      const a = L.find(x => x[0] === sel); a[2] = Math.round(Math.min(97, Math.max(3, p.x / 8.6)) * 10) / 10; a[3] = Math.round(Math.min(97, Math.max(3, p.y / 10.1)) * 10) / 10;
+      const vb = layoutOf(u.store).vb, a = L.find(x => x[0] === sel); a[2] = Math.round(Math.min(97, Math.max(3, p.x / vb[0] * 100)) * 10) / 10; a[3] = Math.round(Math.min(97, Math.max(3, p.y / vb[1] * 100)) * 10) / 10;
       draw(a[1] + " moved. Tap Save map when you're done.");
     };
     box.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { sel = b.dataset.s; draw(); document.getElementById("emap").scrollIntoView({block:"center", behavior:"smooth"}); });
