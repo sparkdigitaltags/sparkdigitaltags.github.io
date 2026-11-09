@@ -188,7 +188,7 @@ function tag(u){
     </div>
     <section class="apply">
       <h2>Apply for financing</h2>
-      ${(DATA.lenders[u.store]||[]).map(l=>`<a class="lend ${l.k}" href="${l.url}" target="_blank" rel="noopener"><span><span class="tier">${esc(l.tier)}</span><br><span class="ttl">${esc(l.title)}</span><br><span class="sub">${esc(l.sub)}</span></span><span class="go">Apply</span></a>`).join("")}
+      ${(DATA.lenders[u.store]||[]).map(l=>`<a class="lend ${l.k}" href="${lendUrl(u, l)}" target="_blank" rel="noopener"><span><span class="tier">${esc(l.tier)}</span><br><span class="ttl">${esc(l.title)}</span><br><span class="sub">${esc(l.sub)}</span></span><span class="go">Apply</span></a>`).join("")}
       <p class="fine">Each option opens that lender's secure application for ${esc(u.dba || "LSM Outdoor Power")} ${esc(u.store)}. Financing and leasing are subject to approval.</p>
     </section>
     <section class="leadsec" id="leadsec"></section>
@@ -450,6 +450,13 @@ function mapEdit(u, r){
   draw();
 }
 
+/* Apply buttons go through the lender redirect so a tap logs which lender, store and unit (tag "DT"), then forwards right away.
+   Only used where the redirect page has that store's link; otherwise the button goes straight to the lender. */
+const GOMAP = {"Colleyville":["colleyville",["sh","te","ko"]],"Keller":["keller",["sh","te","ko"]],"Burleson":["burleson",["sh","te","ko"]],"Denton":["denton",["sh","te","ko"]],"Farmers Branch":["farmersbranch",["sh","te","ko"]],"Lewisville":["lewisville",["sh","te","ko"]],"Renfro":["renfro",["sh","te","ko"]],"Tyler":["atstyler",["sh","te","ko"]],"Weatherford":["atsweatherford",["sh","te","ko"]],"Springtown":["atsspringtown",["sh","te","ko"]],"Gatesville":["atsgatesville",["sh","te","ko"]],"Waco":["landscapesupplywaco",["sh","te","ko"]],"Sarasota":["mowersincsarasota",["sh","te","ko"]],"Bradenton":["mowersincbradenton",["sh","te","ko"]],"Naples":["mowersincnaples",["sh","te","ko"]],"Belleview":["mowersincbelleview",["sh","te","ko"]],"Tampa":["mowersinctampa",["sh","te","ko"]],"Lakeland":["mowersinclakeland",["sh","te","ko"]],"Augusta":["outdoorequipmentcoaugusta",["sh","te","ko"]],"Waynesboro":["taylorwaynesboro",["sh","te","ko"]],"Louisville":["lotplouisville",["sh","ko"]],"Shelbyville":["lotpshelbyville",["ko"]]};
+const LK = {sheffield:"sh", terrace:"te", koalafi:"ko", dcf:"dcf"};
+function lendUrl(u, l){ const g = GOMAP[u.store], c = LK[l.k];
+  if (!g || !c || (c !== "dcf" && !g[1].includes(c))) return l.url;
+  return "https://sparkdigitaltags.github.io/go/?" + new URLSearchParams({l:c, s:g[0], t:"DT", u:u.unit}); }
 /* Customer lead form (Nov 9 2026). The customer asks the store to hold the unit or reach out.
    Saved to the Leads tab and emailed to the store right away. Contact consent is required before sending. */
 function leadInit(u){
