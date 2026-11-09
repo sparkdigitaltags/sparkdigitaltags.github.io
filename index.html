@@ -399,7 +399,7 @@ function locShow(u, r){
   document.getElementById("lupd").onclick = () => locEdit(u, r);
   const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r);
   document.getElementById("lout").onclick = () => { signOut(u.store); document.getElementById("sharesec").hidden = true; document.body.classList.remove("staff"); locSignin(u); leadInit(u); };
-  leadInit(u);
+  leadInit(u); staffLenders(r);
   if (r.name) shareInit(u, r.name);
   if (u.enc) teamPrice(u).then(tp => {
     if (!tp) return;
@@ -420,6 +420,13 @@ function locShow(u, r){
    team price stays hidden until tapped, hides again after 15 seconds or when the page loses focus, carries the employee's
    name as a watermark, can't be selected or printed, and Print Screen attempts are logged. */
 const OWNER = "Brandon Anderson";
+// Flip to true after testing (Brandon, Nov 9 2026): signed in employees see the lender buttons grayed out so they can't trigger lender scan alerts.
+const STAFF_LENDERS_OFF = false;
+function staffLenders(r){
+  if (!STAFF_LENDERS_OFF || r.name === OWNER) return;
+  document.querySelectorAll("a.lend").forEach(a => { a.removeAttribute("href"); a.setAttribute("aria-disabled","true"); a.style.cssText += ";opacity:.45;pointer-events:none;filter:grayscale(1)"; });
+  const ap = document.querySelector(".apply .fine"); if (ap) ap.textContent = "Financing buttons are for customers. They're turned off while you're signed in so they can't send lender alerts.";
+}
 function teamGuard(el, r, u){
   if (r.name === OWNER) return;
   document.body.classList.add("staff");
