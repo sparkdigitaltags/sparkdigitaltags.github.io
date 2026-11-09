@@ -119,6 +119,14 @@ li::marker{color:var(--gold-deep)}
 .tprice .tlbl{font-size:12px;font-weight:700;color:var(--fire)}
 .tprice .tnow{font-family:var(--display);font-weight:800;font-size:36px;line-height:1}
 .tprice .tmeta{font-size:13px;color:var(--ink)}
+.tprice.guard{position:relative;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.tprice.guard .tnow,.tprice.guard .tmeta{filter:blur(14px)}
+.tprice.guard.show .tnow,.tprice.guard.show .tmeta{filter:none}
+.tprice.guard .reveal{position:absolute;inset:48px 10px auto auto;font:700 12px/1 var(--display,inherit);padding:8px 10px;border-radius:8px;border:0;background:var(--fire);color:#fff}
+.tprice.guard.show .reveal{display:none}
+.tprice .wm{position:absolute;inset:0;pointer-events:none;color:rgba(200,16,46,.18);font-size:11px;font-weight:700;line-height:22px;transform:rotate(-18deg) scale(1.4);word-break:break-all}
+@media print{body.staff .tprice{display:none !important}}
+
 /* Fit any phone: nothing may force the page wider than the screen */
 html,body{max-width:100%;overflow-x:hidden}
 .wrap{grid-template-columns:minmax(0,1fr)}
@@ -172,8 +180,8 @@ function tag(u){
     : u.lease
     ? `<b>Take it home today.</b> Lease to own, not a loan. No credit needed, approvals up to $7,500.`
     : `<b>$0 down, ${u.pay}/mo</b> for ${u.term} months at ${u.apr}% APR${u.promo_end ? ", promo expires " + u.promo_end : ""}. Sheffield Financial, on approved credit.`;
-  const fields = [["Unit", u.unit], ["Model", u.model], ["Serial", u.serial], ["Price", u.maphide ? "See paper tag" : u.now.replace("$","")]];
-  const all = [`Store: ${u.dba || "LSM"} ${u.store}`, `Unit: ${u.unit}`, `Make: ${u.brand}`, `Model: ${u.model}`, `Serial: ${u.serial}`, `Desc: ${u.name}`, u.was ? `Was: ${u.was}` : "", `Now: ${u.maphide ? "see paper tag" : u.now}${u.fire ? " FIRE SALE" : ""}`].filter(Boolean).join("\n");
+  const fields = [["Unit", u.unit], ["Model", u.model], ["Serial", u.serial], ["Price", u.maphide ? "Price Too Low to Display Online" : u.now.replace("$","")]];
+  const all = [`Store: ${u.dba || "LSM"} ${u.store}`, `Unit: ${u.unit}`, `Make: ${u.brand}`, `Model: ${u.model}`, `Serial: ${u.serial}`, `Desc: ${u.name}`, u.was ? `Was: ${u.was}` : "", `Now: ${u.maphide ? "Price Too Low to Display Online" : u.now}${u.fire ? " FIRE SALE" : ""}`].filter(Boolean).join("\n");
   app.innerHTML = `
   <article class="card">
     <div class="hero">
@@ -390,7 +398,8 @@ function locShow(u, r){
   if (lm) lm.onclick = () => { const o = document.createElement("div"); o.className="full"; o.innerHTML = `<div class="locmap">${mapSvg(u.store, r.loc)}</div>`; o.onclick=()=>o.remove(); document.body.appendChild(o); };
   document.getElementById("lupd").onclick = () => locEdit(u, r);
   const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r);
-  document.getElementById("lout").onclick = () => { signOut(u.store); document.getElementById("sharesec").hidden = true; locSignin(u); };
+  document.getElementById("lout").onclick = () => { signOut(u.store); document.getElementById("sharesec").hidden = true; document.body.classList.remove("staff"); locSignin(u); leadInit(u); };
+  leadInit(u);
   if (r.name) shareInit(u, r.name);
   if (u.enc) teamPrice(u).then(tp => {
     if (!tp) return;
@@ -399,9 +408,28 @@ function locShow(u, r){
       <div class="tnow">${esc(tp.now)}</div>
       <div class="tmeta">${tp.was ? "Was " + esc(tp.was) + " &middot; You save " + esc(tp.save) + "<br>" : ""}${u.lease ? "Lease to own: give the customer the Koalafi terms at the counter." : "$0 down, " + esc(tp.pay) + "/mo for " + esc(u.term) + " months at " + esc(u.apr) + "% APR" + (u.promo_end ? ", expires " + esc(u.promo_end) : "") + ", on approved credit."}</div>`;
     box.insertBefore(el, box.children[1]);
-    const pf = [...document.querySelectorAll(".field")].find(f => f.querySelector(".k").textContent === "Price");
-    if (pf) { pf.querySelector(".v").textContent = tp.now.replace("$",""); pf.querySelector(".copy").dataset.v = tp.now.replace("$",""); }
+    // Copy buttons above stay the customer version. Team details only go out through "Copy for a team member" (Nov 9 2026).
+    teamGuard(el, r, u);
+    const tc = document.createElement("button"); tc.className = "ghost"; tc.style.cssText = "width:100%;margin-top:6px"; tc.textContent = tc.dataset.label = "Copy for a team member";
+    tc.onclick = () => copyText(tc, ["TEAM ONLY. Do not send to customers.", `Store: ${u.dba || "LSM"} ${u.store}`, `Unit: ${u.unit}`, `${u.brand} ${u.model}`, `Serial: ${u.serial}`, `Team price: ${tp.now}`, r.loc ? `Location: ${r.loc} ${zname(u.store, r.loc)}` : "", SHARE_BASE + "#" + u.id].filter(Boolean).join("\n"));
+    el.appendChild(tc);
   });
+}
+
+/* Team price protection (Nov 9 2026). A website can't fully block phone screenshots, so for employees (not Brandon) the
+   team price stays hidden until tapped, hides again after 15 seconds or when the page loses focus, carries the employee's
+   name as a watermark, can't be selected or printed, and Print Screen attempts are logged. */
+const OWNER = "Brandon Anderson";
+function teamGuard(el, r, u){
+  if (r.name === OWNER) return;
+  document.body.classList.add("staff");
+  el.classList.add("guard");
+  const wm = esc(r.name || "Team") + " " + new Date().toLocaleDateString();
+  el.insertAdjacentHTML("beforeend", `<div class="wm" aria-hidden="true">${Array(6).fill(wm).join(" &middot; ")}</div><button class="reveal" type="button">Tap to see team price</button>`);
+  let t; const hide = () => { el.classList.remove("show"); clearTimeout(t); };
+  el.querySelector(".reveal").onclick = () => { el.classList.add("show"); clearTimeout(t); t = setTimeout(hide, 15000); track("step", {store:u.store, unit:u.unit, d:"tprice:view", code:getCode()}); };
+  window.addEventListener("blur", hide); document.addEventListener("visibilitychange", hide);
+  document.addEventListener("keyup", e => { if (e.key === "PrintScreen") { hide(); try { navigator.clipboard.writeText(""); } catch(_){} track("step", {store:u.store, unit:u.unit, d:"tprice:printscreen", code:getCode()}); } });
 }
 function locEdit(u, r){
   const box = document.getElementById("locsec");
@@ -481,6 +509,7 @@ function lendUrl(u, l){ const g = GOMAP[u.store], c = LK[l.k];
 function leadInit(u){
   const box = document.getElementById("leadsec"); if (!box || !LOC_API) return;
   const biz = (u.dba || "LSM Outdoor Power") + " " + u.store;
+  if (getCode()) { box.innerHTML = `<button class="copy copyall" disabled style="opacity:.45;cursor:not-allowed">Hold this unit or have us call you</button><p class="fine" style="margin:0">For customers. Turned off while you are signed in so it can't send store alerts.</p>`; return; }
   const closed = () => { box.innerHTML = `<button class="copy copyall" id="leadopen">Hold this unit or have us call you</button>`;
     document.getElementById("leadopen").onclick = () => { open(); track("step", {store:u.store, unit:u.unit, d:"lead:open"}); }; };
   const open = (msg) => {
