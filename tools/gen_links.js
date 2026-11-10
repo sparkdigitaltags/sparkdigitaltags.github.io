@@ -28,3 +28,6 @@ for (const u of D.units) {
   n++;
 }
 console.log(n + " unit pages, " + fs.readdirSync(pdir).length + " images");
+
+// Facebook Marketplace catalog feeds follow the unit pages (Nov 10 2026)
+require("./meta_feed.js");
