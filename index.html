@@ -589,7 +589,7 @@ const PLAT = [
   {k:"mk", n:"Marketplace", sub:"FB listing", vid:true, mkt:true, open:()=>"https://www.facebook.com/marketplace/create/item"},
   {k:"eb", n:"eBay", sub:"Listing", market:true, open:()=>"https://www.ebay.com/sl/sell"}
 ];
-function shareLink(u, k){ return SHARE_BASE + "?s=" + k + "#" + u.id; }
+function shareLink(u, k){ return SHARE_BASE + "u/" + u.id + ".html?s=" + k; }   // unit link page carries the photo and name for link previews (tools/gen_links.js)
 function caption(u, k, personal, who){
   const dba = (u.dba || "LSM Outdoor Power") + " " + u.store;
   const tag = s => "#" + String(s).replace(/[^A-Za-z0-9]/g, "");
@@ -641,9 +641,9 @@ function postPreview(P, text, u, who, media){
     const link = (text.match(/https?:\/\/\S+/) || [shareLink(u, "fb")])[0];
     return { html: `<div class="pv fbp"><div class="pvhd"><span class="pvav">${ini}</span><div><b>${esc(who)}</b><small>Just now · ${ICO.globe}</small></div></div>
       <div class="pvtx">${fold(text, 220, "See more", "fbl", "fbl", true)}</div>
-      ${photo ? img("1/1") : `<div class="fbcard"><div class="pvph" style="aspect-ratio:1.91/1">No picture shows for this link</div><div class="fbcd"><small>SPARKDIGITALTAGS.GITHUB.IO</small><b>Spark Digital Tag</b></div></div>`}
+      ${photo ? img("1/1") : `<div class="fbcard">${img("1.91/1")}<div class="fbcd"><small>SPARKDIGITALTAGS.GITHUB.IO</small><b>${esc(u.brand + " " + u.name)}</b><small>Model ${esc(u.model)}. In stock at ${esc((u.dba || "LSM Outdoor Power") + " " + u.store)}.</small></div></div>`}
       <div class="fbbar"><span>${ICO.like} Like</span><span>${ICO.com} Comment</span><span>${ICO.shr} Share</span></div></div>`,
-      note: photo ? "Facebook opens with the photo. Paste the caption if it is not already there; Facebook often leaves it blank." : "On a computer Facebook posts the link, and the link shows no unit picture. Post from your phone to include the photo." };
+      note: photo ? "Facebook opens with the photo. Paste the caption if it is not already there; Facebook often leaves it blank." : "On a computer Facebook posts the link as a card with the unit photo and name. Paste the caption above it." };
   }
   if (P.k === "ig") return { html: `<div class="pv igp"><div class="pvhd"><span class="pvav ring">${ini}</span><b>${esc(handle)}</b><span class="dots">•••</span></div>
       ${img("4/5")}
