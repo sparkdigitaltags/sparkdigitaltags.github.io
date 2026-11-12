@@ -1,4 +1,4 @@
-Meta Commerce Manager scheduled feed URLs. Built 2026-11-12T16:06:52.367Z
+Meta Commerce Manager scheduled feed URLs. Built 2026-11-12T18:37:40.953Z
 https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power.csv  (34 units)
 https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power__Colleyville.csv  (31 units)
 https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power__Keller.csv  (2 units)
