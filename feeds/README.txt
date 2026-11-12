@@ -1,7 +1,10 @@
-Meta Commerce Manager scheduled feed URLs. Built 2026-11-12T18:54:26.589Z
-https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power.csv  (34 units)
-https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power__Colleyville.csv  (31 units)
-https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power__Keller.csv  (2 units)
+Meta Commerce Manager scheduled feed URLs. Built 2026-11-12T19:05:57.355Z
+https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power.csv  (79 units)
+https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power__Burleson.csv  (8 units)
+https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power__Colleyville.csv  (45 units)
+https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power__Denton.csv  (13 units)
+https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power__Farmers_Branch.csv  (2 units)
+https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power__Keller.csv  (10 units)
 https://sparkdigitaltags.github.io/feeds/meta_LSM_Outdoor_Power__Lewisville.csv  (1 units)
 https://sparkdigitaltags.github.io/feeds/meta_Outdoor_Turf_Products.csv  (67 units)
 https://sparkdigitaltags.github.io/feeds/meta_Outdoor_Turf_Products__Louisville.csv  (42 units)
