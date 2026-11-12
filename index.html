@@ -649,7 +649,7 @@ async function hangEdit(u, r){
 
 /* Price change requests (Brandon Nov 12 2026, Waco first). A signed in team member suggests a new price for this unit;
    Brandon gets an email to approve or deny, and the store's alert list hears the decision (action "pricereq"). */
-const PRQ_ON = {"Waco": true};
+const PRQ_ON = new Proxy({}, {get: () => true});   // Brandon Nov 12 2026: on for every Spark store (Waco, Landscape Supply, was first)
 async function teamMap(u){   // team only MAP for this unit: {map, ex}
   const k = getKey(); if (!u.mpe || !k) return null;
   try { const raw = Uint8Array.from(atob(u.mpe), c => c.charCodeAt(0));
