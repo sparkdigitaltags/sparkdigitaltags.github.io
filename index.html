@@ -674,7 +674,7 @@ async function priceReqEdit(u, r){
       <div class="prqmap" id="prqmap">${esc(mapCheck(mp, ""))}</div>
       <label for="prqr">Why? (optional)</label>
       <textarea id="prqr" maxlength="300" rows="3" placeholder="Like: aged unit, customer offer, competitor price"></textarea>
-      <div class="lrow"><button class="copy" type="submit">Send to Brandon</button><button class="ghost" type="button" id="prqx">Back</button></div>
+      <div class="lrow"><button class="copy" type="submit">Send to my GM</button><button class="ghost" type="button" id="prqx">Back</button></div>
       <div class="lmsg" id="prqm"></div>
     </form>`;
   document.getElementById("prqx").onclick = () => locShow(u, r);
@@ -686,7 +686,7 @@ async function priceReqEdit(u, r){
     if (!(Number(v) > 0)) { m.textContent = "Enter the price you want, like 1899."; return; }
     m.textContent = "Sending...";
     try { const q = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"pricereq", store:u.store, unit:u.unit, pin:getPin(u.store) || "", code:getCode(), model:(u.brand + " " + u.model).trim(), cur, price:v, map:(mp && mp.map) || "", mapex:mp && mp.ex ? "1" : "", reason:document.getElementById("prqr").value}).toString()}).then(x => x.json());
-      if (q.ok) box.innerHTML = `<h2>Request sent</h2><div class="locmeta">Brandon will approve or deny the new price of <b>$${esc(Number(v).toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2}))}</b>. Your store's alert email will get his answer. Keep the current tag up until a new one is printed. Approved or not, follow MAP when you post or share: ${esc(mapCheck(mp, v))}</div><div class="lrow"><button class="ghost" id="prqb">Back to this unit</button></div>`, document.getElementById("prqb").onclick = () => locShow(u, r);
+      if (q.ok) box.innerHTML = `<h2>Request sent</h2><div class="locmeta">Your GM will approve or deny the new price of <b>$${esc(Number(v).toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2}))}</b>. Your store's alert email will get his answer. Keep the current tag up until a new one is printed. Approved or not, follow MAP when you post or share: ${esc(mapCheck(mp, v))}</div><div class="lrow"><button class="ghost" id="prqb">Back to this unit</button></div>`, document.getElementById("prqb").onclick = () => locShow(u, r);
       else if (ERRS[q.error] && q.error !== "nostore") { signOut(u.store); locSignin(u, ERRS[q.error]); }
       else m.textContent = q.error === "price" ? "Enter the price you want, like 1899." : "Could not send. Try again.";
     } catch(err){ m.textContent = "Could not connect. Check your signal and try again."; }
