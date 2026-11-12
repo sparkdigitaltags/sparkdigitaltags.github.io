@@ -116,6 +116,7 @@ li::marker{color:var(--gold-deep)}
 .top3 .spl{display:block;font-size:13px;color:var(--muted);margin-top:2px}.top3 .spl b{color:var(--ink)}
 .prqmap{font-size:14px;color:var(--muted)}.prqmap.low{color:#b42318;font-weight:700}
 .prqf{display:grid;gap:6px;margin-top:8px}.prqf label{font-weight:700;font-size:15px}.prqin{display:flex;align-items:center;gap:6px;font-size:22px;font-weight:700}.prqin input{flex:1;min-width:0;font:inherit;padding:10px;border-radius:8px;border:2px solid var(--line)}.prqf textarea{font:inherit;font-size:16px;padding:10px;border-radius:8px;border:2px solid var(--line)}
+.galdel{margin-top:8px;font:600 13px/1.2 inherit;color:#A11829;background:#fff;border:1.5px solid #A11829;border-radius:8px;padding:8px 12px;cursor:pointer}.galdel:disabled{opacity:.6}
 .hphoto{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}.hphoto h3{margin:0 0 4px;font-size:17px}
 .addf{display:flex;gap:8px;margin:6px 0 10px}.addf input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;border-radius:8px;border:2px solid var(--line)}
 .leadsec{padding:14px 16px;display:grid;gap:10px;border-top:1px solid var(--line)}
@@ -708,13 +709,22 @@ const PHOTO_UP_ON = true, PHOTO_MAX = 3;
 function galInit(u){
   const box = document.getElementById("gal"), up = document.getElementById("galup"); if (!box) return;
   const pics = u.photo ? [{src:u.photo, note:"Manufacturer photo. Unit on display may vary."}] : [];
-  let i = 0;
+  let i = 0, canDel = false;
   const draw = () => {
     if (!pics.length) { box.hidden = true; return; }
     box.hidden = false; const p = pics[i];
     box.innerHTML = `<img src="${p.src}" alt="${esc(u.brand)} ${esc(u.model)}, photo ${i + 1} of ${pics.length}"><small>${esc(p.note)}</small>` +
+      (canDel && p.id ? `<button class="galdel" id="galdel" type="button">Remove this photo</button>` : "") +
       (pics.length > 1 ? `<div class="galnav"><button class="galb" data-d="-1" aria-label="Previous photo">&#8249;</button><span>${pics.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("")}</span><button class="galb" data-d="1" aria-label="Next photo">&#8250;</button></div>` : "");
     box.querySelectorAll(".galb").forEach(b => b.onclick = () => { i = (i + Number(b.dataset.d) + pics.length) % pics.length; draw(); });
+    const del = document.getElementById("galdel");   // GMs, branch managers and Brandon only; the manufacturer photo has no button
+    if (del) del.onclick = async () => {
+      if (!del.dataset.sure) { del.dataset.sure = 1; del.textContent = "Tap again to remove it for everyone"; return; }
+      del.disabled = true; del.textContent = "Removing...";
+      try { const r = await api({action:"delphoto", store:u.store, unit:u.unit, id:p.id, pin:getPin(u.store) || "", code:getCode()});
+        if (r.ok) { i = 0; load(); } else { del.textContent = r.error === "role" ? "Only a GM or branch manager can remove photos." : "Could not remove it. Try again."; }
+      } catch(e){ del.textContent = "Could not connect. Try again."; }
+    };
   };
   let x0 = null;
   box.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, {passive:true});
@@ -722,8 +732,9 @@ function galInit(u){
     if (Math.abs(dx) > 40) { i = (i + (dx < 0 ? 1 : -1) + pics.length) % pics.length; draw(); } }, {passive:true});
   draw();
   if (!PHOTO_UP_ON || !LOC_API) return;
-  const load = async () => { try { const r = await api({action:"photos", store:u.store, unit:u.unit});
-      if (r.ok && Array.isArray(r.ids)) { pics.splice(u.photo ? 1 : 0); r.ids.forEach(id => pics.push({src:"https://lh3.googleusercontent.com/d/" + encodeURIComponent(id) + "=w1000", note:"Photo of this unit, taken in store by our team."})); draw(); }
+  const load = async () => { try { const me = getCode() && (isAll() || getPin(u.store)) ? {pin:getPin(u.store) || "", code:getCode()} : {};
+      const r = await api(Object.assign({action:"photos", store:u.store, unit:u.unit}, me));
+      if (r.ok && Array.isArray(r.ids)) { canDel = !!r.del; pics.splice(u.photo ? 1 : 0); r.ids.forEach(id => pics.push({id, src:"https://lh3.googleusercontent.com/d/" + encodeURIComponent(id) + "=w1000", note:"Photo of this unit, taken in store by our team."})); if (i >= pics.length) i = 0; draw(); }
     } catch(e){} };
   load();
   const signed = !!(getCode() && (isAll() || getPin(u.store)));
