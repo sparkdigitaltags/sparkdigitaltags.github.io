@@ -98,6 +98,9 @@ li::marker{color:var(--gold-deep)}
 .lrow{display:flex;gap:8px}.lrow>*{flex:1}
 .ghost{font-family:var(--display);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink)}
 .lmsg{font-size:13px;color:var(--fire);min-height:1em}
+.leadok{display:grid;gap:8px;border:2px solid var(--fire);border-radius:12px;padding:14px 16px;background:var(--card)}
+.leadsec h2.leadok-h{font-size:24.5px;letter-spacing:.06em;color:var(--ink)}
+.leadok-p{font-size:21px;line-height:1.3;font-weight:700;color:var(--ink);margin:0}
 .zbtn small{display:block;font-family:var(--body,inherit);font-weight:600;font-size:11px;opacity:.8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mapedit svg{cursor:crosshair}
 .locmap svg{max-height:72vh;display:block;margin:0 auto}
@@ -547,6 +550,15 @@ const LK = {sheffield:"sh", terrace:"te", koalafi:"ko", dcf:"dcf"};
 function lendUrl(u, l){ const g = GOMAP[u.store], c = LK[l.k];
   if (!g || !c || (c !== "dcf" && !g[1].includes(c))) return l.url;
   return "https://sparkdigitaltags.github.io/go/?" + new URLSearchParams({l:c, s:g[0], t:"DT", u:u.unit}); }
+/* Hold or contact confirmation (Brandon Nov 12 2026, Colleyville first). Thanks the customer for joining us at the store,
+   says how we'll reach them (the method they picked), and the "Got it" lines are 75% bigger and in full ink color. */
+const LEAD_THANKS = {"Colleyville": true};
+function leadThanks(u, biz, name, pref){
+  const how = {Call: "give you a call", Text: "send you a text", Email: "email you"}[pref] || "reach out";
+  return `<div class="leadok" role="status"><h2 class="leadok-h">Got it, thanks ${esc(name.split(" ")[0])}</h2>
+    <p class="leadok-p">The ${esc(u.store)} team will reach out soon about this unit.</p>
+    <p class="fine" style="margin:0">Thank you for joining us at ${esc(biz)}. A team member will ${how} soon.</p></div>`;
+}
 /* Customer lead form (Nov 9 2026). The customer asks the store to hold the unit or reach out.
    Saved to the Leads tab and emailed to the store right away. Contact consent is required before sending. */
 function leadInit(u){
@@ -577,8 +589,9 @@ function leadInit(u){
       if (pref === "Email" && !email) { m.textContent = "Add your email so we can reach you that way."; return; }
       if (!document.getElementById("lc").checked) { m.textContent = "Please check the box so we're allowed to contact you."; return; }
       m.textContent = "Sending...";
-      try { const r = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"lead", store:u.store, unit:u.unit, model:(u.brand + " " + u.model).trim(), name, phone, email, pref, consent:"1", sid:SID}).toString()}).then(x => x.json());   // POST keeps the customer's details out of the web address
-        if (r.ok) box.innerHTML = `<h2>Got it, thanks ${esc(name.split(" ")[0])}</h2><p class="fine" style="margin:0">The ${esc(u.store)} team will reach out soon about this unit.</p>`;
+      try { const r = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"lead", store:u.store, unit:u.unit, model:(u.brand + " " + u.model).trim(), biz, name, phone, email, pref, consent:"1", sid:SID}).toString()}).then(x => x.json());   // POST keeps the customer's details out of the web address
+        if (r.ok) box.innerHTML = LEAD_THANKS[u.store] ? leadThanks(u, biz, name, pref)
+          : `<h2>Got it, thanks ${esc(name.split(" ")[0])}</h2><p class="fine" style="margin:0">The ${esc(u.store)} team will reach out soon about this unit.</p>`;
         else m.textContent = r.error === "busy" ? "We're getting a lot of requests. Please ask any team member or call the store." : "That didn't go through. Please check your info and try again.";
       } catch(err){ m.textContent = "Could not connect. Check your signal and try again."; }
     };
