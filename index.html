@@ -111,6 +111,9 @@ li::marker{color:var(--gold-deep)}
 .labrow.on .lab{border-color:var(--fire)}
 .labrow .req{font-size:12px;color:var(--muted);min-width:64px;text-align:center}
 .labrow .del{padding:8px 10px;font-size:13px}
+#haddc{font:inherit;font-size:15px;padding:8px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.hsug{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.hsug button{padding:8px 10px;font-size:14px}
+.hphoto{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}.hphoto h3{margin:0 0 4px;font-size:17px}
 .addf{display:flex;gap:8px;margin:6px 0 10px}.addf input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;border-radius:8px;border:2px solid var(--line)}
 .leadsec{padding:14px 16px;display:grid;gap:10px;border-top:1px solid var(--line)}
 .leadsec h2{font-family:var(--display);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:14px;margin:0;color:var(--muted)}
@@ -434,11 +437,12 @@ function locShow(u, r){
     ${map}
     <div class="lrow"><button class="copy" id="lupd">${r.loc ? "Update location" : "Set location"}</button><button class="ghost" id="lout">Sign out</button></div>
     ${r.canMap ? `<button class="ghost" id="lmapedit" style="width:100%;margin-top:8px">Edit store map labels</button>` : ""}
+    <button class="ghost" id="lhang" style="width:100%;margin-top:8px">Update QR Code Hanger Locations</button>
     ${r.name ? `<div class="locmeta">Signed in as ${esc(r.name)}</div>` : ""}`;
   const lm = document.getElementById("lmap");
   if (lm) lm.onclick = () => { const o = document.createElement("div"); o.className="full"; o.innerHTML = `<div class="locmap">${mapSvg(u.store, r.loc)}</div>`; o.onclick=()=>o.remove(); document.body.appendChild(o); };
   document.getElementById("lupd").onclick = () => locEdit(u, r);
-  const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r);
+  const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r); document.getElementById("lhang").onclick = () => hangEdit(u, r);
   document.getElementById("lout").onclick = () => { signOut(u.store); document.getElementById("sharesec").hidden = true; document.body.classList.remove("staff"); locSignin(u); leadInit(u); };
   leadInit(u); staffLenders(r);
   if (r.name) shareInit(u, r.name);
@@ -540,6 +544,100 @@ function mapEdit(u, r){
         if (s.ok) { MAPLIVE[u.store] = s.labels || L; locShow(u, r); }
         else m.textContent = s.error === "role" ? "Only the ISR or a manager can change the store map." : "Could not save. Try again.";
       } catch(e){ m.textContent = "Could not connect. Check your signal and try again."; }
+    };
+  };
+  draw();
+}
+
+/* QR code hanger locations (Brandon Nov 12 2026). Signed in team members open a simple showroom diagram, then add, name,
+   place and remove the spots where the store's QR pegboard hangers (PBH) hang. Saved per store (Hangers tab, action
+   "sethangers"). The showroom drawing is a best guess until the team uploads showroom photos (action "showphoto");
+   Brandon has Claude redraw that store's showroom from the photos, then the drawing goes in SHOWROOMS below. */
+const SHOWROOMS = {};   // store -> {bg, vb} drawn from that store's showroom photos
+const SHOW_GENERIC = { vb: [860, 620], bg: `<rect width="860" height="620" fill="#F4EFE6"/>
+ <rect x="22" y="22" width="816" height="576" fill="none" stroke="#2c2725" stroke-width="10"/>
+ <rect x="30" y="593" width="330" height="12" fill="#9CC9E6"/><rect x="500" y="593" width="330" height="12" fill="#9CC9E6"/>
+ <rect x="360" y="588" width="140" height="22" fill="#F4EFE6"/>${_T(430, 572, "FRONT DOOR", {s:20})}
+ ${_T(195, 580, "WINDOWS", {s:15, c:"#6b8aa0"})}${_T(665, 580, "WINDOWS", {s:15, c:"#6b8aa0"})}
+ <rect x="32" y="70" width="64" height="430" fill="#D9CBB4"/>${_T(64, 285, "HANDHELD WALL", {s:20, r:-90})}
+ <rect x="300" y="32" width="300" height="64" fill="#BFAE92"/>${_T(450, 72, "PARTS COUNTER", {s:20})}
+ <rect x="700" y="16" width="110" height="16" fill="#F4EFE6"/>${_T(755, 60, "TO SHOP", {s:16})}
+ <rect x="620" y="410" width="190" height="72" fill="#BFAE92"/>${_T(715, 453, "SALES COUNTER", {s:19})}
+ <rect x="190" y="170" width="120" height="170" rx="14" fill="#DCE5D0"/><rect x="340" y="170" width="120" height="170" rx="14" fill="#DCE5D0"/><rect x="490" y="170" width="120" height="170" rx="14" fill="#DCE5D0"/>
+ ${_T(400, 370, "MOWER DISPLAY", {s:19})}
+ <rect x="140" y="430" width="200" height="56" fill="#E6DCCB"/>${_T(240, 464, "ACCESSORIES", {s:17})}
+ ${_T(430, 140, "Best guess layout. Add showroom photos so we can draw yours.", {s:15, c:"#8a817c"})}` };
+const HANG_SUGGEST = ["Front Door", "Sales Counter", "Parts Counter", "Handheld Wall", "Mower Display"];
+function showroomOf(store){ return SHOWROOMS[store] || SHOW_GENERIC; }
+function hangSvg(store, H, sel){
+  const s = showroomOf(store), [VW, VH] = s.vb, Z = VW / 860;
+  const pins = H.map(([k, n, x, y]) => { const X = x * VW / 100, Y = y * VH / 100, on = k === sel, fs = (on ? 28 : 24) * Z, w = Math.max(60 * Z, n.length * fs * 0.56 + 44 * Z), h = fs * 1.9;
+    return `<g class="zp" data-z="${esc(k)}"><rect x="${X - w / 2}" y="${Y - h / 2}" width="${w}" height="${h}" rx="${6 * Z}" fill="${on ? "#C8102E" : "#1F2A5A"}" stroke="#fff" stroke-width="${3 * Z}"/>
+      <rect x="${X - w / 2 + 8 * Z}" y="${Y - 7 * Z}" width="${14 * Z}" height="${14 * Z}" fill="#fff"/><rect x="${X - w / 2 + 11 * Z}" y="${Y - 4 * Z}" width="${8 * Z}" height="${8 * Z}" fill="${on ? "#C8102E" : "#1F2A5A"}"/>
+      <text x="${X + 10 * Z}" y="${Y + fs * 0.36}" text-anchor="middle" ${_F} font-size="${fs}" fill="#fff">${esc(n)}</text></g>`; }).join("");
+  return `<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${esc(store)} showroom with ${H.length} QR code hangers">${s.bg}${pins}</svg>`;
+}
+async function hangEdit(u, r){
+  const box = document.getElementById("locsec");
+  box.innerHTML = `<h2>QR code hanger locations</h2><div class="locmeta">Loading...</div>`;
+  let H = [], sel = "";
+  try { const g = await api({action:"hangers", store:u.store}); if (g.ok && Array.isArray(g.hangers)) H = g.hangers; } catch(e){}
+  const pb = i => "PB" + String(i).padStart(2, "0"), free = () => { const o = []; for (let i = 1; i <= 20; i++) if (!H.some(a => a[0] === pb(i))) o.push(pb(i)); return o; };
+  const add = (n, c) => { n = n.trim().replace(/\s+/g, " ").slice(0, 30); if (!n) return "";
+    if (H.length >= 40) return "That's the most hangers one showroom can hold.";
+    if (H.some(a => a[1].toLowerCase() === n.toLowerCase())) return "There's already a hanger with that name.";
+    c = c || free()[0]; if (!c) return "All 20 hanger numbers are used."; H.push([c, n, 50, 55]); sel = c; return c + " " + n + " added in the middle. Tap the spot where it hangs."; };
+  const draw = (msg) => {
+    const left = HANG_SUGGEST.filter(n => !H.some(a => a[1].toLowerCase() === n.toLowerCase()));
+    box.innerHTML = `<h2>QR code hanger locations</h2>
+      <div class="locmeta">Pick the hanger number printed in its top right corner (PB01 to PB10) and name the spot, like Front Door. Tap the hanger in the list, then tap the spot on the showroom where it hangs. Tap Save when you're done.</div>
+      <div class="locmap mapedit" id="hmap">${hangSvg(u.store, H, sel)}</div>
+      <div class="lablist">${H.length ? H.map(([k, n]) => `<div class="labrow${k === sel ? " on" : ""}"><button class="lab" data-s="${esc(k)}"><b>${esc(k)}</b> ${esc(n)}</button><button class="ghost del" data-d="${esc(k)}">Remove</button></div>`).join("") : `<div class="locmeta">No hangers on this showroom yet.</div>`}</div>
+      ${left.length ? `<div class="locmeta" style="margin-top:4px">Quick add:</div><div class="hsug">${left.map(n => `<button class="ghost" data-a="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
+      <form id="haddf" class="addf"><select id="haddc" aria-label="Hanger number">${free().map(c => `<option>${c}</option>`).join("")}</select><input id="haddn" maxlength="30" placeholder="Spot name, like Battery Endcap" aria-label="New hanger name"><button class="copy" type="submit">Add</button></form>
+      <div class="lrow"><button class="copy" id="hsave">Save hangers</button><button class="ghost" id="hcancel">Back</button></div>
+      <div class="lmsg" id="hmsg">${msg ? esc(msg) : ""}</div>
+      <div class="hphoto"><h3>Showroom photos</h3>
+        <p class="fine" style="margin:0 0 6px">${SHOWROOMS[u.store] ? "This showroom was drawn from your team's photos. Add new photos if the layout changes." : "This drawing is our best guess. Take 3 to 6 photos of your showroom from the front door and each corner so we can draw your real layout. No customers or faces, please."}</p>
+        <label class="copy copyall galadd">Add showroom photos<input type="file" accept="image/*" capture="environment" multiple hidden id="hfile"></label>
+        <div class="lmsg" id="hpmsg"></div></div>`;
+    const svg = box.querySelector("#hmap svg");
+    svg.onclick = e => {
+      const g = e.target.closest(".zp"); if (g) { sel = g.dataset.z; return draw(); }
+      if (!sel) return draw(H.length ? "Tap a hanger name first." : "Add a hanger first.");
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const vb = showroomOf(u.store).vb, a = H.find(x => x[0] === sel); if (!a) return;
+      a[2] = Math.round(Math.min(96, Math.max(4, p.x / vb[0] * 100)) * 10) / 10; a[3] = Math.round(Math.min(96, Math.max(4, p.y / vb[1] * 100)) * 10) / 10;
+      draw(a[1] + " moved. Tap Save hangers when you're done.");
+    };
+    box.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { sel = b.dataset.s; draw(); document.getElementById("hmap").scrollIntoView({block:"center", behavior:"smooth"}); });
+    box.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { H = H.filter(a => a[0] !== b.dataset.d); if (sel === b.dataset.d) sel = ""; draw("Removed. Tap Save hangers to keep the change."); });
+    box.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { draw(add(b.dataset.a)); document.getElementById("hmap").scrollIntoView({block:"center", behavior:"smooth"}); });
+    document.getElementById("haddf").onsubmit = e => { e.preventDefault(); draw(add(document.getElementById("haddn").value, document.getElementById("haddc").value)); };
+    document.getElementById("hcancel").onclick = () => locShow(u, r);
+    document.getElementById("hsave").onclick = async () => {
+      const m = document.getElementById("hmsg"); m.textContent = "Saving...";
+      try { const s = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"sethangers", store:u.store, pin:getPin(u.store) || "", code:getCode(), hangers:JSON.stringify(H)}).toString()}).then(x => x.json());
+        if (s.ok) { H = s.hangers || H; m.textContent = `Saved ${H.length} hanger${H.length === 1 ? "" : "s"} for ${u.store}.`; }
+        else if (ERRS[s.error] && s.error !== "nostore") { signOut(u.store); locSignin(u, ERRS[s.error]); }
+        else m.textContent = "Could not save. Check each hanger has a different name and try again.";
+      } catch(e){ m.textContent = "Could not connect. Check your signal and try again."; }
+    };
+    document.getElementById("hfile").onchange = async e => {
+      const files = [...e.target.files].slice(0, 6), m = document.getElementById("hpmsg"); if (!files.length) return;
+      let ok = 0;
+      for (const f of files) {
+        m.textContent = `Saving photo ${ok + 1} of ${files.length}...`;
+        try {
+          const bm = await createImageBitmap(f), s = Math.min(1, 1600 / Math.max(bm.width, bm.height)), c = document.createElement("canvas");
+          c.width = Math.round(bm.width * s); c.height = Math.round(bm.height * s); c.getContext("2d").drawImage(bm, 0, 0, c.width, c.height);
+          const img = c.toDataURL("image/jpeg", 0.8).split(",")[1];
+          const q = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"showphoto", store:u.store, pin:getPin(u.store) || "", code:getCode(), img}).toString()}).then(x => x.json());
+          if (q.ok) ok++; else m.textContent = "That photo didn't save. Try again.";
+        } catch(err){ m.textContent = "Could not save the photo. Check your signal and try again."; }
+      }
+      if (ok) m.textContent = `Saved ${ok} showroom photo${ok > 1 ? "s" : ""}. Thanks! We'll redraw your showroom from them.`;
+      e.target.value = "";
     };
   };
   draw();
