@@ -113,6 +113,7 @@ li::marker{color:var(--gold-deep)}
 .labrow .del{padding:8px 10px;font-size:13px}
 #haddc{font:inherit;font-size:15px;padding:8px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
 .hsug{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.hsug button{padding:8px 10px;font-size:14px}
+.prqf{display:grid;gap:6px;margin-top:8px}.prqf label{font-weight:700;font-size:15px}.prqin{display:flex;align-items:center;gap:6px;font-size:22px;font-weight:700}.prqin input{flex:1;min-width:0;font:inherit;padding:10px;border-radius:8px;border:2px solid var(--line)}.prqf textarea{font:inherit;font-size:16px;padding:10px;border-radius:8px;border:2px solid var(--line)}
 .hphoto{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}.hphoto h3{margin:0 0 4px;font-size:17px}
 .addf{display:flex;gap:8px;margin:6px 0 10px}.addf input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px;border-radius:8px;border:2px solid var(--line)}
 .leadsec{padding:14px 16px;display:grid;gap:10px;border-top:1px solid var(--line)}
@@ -438,11 +439,12 @@ function locShow(u, r){
     <div class="lrow"><button class="copy" id="lupd">${r.loc ? "Update location" : "Set location"}</button><button class="ghost" id="lout">Sign out</button></div>
     ${r.canMap ? `<button class="ghost" id="lmapedit" style="width:100%;margin-top:8px">Edit store map labels</button>` : ""}
     <button class="ghost" id="lhang" style="width:100%;margin-top:8px">Update QR Code Hanger Locations</button>
+    ${PRQ_ON[u.store] ? `<button class="ghost" id="lprq" style="width:100%;margin-top:8px">Request a price change</button>` : ""}
     ${r.name ? `<div class="locmeta">Signed in as ${esc(r.name)}</div>` : ""}`;
   const lm = document.getElementById("lmap");
   if (lm) lm.onclick = () => { const o = document.createElement("div"); o.className="full"; o.innerHTML = `<div class="locmap">${mapSvg(u.store, r.loc)}</div>`; o.onclick=()=>o.remove(); document.body.appendChild(o); };
   document.getElementById("lupd").onclick = () => locEdit(u, r);
-  const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r); document.getElementById("lhang").onclick = () => hangEdit(u, r);
+  const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r); document.getElementById("lhang").onclick = () => hangEdit(u, r); const pq = document.getElementById("lprq"); if (pq) pq.onclick = () => priceReqEdit(u, r);
   document.getElementById("lout").onclick = () => { signOut(u.store); document.getElementById("sharesec").hidden = true; document.body.classList.remove("staff"); locSignin(u); leadInit(u); };
   leadInit(u); staffLenders(r);
   if (r.name) shareInit(u, r.name);
@@ -641,6 +643,35 @@ async function hangEdit(u, r){
     };
   };
   draw();
+}
+
+/* Price change requests (Brandon Nov 12 2026, Waco first). A signed in team member suggests a new price for this unit;
+   Brandon gets an email to approve or deny, and the store's alert list hears the decision (action "pricereq"). */
+const PRQ_ON = {"Waco": true};
+async function priceReqEdit(u, r){
+  const box = document.getElementById("locsec");
+  const tp = u.enc ? await teamPrice(u) : null, cur = (tp && tp.now) || u.now || "";
+  box.innerHTML = `<h2>Request a price change</h2>
+    <div class="locmeta">${esc(u.brand)} ${esc(u.model)}, unit ${esc(u.unit)}${cur ? `<br>Current price: <b>${esc(cur)}</b>` : ""}</div>
+    <form id="prqf" class="prqf">
+      <label for="prqp">Suggested price</label>
+      <div class="prqin"><span>$</span><input id="prqp" inputmode="decimal" autocomplete="off" placeholder="0.00" required></div>
+      <label for="prqr">Why? (optional)</label>
+      <textarea id="prqr" maxlength="300" rows="3" placeholder="Like: aged unit, customer offer, competitor price"></textarea>
+      <div class="lrow"><button class="copy" type="submit">Send to Brandon</button><button class="ghost" type="button" id="prqx">Back</button></div>
+      <div class="lmsg" id="prqm"></div>
+    </form>`;
+  document.getElementById("prqx").onclick = () => locShow(u, r);
+  document.getElementById("prqf").onsubmit = async e => {
+    e.preventDefault(); const m = document.getElementById("prqm"), v = document.getElementById("prqp").value.replace(/[$,\s]/g, "");
+    if (!(Number(v) > 0)) { m.textContent = "Enter the price you want, like 1899."; return; }
+    m.textContent = "Sending...";
+    try { const q = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"pricereq", store:u.store, unit:u.unit, pin:getPin(u.store) || "", code:getCode(), model:(u.brand + " " + u.model).trim(), cur, price:v, reason:document.getElementById("prqr").value}).toString()}).then(x => x.json());
+      if (q.ok) box.innerHTML = `<h2>Request sent</h2><div class="locmeta">Brandon will approve or deny the new price of <b>$${esc(Number(v).toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2}))}</b>. Your store's alert email will get his answer. Keep the current tag up until a new one is printed.</div><div class="lrow"><button class="ghost" id="prqb">Back to this unit</button></div>`, document.getElementById("prqb").onclick = () => locShow(u, r);
+      else if (ERRS[q.error] && q.error !== "nostore") { signOut(u.store); locSignin(u, ERRS[q.error]); }
+      else m.textContent = q.error === "price" ? "Enter the price you want, like 1899." : "Could not send. Try again.";
+    } catch(err){ m.textContent = "Could not connect. Check your signal and try again."; }
+  };
 }
 
 /* Apply buttons go through the lender redirect so a tap logs which lender, store and unit (tag "DT"), then forwards right away.
