@@ -556,7 +556,7 @@ function lendUrl(u, l){ const g = GOMAP[u.store], c = LK[l.k];
    add up to 3 photos of the actual unit with their phone camera; customers and team swipe through all of them.
    Photos are saved to Brandon's Drive by the tag script (action "photo") and listed with action "photos".
    PHOTO_UP_ON stays false until that script update is installed. */
-const PHOTO_UP_ON = false, PHOTO_MAX = 3;
+const PHOTO_UP_ON = true, PHOTO_MAX = 3;
 function galInit(u){
   const box = document.getElementById("gal"), up = document.getElementById("galup"); if (!box) return;
   const pics = u.photo ? [{src:u.photo, note:"Manufacturer photo. Unit on display may vary."}] : [];
