@@ -194,6 +194,32 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .pvnote{margin:6px 0 0}
 .rebate{margin-top:8px;padding:8px 10px;border-radius:8px;background:#fff4d6;color:#5a3b00;font-size:14px;font-weight:600;border:1px solid #f0c64a}
 .pvw{margin:12px 0}.pvh{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555;margin-bottom:6px}.pvcard{border:1px solid #ddd;border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}.pvwho{display:flex;align-items:center;gap:8px;padding:10px 12px}.pvav{width:32px;height:32px;border-radius:50%;background:#C8102E;color:#fff;display:grid;place-items:center;font-weight:800}.pvtext{white-space:pre-wrap;padding:0 12px 10px;font-size:14px;line-height:1.4}.pvimg{display:block;width:100%;max-height:360px;object-fit:contain;background:#f4f4f4}.pvnone{padding:18px 12px;background:#fff8e1;color:#7a5b00;font-size:13px}.caplab{display:block;font-size:12px;font-weight:700;color:#555;margin:6px 0 4px}
+.tloff{display:none !important}
+[data-tlnote]::before{content:attr(data-tlnote);display:block;background:#FFF4CC;color:#5a4500;font-size:12px;font-weight:700;line-height:1.35;padding:6px 10px;border-radius:8px;margin:8px 12px 4px}
+.tlfab{position:fixed;right:14px;bottom:14px;z-index:9990;background:#1F2A5A;color:#fff;border:0;border-radius:24px;padding:12px 18px;font-weight:800;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.tlpanel{position:fixed;left:0;right:0;bottom:0;max-height:62vh;overflow-y:auto;z-index:9995;background:#fff;color:#1d1d1f;border-radius:16px 16px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.3);padding:12px 14px 18px;font-size:15px}
+.tlhead{display:flex;justify-content:space-between;align-items:center;font-size:17px}.tlhead button{background:#eee;border:0;border-radius:50%;width:34px;height:34px;font-size:16px;color:#1d1d1f}
+.tlhint{font-size:13px;color:#555;margin:6px 0 8px}.tllist{list-style:none;margin:0;padding:0}.tllist li{border:1px solid #ddd;border-radius:12px;padding:8px 10px;margin:6px 0;background:#fff;color:#1d1d1f;touch-action:pan-y}
+.tllist li.tldrag{box-shadow:0 6px 18px rgba(0,0,0,.25);position:relative;z-index:2;background:#FFFBEA}
+.tlrow{display:flex;align-items:center;gap:8px}.tlgrip{font-size:22px;cursor:grab;padding:0 6px;touch-action:none;color:#666}.tlname{flex:1;font-weight:700}.tlname small{font-weight:400;color:#777}
+.tlarr{background:#f1f1f1;border:0;border-radius:8px;width:36px;height:34px;font-size:16px;color:#1d1d1f}.tlarr:disabled{opacity:.3}
+.tlroles{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.tlrole{background:#E8F3EA;color:#1a5f2d;border:1px solid #bfdcc6;border-radius:16px;padding:5px 10px;font-size:13px;font-weight:600}
+.tlrole.off{background:#FDE8E8;color:#a12020;border-color:#f3c0c0}.tlrm{background:#fff;color:#a12020;border:1px solid #f3c0c0;border-radius:16px;padding:5px 10px;font-size:13px;margin-left:auto}
+.tlsub{font-weight:800;margin:12px 0 4px}.tloffl{list-style:none;padding:0;margin:0}.tloffl li{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px dashed #ccc;border-radius:10px;margin:4px 0;color:#1d1d1f}
+.tloffl button{background:#1F2A5A;color:#fff;border:0;border-radius:16px;padding:6px 12px;font-weight:700}.tlbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.climb{background:#fff;color:#1d1d1f;border-radius:14px;padding:12px 14px;margin:14px 0;border:2px solid #F5B400}.climbh{font-weight:800;font-size:15px;color:#1d1d1f}.climbh span{display:block;font-weight:600;font-size:13px;color:#666}
+.climbbar{height:8px;background:#eee;border-radius:4px;overflow:hidden;margin:8px 0}.climbbar i{display:block;height:100%;background:linear-gradient(90deg,#F5B400,#1a7f37)}
+.climb ol{list-style:none;padding:0;margin:0}.climb li{padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#1d1d1f}.climb li.ok{color:#1a7f37}.climb li.nx{font-weight:800}
+.climbgo{display:block;margin-top:6px;background:#C8102E;color:#fff;border:0;border-radius:10px;padding:8px 12px;font-weight:700}.climbtour{width:100%;margin-top:10px}
+.shmodal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:18px}.shbox{background:#fff;color:#1d1d1f;border-radius:18px;max-width:420px;width:100%;padding:20px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.shbox h2{margin:6px 0 8px;font-size:20px;color:#1d1d1f}.shbox p{font-size:15px;line-height:1.45;color:#333}.shicon{font-size:40px}.shbtns{display:grid;gap:8px;margin-top:12px}
+.coachbar{position:fixed;left:10px;right:10px;bottom:10px;z-index:9999;background:#121212;color:#fff;border-radius:16px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.45);border-top:4px solid #F5B400;max-width:520px;margin:0 auto}
+.coachbar p{margin:6px 0 10px;font-size:15px;line-height:1.4;color:#fff}.coachn{font-size:12px;color:#F5B400;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.coachb{display:flex;gap:8px;justify-content:flex-end}
+.coachon{outline:4px solid #F5B400 !important;outline-offset:3px;border-radius:10px;animation:coachpulse 1.4s ease-in-out infinite}
+@keyframes coachpulse{0%,100%{outline-color:#F5B400}50%{outline-color:#C8102E}}
+.standout{background:#F5B400 !important;color:#111 !important;font-weight:800 !important;border-color:#F5B400 !important;animation:standglow 1.8s ease-in-out infinite}
+@keyframes standglow{0%,100%{box-shadow:0 0 0 0 rgba(245,180,0,.7)}50%{box-shadow:0 0 0 8px rgba(245,180,0,0)}}
+.standnote{margin-top:10px;font-weight:700;color:#F5B400;font-size:14px}
 .ulist{list-style:none;padding:0;margin:8px 0;max-height:236px;overflow-y:auto;border:1px solid #ddd;border-radius:12px;background:#fff;-webkit-overflow-scrolling:touch}.ulist.tall{max-height:472px}
 .ulist li{border-bottom:1px solid #eee;background:#fff !important;margin:0 !important;padding:0 !important}.ulist a,.ulist a:visited{color:#1d1d1f !important;background:#fff !important;text-decoration:none !important}.ulist .ub,.ulist .um{color:#1d1d1f !important}.ulist li:last-child{border-bottom:0}.ulist a{display:flex;align-items:center;gap:8px;min-height:46px;padding:4px 12px;color:#1d1d1f;text-decoration:none;font-size:15px}
 .ulist .ub{font-weight:800;min-width:54px}.ulist .um{flex:1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ulist .ud{color:#C8102E;font-weight:700;font-size:13px;white-space:nowrap}.ulist .us{color:#555;font-size:13px;white-space:nowrap}
@@ -244,14 +270,16 @@ function tag(u){
   const all = [`Store: ${u.dba || "LSM"} ${u.store}`, `Unit: ${u.unit}`, `Make: ${u.brand}`, `Model: ${u.model}`, `Serial: ${u.serial}`, `Desc: ${u.name}`, u.was ? `Was: ${u.was}` : "", `Now: ${u.maphide ? "Price Too Low to Display Online" : u.now}${u.fire ? " FIRE SALE" : ""}`].filter(Boolean).join("\n");
   app.innerHTML = `
   <article class="card">
-    <div class="hero">
+    <div class="hero" data-sec="title">
       <div class="toprow">${u.fire ? '<span class="pill fire">Fire Sale</span>' : ''}<span class="pill">${esc(u.dba || "LSM Outdoor Power")} ${esc(u.store)}</span></div>
       <div class="brand">${esc(u.brand)}</div>
       <h1>${esc(u.name)}</h1>
+    </div>
+    <div class="hero" data-sec="photo" style="padding-top:0">
       <div class="photo" id="gal"${u.photo ? "" : " hidden"}>${u.photo ? `<img src="${u.photo}" alt="${esc(u.brand)} ${esc(u.model)}"><small>Manufacturer photo. Unit on display may vary.</small>` : ""}</div>
       <div id="galup"></div>
     </div>
-    <div class="price">
+    <div class="price" data-sec="price">
       ${u.maphide ? `<div class="row"><span class="was">${u.fire ? "Fire Sale" : "Sale"}</span></div><div class="now hidep">Price Too Low to Display Online</div>` : `${(!payHero || u.was || u.save) ? `<div class="row">${u.was ? `<span class="was">Was <s>${u.was}</s></span>` : (payHero ? "<span></span>" : `<span class="was">${u.fire ? "Fire Sale price" : "Price"}</span>`)}${u.save ? `<span class="save">You save <b>${u.save}</b></span>` : ""}</div>` : ""}
       ${payHero ? `<div class="mo"><span class="mol">As low as</span><span class="moa">${u.pay}<small>/mo</small></span></div>
       <div class="moterms">$0 down for ${u.term} months at ${u.apr}% APR${u.promo_end ? ", promo expires " + u.promo_end : ""}. Sheffield Financial, on approved credit.</div>
@@ -259,26 +287,28 @@ function tag(u){
       ${payHero ? "" : `<div class="pay">${payLine}</div>`}
       ${u.rebate ? `<div class="rebate">${esc(rebateText(u))}</div>` : ""}
     </div>
-    <section class="apply">
+    <section class="apply" data-sec="apply">
       <h2>Apply for financing</h2>
       ${lendersFor(u).map(l=>`<a class="lend ${l.k}" href="${lendUrl(u, l)}" target="_blank" rel="noopener"><span><span class="tier">${esc(l.tier)}</span><br><span class="ttl">${esc(l.title)}</span><br><span class="sub">${esc(l.sub)}</span></span><span class="go">Apply</span></a>`).join("")}
       <p class="fine">Each option opens that lender's secure application for ${esc(u.dba || "LSM Outdoor Power")} ${esc(u.store)}. Financing and leasing are subject to approval.</p>
     </section>
-    <section class="leadsec" id="leadsec"></section>
-    <section class="sect">
+    <section class="leadsec" id="leadsec" data-sec="leads"></section>
+    <section class="sect" data-sec="teaminfo">
       <h2>For our team</h2>
       <div class="fields">${fields.map(([k,v],i)=>`<div class="field"><span class="k">${k}</span><span class="v">${esc(v)}</span><button class="copy" id="c${i}" data-label="Copy" data-v="${esc(v)}">Copy</button></div>`).join("")}</div>
       <button class="copy copyall" id="call" data-label="Copy all unit info">Copy all unit info</button>
       ${SHARE_BASE.startsWith("http") ? `<button class="copy copyall" id="clink" data-label="Copy link to this tag">Copy link to this tag</button>` : ""}
     </section>
-    <section class="locsec" id="locsec" hidden></section>
-    <section class="locsec" id="stonesec" hidden></section>
-    <section class="locsec" id="sharesec" hidden></section>
-    <section class="sect">
+    <section class="locsec" id="locsec" data-sec="loc" hidden></section>
+    <section class="locsec" id="stonesec" data-sec="stones" hidden></section>
+    <section class="locsec" id="sharesec" data-sec="share" hidden></section>
+    <section class="sect" data-sec="specs">
       <div class="lists">
         <div><h2>Key features</h2><ul>${u.feats.map(f=>`<li>${esc(f)}</li>`).join("")}</ul></div>
         <div><h2>Specifications</h2><ul>${u.specs.map(f=>`<li>${esc(f)}</li>`).join("")}</ul></div>
       </div>
+    </section>
+    <section class="sect" data-sec="warranty" style="padding-top:0">
       <p class="fine">Warranty: ${esc(u.warranty)}. ${u.fire ? "Fire Sale pricing applies to this unit only while supplies last. " : ""}</p>
     </section>
   </article>`;
@@ -287,6 +317,8 @@ function tag(u){
   const cl = document.getElementById("clink"); if (cl) cl.addEventListener("click", e => copyText(e.currentTarget, SHARE_BASE + "#" + u.id));
   locInit(u); galInit(u);
   leadInit(u);
+  applyTagLayout(); tlFab();
+  if (getCode()) meRefresh(!ls.get("sparkrole")).then(() => { applyTagLayout(); tlFab(); });
   window.scrollTo(0,0);
 }
 
@@ -400,7 +432,8 @@ const pinKey = st => "sparkpin:" + st;
 const isAll = () => MEM._all || ls.get("sparkall") === "1";
 const getPin = st => isAll() ? "" : (MEM[st] || ls.get(pinKey(st)));
 const getCode = () => MEM._code || ls.get("sparkcode");
-const signOut = st => { delete MEM[st]; delete MEM._code; delete MEM._all; delete MEM._k; ls.del(pinKey(st)); ls.del("sparkcode"); ls.del("sparkall"); ls.del("sparkk"); };
+const signOut = st => { delete MEM[st]; delete MEM._code; delete MEM._all; delete MEM._k; ls.del(pinKey(st)); ls.del("sparkcode"); ls.del("sparkall"); ls.del("sparkk");
+  ["sparkrole","sparkadm","sparkfirst","sparkchat"].forEach(k => ls.del(k)); try { SHERPA = null; } catch(e){} ["tledit","tlpanel","coach","shmodal"].forEach(id => document.getElementById(id)?.remove()); };
 const keepKey = r => { if (r && r.k) { MEM._k = r.k; ls.set("sparkk", r.k); } };
 const getKey = () => MEM._k || ls.get("sparkk");
 async function teamPrice(u){
@@ -475,7 +508,7 @@ function locShow(u, r){
   const lmo = document.getElementById("lmodel"); if (lmo) lmo.onclick = () => { const L = document.getElementById("lmodell"); if (!L.hidden) { L.hidden = true; return; }
     L.innerHTML = DATA.units.filter(x => x.fire && TX_STORES.includes(x.store) && snorm(x.model) === snorm(u.model)).sort((a, b) => (b.store === u.store) - (a.store === u.store) || byAge(a, b)).map(x => urow(x, u.store)).join(""); L.hidden = false; };
   document.getElementById("lout").onclick = () => { signOut(u.store); document.getElementById("sharesec").hidden = true; document.getElementById("stonesec").hidden = true; document.body.classList.remove("staff"); locSignin(u); leadInit(u); };
-  leadInit(u); staffLenders(r);
+  leadInit(u); staffLenders(r); setTimeout(sherpaTag, 50);
   if (r.name) { stonesInit(u); shareInit(u, r.name); }
   if (u.enc) teamPrice(u).then(tp => {
     if (!tp) return;
@@ -708,6 +741,7 @@ async function hangEdit(u, r){
   const box = document.getElementById("locsec");
   box.innerHTML = `<h2>QR code hanger locations</h2><div class="locmeta">Loading...</div>`;
   let H = [], sel = "", mode = "hang", L = null, fsel = "", snapK = "", snap = null, suppress = false, drawOn = false;
+  await sherpaLoad();
   try { const g = await api({action:"hangers", store:u.store}); if (g.ok && Array.isArray(g.hangers)) H = g.hangers;
     if (g.ok && Array.isArray(g.layout) && g.layout.length) ROOMS[u.store] = g.layout; LAYOUT_PENDING[u.store] = !!(g && g.pending); } catch(e){}
   const pb = i => "PB" + String(i).padStart(2, "0"), free = () => { const o = []; for (let i = 1; i <= 20; i++) if (!H.some(a => a[0] === pb(i))) o.push(pb(i)); return o; };
@@ -753,7 +787,7 @@ async function hangEdit(u, r){
     return true; };
   const roomPanel = () => {
     const it = fsel && fx();
-    return `<div class="locmeta"><b>Edit the showroom drawing.</b> Tap a counter, door or display to pick it, then tap a new spot to move it. Drag the corner arrows to resize it, drag or tap the circle arrow to turn it, and tap the red X to cancel your changes to it. The buttons below rename, resize or delete it. Your changes go to your branch manager and Brandon. The drawing changes for everyone once one of them approves.</div>
+    return `<div class="locmeta"><b>Edit the showroom drawing.</b> Tap a counter, door or display to pick it, then tap a new spot to move it. Drag the corner arrows to resize it, drag or tap the circle arrow to turn it, and tap the red X to cancel your changes to it. The buttons below rename, resize or delete it. Your changes go to Brandon for approval. The drawing changes for everyone once he approves.</div>
       ${LAYOUT_PENDING[u.store] ? `<div class="lmsg">A drawing change for ${esc(u.store)} is waiting for approval. Submitting again replaces it.</div>` : ""}
       <button class="${drawOn ? "copy" : "ghost"}" id="fxdraw" style="width:100%;margin-bottom:6px">${drawOn ? "Drawing is on. Tap here to stop drawing" : "Draw with your finger"}</button>
       ${drawOn ? `<div class="locmeta">Draw a wall as a line, a shelf or counter as a box, or a round display as a circle. We straighten and square it up for you. Draw one thing at a time.</div>` : ""}
@@ -779,8 +813,9 @@ async function hangEdit(u, r){
       <form id="haddf" class="addf"><select id="haddc" aria-label="Hanger number">${free().map(c => `<option>${c}</option>`).join("")}</select><input id="haddn" maxlength="30" placeholder="Spot name, like Battery Endcap" aria-label="New hanger name"><button class="copy" type="submit">Add</button></form>
       <div class="lrow"><button class="copy" id="hsave">Save hangers</button><button class="ghost" id="hcancel">Back</button></div>
       <div class="lmsg" id="hmsg">${msg ? esc(msg) : ""}</div>
-      <button class="ghost" id="hroom" style="width:100%;margin-top:8px">Edit the showroom drawing (needs approval)</button>
-      <button class="ghost" id="hdraw" style="width:100%;margin-top:8px">Draw walls and shelves with your finger (needs approval)</button>
+      ${SHERPA && !SHERPA.done.drawing ? `<div class="standnote">New for you: make the showroom drawing match your store. Brandon approves it.</div>` : ""}
+      <button class="ghost${SHERPA && !SHERPA.done.drawing ? " standout" : ""}" id="hroom" style="width:100%;margin-top:8px">Edit the showroom drawing (needs approval)</button>
+      <button class="ghost${SHERPA && !SHERPA.done.drawing ? " standout" : ""}" id="hdraw" style="width:100%;margin-top:8px">Draw walls and shelves with your finger (needs approval)</button>
       <div class="hphoto"><h3>Showroom photos</h3>
         <p class="fine" style="margin:0 0 6px">${ROOMS[u.store] ? "Add new photos if the layout changes." : "This drawing is our best guess. Fix it with Edit the showroom drawing, or take 3 to 6 photos of your showroom from the front door and each corner so we can draw your real layout. No customers or faces, please."}</p>
         <label class="copy copyall galadd">Add showroom photos<input type="file" accept="image/*" capture="environment" multiple hidden id="hfile"></label>
@@ -875,7 +910,7 @@ async function hangEdit(u, r){
     document.getElementById("fxsub").onclick = async () => {
       const m = document.getElementById("hmsg"); m.textContent = "Sending for approval...";
       try { const s = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"setlayout", store:u.store, pin:getPin(u.store) || "", code:getCode(), layout:JSON.stringify(L)}).toString()}).then(x => x.json());
-        if (s.ok) { LAYOUT_PENDING[u.store] = true; mode = "hang"; draw("Sent to " + (s.to || "your branch manager and Brandon") + " for approval. The drawing changes once it is approved."); }
+        if (s.ok) { LAYOUT_PENDING[u.store] = true; mode = "hang"; if (SHERPA) SHERPA.done.drawing = new Date().toISOString(); draw("Sent to " + (s.to || "your branch manager and Brandon") + " for approval. The drawing changes once it is approved."); }
         else if (ERRS[s.error] && s.error !== "nostore") { signOut(u.store); locSignin(u, ERRS[s.error]); }
         else m.textContent = "Could not send. Check each name is filled in and try again.";
       } catch(e){ m.textContent = "Could not connect. Check your signal and try again."; }
@@ -1331,7 +1366,7 @@ function lookup(){
 /* Unit finder (Brandon Nov 14 2026): the easiest thing on the DT. Type the last 4 of any serial number, or take or upload a photo
    of the serial plate, and jump to that unit's digital tag. Short rows: manufacturer, model, days old, last 4 of SN. Five rows show,
    the rest scroll. */
-const BR_AB = {"cub cadet":"CUB","bad boy":"BADBOY","billy goat":"BILLYGT","dr power":"DR","exmark":"EXMARK","redmax":"REDMAX","bluebird":"BLUEBIRD","worldlawn":"WLAWN","ecolawn":"ECOLAWN","ventrac":"VENTRAC","spartan":"SPARTAN","gravely":"GRAVELY","hustler":"HUSTLER","wright":"WRIGHT","ferris":"FERRIS"};
+const BR_AB = {"cub cadet":"CUB","bad boy":"BBOY","billy goat":"BILLYGT","dr power":"DR","exmark":"EXMARK","redmax":"REDMAX","bluebird":"BLUEBIRD","worldlawn":"WLAWN","ecolawn":"ECOLAWN","ventrac":"VENTRAC","spartan":"SPARTAN","gravely":"GRAVELY","hustler":"HUSTLER","wright":"WRIGHT","ferris":"FERRIS"};
 const brAb = b => BR_AB[String(b || "").toLowerCase()] || String(b || "").toUpperCase();
 const sn4 = u => String(u.serial || "").replace(/[^A-Za-z0-9]/g, "").slice(-4).toUpperCase();
 const snN = u => String(u.serial || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -1362,6 +1397,7 @@ function wireFinder(k, st, base, pool, tall){
     R.hidden = false; R.innerHTML = hit.slice(0, 400).map(u => urow(u, st)).join("") || `<li class="none">No unit matches. Check the last 4 of the serial, or try a photo of the serial plate.</li>`;
     const ex = tn.length >= 4 ? hit.filter(u => snN(u).endsWith(tn.toLowerCase())) : [];
     N.textContent = ex.length === 1 ? "Serial match. Tap it to open the digital tag." : hit.length ? hit.length + " found" + (hit.length > 5 ? ", scroll for more" : "") : ""; };
+  R.addEventListener("click", e => { const a = e.target.closest("a"); if (a && q.value.trim()) { const st0 = st || (STORES.find(x => getPin(x)) || "Keller"); if (getCode()) { track("find", {store:st0, pin:getPin(st0) || "", code:getCode(), d:"sn " + q.value.trim().slice(-4)}); if (SHERPA) SHERPA.done.find = SHERPA.done.find || new Date().toISOString(); } } });
   q.oninput = paint; q.onkeydown = e => { if (e.key === "Enter") { const a = R.querySelector("a"); if (a && q.value.trim()) location.hash = a.getAttribute("href").slice(1); } };
   [k + "c", k + "u"].forEach(id => document.getElementById(id).onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) serialScan(f, st || "", M, R); });
   paint(); return paint;
@@ -1388,7 +1424,11 @@ function inventory(st0){
 /* Team chat (Brandon Nov 14 2026). Live only for the codes the server allows (Brandon's two phones for now). Rooms: Announcements
    plus one per store. Photos are shrunk on the phone before sending. Messages refresh every 12 seconds while a room is open.
    The server blocks profanity. */
-function chatFlag(r){ if (r && "chat" in r) { ls.set("sparkchat", r.chat ? "1" : "0"); ls.set("sparkchatat", String(Date.now())); } }
+function chatFlag(r){ if (r && "chat" in r) { ls.set("sparkchat", r.chat ? "1" : "0"); ls.set("sparkchatat", String(Date.now())); }
+  if (r && r.role) { ls.set("sparkrole", r.role); ls.set("sparkadm", r.adm ? "1" : "0"); if (r.first) ls.set("sparkfirst", r.first); } }
+const myRole = () => getCode() ? (ls.get("sparkrole") || "team") : "customer";
+const isAdm = () => !!getCode() && ls.get("sparkadm") === "1";
+const meRefresh = force => { if (force) ls.set("sparkchatat", "0"); return chatRefresh(); };
 const chatOn = () => ls.get("sparkchat") === "1" && !!getCode();
 async function chatRefresh(){   // re-check now and then so turning chat on or off for someone takes effect without signing in again
   if (!getCode() || Date.now() - Number(ls.get("sparkchatat") || 0) < 30 * 60 * 1000) return chatOn();
@@ -1443,6 +1483,175 @@ async function chatRoom(room){
     sending = false; };
   T.onkeydown = e => { if (e.key === "Enter" && !e.shiftKey && window.matchMedia("(pointer:fine)").matches) { e.preventDefault(); document.getElementById("cform").requestSubmit(); } };
 }
+/* ======================= Tag layout (Brandon Nov 14 2026) =======================
+   One shared layout for every digital tag. Brandon (admin codes) can move sections, remove them (and add them back), and hide a
+   section from customers, ISRs, BMs, GMs or team members. On Brandon's view, a yellow note on each section says who it is hidden
+   from. Warranty and Fire Sale terms always show. Stepping Stones start hidden from ISRs. */
+const TAG_SECS = [["title","Store, brand and unit name"],["photo","Unit photo"],["price","Price and monthly payment"],["apply","Apply for financing"],["leads","Hold this unit and Contact me"],
+  ["teaminfo","Unit info and copy buttons"],["loc","Team tools: location, print, hangers, price change"],["stones","Stepping Stones"],["share","Post this unit"],["specs","Key features and specifications"],["warranty","Warranty and Fire Sale terms"]];
+const TEAM_ONLY = ["loc","stones","share"], TL_LOCKED = ["warranty"];
+const TL_ROLES = [["customer","Customers"],["isr","ISRs"],["bm","BMs"],["gm","GMs"],["team","Team members"]];
+const TL_DEF = {order: TAG_SECS.map(x => x[0]), hidden: [], roles: {stones: ["isr"]}};
+const tlName = k => (TAG_SECS.find(x => x[0] === k) || [k, k])[1];
+function tlNorm(L){ L = L || TL_DEF; const keys = TAG_SECS.map(x => x[0]); const order = (L.order || []).filter(k => keys.includes(k)); keys.forEach(k => { if (!order.includes(k)) order.splice(keys.indexOf(k), 0, k); });
+  const roles = {}; Object.keys(L.roles || {}).forEach(k => { if (keys.includes(k)) roles[k] = (L.roles[k] || []).filter(r => TL_ROLES.some(x => x[0] === r) && !(TL_LOCKED.includes(k) && r === "customer")); });
+  return {order, hidden: (L.hidden || []).filter(k => keys.includes(k) && !TL_LOCKED.includes(k)), roles}; }
+let TL = tlNorm((() => { try { return JSON.parse(ls.get("sparktl") || "null"); } catch(e){ return null; } })());
+(async () => { try { const r = await api({action:"taglayout"}); if (r.ok) { const n = tlNorm(r.layout); if (JSON.stringify(n) !== JSON.stringify(TL)) { TL = n; ls.set("sparktl", JSON.stringify(n)); applyTagLayout(); } } } catch(e){} })();
+const roleList = a => { const n = a.map(r => (TL_ROLES.find(x => x[0] === r) || [r, r])[1]); return n.length > 1 ? n.slice(0, -1).join(", ") + " and " + n[n.length - 1] : n[0] || ""; };
+function applyTagLayout(L){
+  L = L || TL; const card = document.querySelector("#app > article.card"); if (!card || !card.querySelector(":scope > [data-sec]")) return;
+  const role = myRole(), adm = isAdm();
+  L.order.forEach(k => { const el = card.querySelector(`:scope > [data-sec="${k}"]`); if (el) card.appendChild(el); });
+  card.querySelectorAll(":scope > [data-sec]").forEach(el => { const k = el.dataset.sec, rm = L.hidden.includes(k), hid = L.roles[k] || [];
+    el.classList.toggle("tloff", rm || (!adm && hid.includes(role)));
+    const who = TL_ROLES.map(x => x[0]).filter(r => !(TEAM_ONLY.includes(k) && r === "customer")), vis = who.filter(r => !hid.includes(r));
+    if (adm && !rm && hid.length) el.dataset.tlnote = "Your view only. Hidden from " + roleList(hid) + ". " + (vis.length ? "Showing for " + roleList(vis) + "." : "Nobody else sees it.");
+    else delete el.dataset.tlnote; });
+}
+function tlFab(){
+  document.getElementById("tledit")?.remove();
+  if (!isAdm() || !document.querySelector("#app > article.card > [data-sec]")) return;
+  const b = document.createElement("button"); b.id = "tledit"; b.className = "tlfab"; b.type = "button"; b.textContent = "Edit layout"; b.onclick = tlEditor; document.body.appendChild(b);
+}
+function tlEditor(){
+  document.getElementById("tlpanel")?.remove(); document.getElementById("tledit")?.remove();
+  let D = JSON.parse(JSON.stringify(TL)); const host = document.createElement("div"); host.id = "tlpanel"; host.className = "tlpanel"; document.body.appendChild(host);
+  const close = () => { host.remove(); applyTagLayout(); tlFab(); };
+  const paint = (msg) => {
+    applyTagLayout(D);
+    const on = D.order.filter(k => !D.hidden.includes(k));
+    host.innerHTML = `<div class="tlhead"><b>Tag layout</b><button type="button" id="tlx" aria-label="Close">✕</button></div>
+      <p class="tlhint">Drag ≡ or tap the arrows to move a section. The page behind updates as you go. Tap a role to hide the section from them (tap again to show it). Remove takes it off every tag, and you can add it back below.</p>
+      <ol class="tllist" id="tllist">${on.map((k, i) => `<li data-k="${k}"><div class="tlrow"><span class="tlgrip" data-grip="${k}" aria-label="Drag to move">≡</span><span class="tlname">${esc(tlName(k))}${TL_LOCKED.includes(k) ? " <small>(always shown)</small>" : ""}${TEAM_ONLY.includes(k) ? " <small>(team only)</small>" : ""}</span>
+        <button type="button" class="tlarr" data-up="${k}" ${i ? "" : "disabled"} aria-label="Move up">↑</button><button type="button" class="tlarr" data-dn="${k}" ${i < on.length - 1 ? "" : "disabled"} aria-label="Move down">↓</button></div>
+        <div class="tlroles">${TL_ROLES.filter(([r]) => !(TEAM_ONLY.includes(k) && r === "customer") && !(TL_LOCKED.includes(k) && r === "customer")).map(([r, l]) => { const off = (D.roles[k] || []).includes(r); return `<button type="button" class="tlrole${off ? " off" : ""}" data-r="${r}" data-rk="${k}">${off ? "Hidden from " : ""}${l}</button>`; }).join("")}
+        ${TL_LOCKED.includes(k) ? "" : `<button type="button" class="tlrm" data-rm="${k}">Remove</button>`}</div></li>`).join("")}</ol>
+      ${D.hidden.length ? `<div class="tlsub">Removed sections</div><ul class="tloffl">${D.hidden.map(k => `<li><span>${esc(tlName(k))}</span><button type="button" data-add="${k}">Add back</button></li>`).join("")}</ul>` : ""}
+      <div class="tlbtns"><button type="button" class="copy" id="tlsave">Save for every tag</button><button type="button" class="ghost" id="tlreset">Start from the default</button></div><div class="lmsg" id="tlmsg">${msg ? esc(msg) : ""}</div>`;
+    const mv = (k, d) => { const vis = D.order.filter(x => !D.hidden.includes(x)), i = vis.indexOf(k), j = i + d; if (j < 0 || j >= vis.length) return; const a = D.order.indexOf(k), b = D.order.indexOf(vis[j]); [D.order[a], D.order[b]] = [D.order[b], D.order[a]]; paint(); };
+    host.querySelectorAll("[data-up]").forEach(b => b.onclick = () => mv(b.dataset.up, -1));
+    host.querySelectorAll("[data-dn]").forEach(b => b.onclick = () => mv(b.dataset.dn, 1));
+    host.querySelectorAll("[data-rk]").forEach(b => b.onclick = () => { const k = b.dataset.rk, r = b.dataset.r, a = D.roles[k] || (D.roles[k] = []); const i = a.indexOf(r); if (i < 0) a.push(r); else a.splice(i, 1); paint(); });
+    host.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { D.hidden.push(b.dataset.rm); paint(tlName(b.dataset.rm) + " removed. Add it back any time below."); });
+    host.querySelectorAll("[data-add]").forEach(b => b.onclick = () => { D.hidden = D.hidden.filter(x => x !== b.dataset.add); paint(tlName(b.dataset.add) + " is back."); });
+    document.getElementById("tlx").onclick = close;
+    document.getElementById("tlreset").onclick = () => { D = tlNorm(TL_DEF); paint("Back to the default layout. Tap Save to keep it."); };
+    document.getElementById("tlsave").onclick = async () => { const m = document.getElementById("tlmsg"); m.textContent = "Saving..."; const a = chatAuth();
+      try { const r = await api({action:"settaglayout", store:a.store, pin:a.pin, code:getCode(), layout:JSON.stringify({order:D.order, hidden:D.hidden, roles:D.roles})});
+        if (r.ok) { TL = tlNorm(r.layout); ls.set("sparktl", JSON.stringify(TL)); D = JSON.parse(JSON.stringify(TL)); paint("Saved. Every digital tag uses this layout now."); } else m.textContent = r.error === "owner" ? "Only an admin can change the layout." : "Could not save. Try again."; }
+      catch(e){ m.textContent = "Could not connect. Try again."; } };
+    const list = document.getElementById("tllist");
+    list.querySelectorAll("[data-grip]").forEach(g => g.onpointerdown = e => { e.preventDefault(); const li = g.closest("li"), k = g.dataset.grip; li.classList.add("tldrag"); const y0 = e.clientY;
+      try { g.setPointerCapture(e.pointerId); } catch(err){}
+      g.onpointermove = ev => { li.style.transform = `translateY(${ev.clientY - y0}px)`; };
+      g.onpointerup = g.onpointercancel = ev => { g.onpointermove = g.onpointerup = g.onpointercancel = null; li.style.transform = ""; li.classList.remove("tldrag");
+        const rows = [...list.children].filter(x => x !== li), tgt = rows.find(x => { const b = x.getBoundingClientRect(); return ev.clientY < b.top + b.height / 2; });
+        D.order.splice(D.order.indexOf(k), 1); if (tgt) D.order.splice(D.order.indexOf(tgt.dataset.k), 0, k); else { const lastVis = rows.length ? rows[rows.length - 1].dataset.k : null; D.order.splice(lastVis ? D.order.indexOf(lastVis) + 1 : D.order.length, 0, k); }
+        paint(tlName(k) + " moved."); }; });
+  };
+  paint();
+}
+
+/* ======================= Sherpa (Brandon Nov 14 2026) =======================
+   The DT is each team member's sherpa up Spark OPE Mountain. First sign in: a welcome with their first name and a tour.
+   The tour stays available on every tag. Five ISR motions are tracked from what they actually do (add more to CLIMB).
+   First open of the day, and first open after noon, prompts the next motion they have not done yet. */
+const CLIMB = [
+  ["find", "Find a unit by the last 4 of its serial", "On your store page, type the last 4 of the serial number in Find any unit, or take a photo of the serial plate."],
+  ["loc", "Set where a unit sits", "On any tag, tap Set location, pick the spot, and tap Save."],
+  ["print", "Print a tag", "On any tag, tap Print this tag. The printed tag shows the in store price."],
+  ["post", "Post a Money Maker", "On a Money Maker's tag, open Post this unit and pick where to post. The caption is written for you."],
+  ["hanger", "Place a QR hanger on the showroom map", "On any tag, tap Update QR Code Hanger Locations, pick a hanger, tap where it hangs, and Save."]];
+const CAMPS = ["Base Camp", "Camp 1", "Camp 2", "Camp 3", "Camp 4", "the Summit"];
+let SHERPA = null;
+async function sherpaLoad(force){
+  if (!getCode()) return null; if (SHERPA && !force && Date.now() - SHERPA._at < 120000) return SHERPA;
+  const a = chatAuth(); if (!a) return null;
+  try { const r = await api({action:"sherpa", store:a.store, pin:a.pin, code:getCode()}); if (r.ok) { r._at = Date.now(); r.done = r.done || {}; SHERPA = r; chatFlag(r); } } catch(e){}
+  return SHERPA;
+}
+function sherpaMark(step){ const a = chatAuth(); if (!a) return; if (SHERPA) SHERPA.done[step] = SHERPA.done[step] || new Date().toISOString(); api({action:"sherpamark", store:a.store, pin:a.pin, code:getCode(), step}).catch(() => {}); }
+const climbDone = S => CLIMB.filter(c => S && S.done[c[0]]).length;
+function climbCard(S){
+  if (!S) return "";
+  const n = climbDone(S), next = CLIMB.find(c => !S.done[c[0]]);
+  return `<div class="climb" id="tlclimb"><div class="climbh">⛰ Your climb up Spark OPE Mountain <span>${n === CLIMB.length ? "Summit reached!" : "At " + CAMPS[n] + ", " + n + " of " + CLIMB.length + " done"}</span></div>
+    <div class="climbbar"><i style="width:${Math.round(n / CLIMB.length * 100)}%"></i></div>
+    <ol>${CLIMB.map(([k, t]) => `<li class="${S.done[k] ? "ok" : next && next[0] === k ? "nx" : ""}">${S.done[k] ? "✓" : "○"} ${esc(t)}${!S.done[k] && next && next[0] === k ? ` <button type="button" class="climbgo" data-show="${k}">Show me how</button>` : ""}</li>`).join("")}</ol>
+    <button type="button" class="ghost climbtour" data-tour="1">Take the tour</button></div>`;
+}
+function wireClimb(root){ root.querySelectorAll("[data-show]").forEach(b => b.onclick = () => sherpaShow(b.dataset.show)); root.querySelectorAll("[data-tour]").forEach(b => b.onclick = () => tourStart()); }
+function sherpaModal(title, body, btns){
+  document.getElementById("shmodal")?.remove();
+  const d = document.createElement("div"); d.id = "shmodal"; d.className = "shmodal";
+  d.innerHTML = `<div class="shbox" role="dialog" aria-label="${esc(title)}"><div class="shicon">⛰</div><h2>${esc(title)}</h2><p>${body}</p><div class="shbtns">${btns.map((b, i) => `<button type="button" class="${i ? "ghost" : "copy"}" data-i="${i}">${esc(b[0])}</button>`).join("")}</div></div>`;
+  document.body.appendChild(d); d.querySelectorAll("[data-i]").forEach(b => b.onclick = () => { d.remove(); const f = btns[+b.dataset.i][1]; if (f) f(); });
+}
+async function sherpaGreet(){
+  if (document.getElementById("shmodal") || document.getElementById("coach")) return;
+  const S = await sherpaLoad(); if (!S) return;
+  const now = new Date(), slot = now.toDateString() + (now.getHours() >= 12 ? " pm" : " am"), key = "sparkslot" + getCode();
+  if (!S.done.welcome) { sherpaMark("welcome"); ls.set(key, slot);
+    return sherpaModal(`Welcome to Spark Digital Tags, ${S.first || "team"}!`, `Think of this app as your sherpa for the climb up Spark OPE Mountain. Take the 1 minute tour to see how a digital tag works for you and your customers. The tour is always here when you come back to any tag: just tap <b>Take the tour</b>.`, [["Take the tour", () => tourStart()], ["Later", null]]); }
+  if (ls.get(key) === slot) return; ls.set(key, slot);
+  const n = climbDone(S), next = CLIMB.find(c => !S.done[c[0]]), hi = now.getHours() < 12 ? "Good morning" : "Good afternoon";
+  if (next) return sherpaModal(`${hi}, ${S.first}. Next stop: ${CAMPS[n + 1]}`, `<b>${esc(next[1])}.</b> ${esc(next[2])}<br><br>You're at ${CAMPS[n]} with ${n} of ${CLIMB.length} done.`, [["Show me how", () => sherpaShow(next[0])], ["Not now", null]]);
+  if (!S.done.tour) return sherpaModal(`${hi}, ${S.first}. You reached the summit!`, `All ${CLIMB.length} motions are done. Want the quick tour as a refresher?`, [["Take the tour", () => tourStart()], ["Not now", null]]);
+}
+function sherpaUnit(){
+  const cur = byId[decodeURIComponent(location.hash.slice(1))], st = cur ? cur.store : (STORES.find(x => getPin(x)) || (STORES.includes("Keller") ? "Keller" : STORES[0]));
+  const top = (TOP3[st] || []).find(i => byId[i]); return top || (DATA.units.find(u => u.store === st && u.fire) || DATA.units.find(u => u.store === st) || DATA.units[0]).id;
+}
+const SHOW = {loc:["#lupd", "Tap Set location, pick where this unit sits, and tap Save."], print:["#lprint", "Tap Print this tag. Use Print in the tab that opens."],
+  hanger:["#lhang", "Tap here, pick a hanger, tap where it hangs on the showroom, and tap Save hangers."], post:["#sharesec", "Pick where to post. The caption is written for you and never shows a price."]};
+function sherpaShow(step){
+  if (step === "find") { const cur = byId[decodeURIComponent(location.hash.slice(1))], st = cur ? cur.store : (STORES.find(x => getPin(x)) || "Keller");
+    if (!document.getElementById("shq")) { sessionStorage.setItem("sparkshow", "find"); location.hash = "store/" + slug(st); return; }
+    return coach([["#shq", "Type the last 4 of any serial number here, or tap Take serial photo. Tap the unit to open its digital tag."]], null); }
+  const sel = SHOW[step]; if (!sel) return;
+  if (!document.querySelector(sel[0]) || !document.getElementById("locsec") || document.getElementById("locsec").hidden) { sessionStorage.setItem("sparkshow", step); location.hash = sherpaUnit(); return; }
+  coach([sel], null);
+}
+const TOUR = [
+  ['[data-sec=price]', "This is what your customer sees first: the monthly payment. Always point to the tag for the payment. Never quote it from memory."],
+  ['[data-sec=apply]', "Customers apply here. Each button opens that lender's secure application for your store."],
+  ['[data-sec=leads]', "Hold this unit and Contact me. These requests come straight to your store team."],
+  ['#lupd', "Set location tells the whole team where this unit sits right now."],
+  ['#lprint', "Print this tag gives you the paper tag with the real in store price."],
+  ['#lhang', "Place the QR hangers on your showroom map. You can also draw your showroom with your finger."],
+  ['#lprq', "Need a better number? Request a price change. It goes to your GM."],
+  ['#lmodel', "See every Texas Fire Sale unit of this same model."],
+  ['#sharesec', "Post this unit. The caption is written for you and never shows a price, payment or rate."],
+  ['#stonesec', "Stepping Stones walk a customer down the tag, top to bottom, and always end with Buy."],
+  ['#tlclimb', "Your climb up Spark OPE Mountain. Finish these five motions and you reach the summit."],
+  [null, "Last stop: on your store page, find any unit by the last 4 of its serial number, or a photo of the serial plate. This tour is always here: tap Take the tour on any tag."]];
+function tourStart(){
+  if (!document.getElementById("locsec") || document.getElementById("locsec").hidden || !document.getElementById("lupd")) { sessionStorage.setItem("sparktour", "1"); location.hash = sherpaUnit(); return; }
+  coach(TOUR, () => sherpaMark("tour"));
+}
+function coach(steps, done){
+  const vis = el => el && el.offsetParent !== null && !el.closest(".tloff,[hidden]");
+  const S = steps.filter(([q]) => !q || vis(document.querySelector(q)));
+  let i = 0; document.getElementById("coach")?.remove();
+  const bar = document.createElement("div"); bar.id = "coach"; bar.className = "coachbar"; document.body.appendChild(bar);
+  const end = fin => { document.querySelectorAll(".coachon").forEach(e => e.classList.remove("coachon")); bar.remove(); if (fin && done) done(); };
+  const show = () => { document.querySelectorAll(".coachon").forEach(e => e.classList.remove("coachon"));
+    const [q, t] = S[i], el = q && document.querySelector(q); if (el) { el.classList.add("coachon"); el.scrollIntoView({behavior:"smooth", block:"center"}); }
+    bar.innerHTML = `<div class="coachn">${S.length > 1 ? `Step ${i + 1} of ${S.length}` : "Your sherpa"}</div><p>${esc(t)}</p><div class="coachb">${i ? `<button type="button" class="ghost" data-c="b">Back</button>` : ""}<button type="button" class="ghost" data-c="x">${S.length > 1 ? "End tour" : "Got it"}</button>${S.length > 1 ? `<button type="button" class="copy" data-c="n">${i === S.length - 1 ? "Finish" : "Next"}</button>` : ""}</div>`;
+    bar.querySelectorAll("[data-c]").forEach(b => b.onclick = () => { const c = b.dataset.c; if (c === "x") return end(S.length === 1); if (c === "b") i--; else if (i === S.length - 1) return end(true); else i++; show(); }); };
+  if (S.length) show(); else end(false);
+}
+/* After the team section on a tag shows: the climb card, the tour button, any pending tour or "show me how", then the greeting. */
+async function sherpaTag(){
+  if (!getCode()) return; const box = document.getElementById("locsec"); if (!box || box.hidden) return;
+  const S = await sherpaLoad(); if (!S || !document.getElementById("locsec")) return;
+  document.getElementById("tlclimb")?.remove(); box.insertAdjacentHTML("beforeend", climbCard(S)); wireClimb(box);
+  const t = sessionStorage.getItem("sparktour"), sh = sessionStorage.getItem("sparkshow");
+  if (t) { sessionStorage.removeItem("sparktour"); setTimeout(() => coach(TOUR, () => sherpaMark("tour")), 600); return; }
+  if (sh && sh !== "find") { sessionStorage.removeItem("sparkshow"); setTimeout(() => sherpaShow(sh), 600); return; }
+  sherpaGreet();
+}
 /* Store home page (Nov 14 2026): sparkdigitaltags.github.io/#store/keller . Team signs in once here with the store PIN and the
    last 4 of their cell, then opens any unit. No prices on this page. */
 const STORES = [...new Set(DATA.units.map(u => u.store))];
@@ -1477,9 +1686,12 @@ function storeHome(st){
     return;
   }
   chatRefresh().then(on => { const cb = document.getElementById("shchat"); if (cb) cb.innerHTML = on ? chatBtn() : ""; });
+  sherpaLoad().then(S => { const c = document.getElementById("shclimb"); if (!S || !c) return; c.innerHTML = climbCard(S); wireClimb(c);
+    if (sessionStorage.getItem("sparkshow") === "find") { sessionStorage.removeItem("sparkshow"); setTimeout(() => sherpaShow("find"), 400); } else sherpaGreet(); });
   box.innerHTML = `<div id="shchat">${chatBtn()}</div><h2 style="margin-top:4px">Find any unit</h2>${finderHtml("sh")}
     <a class="copy copyall" href="#inventory/${slug(st)}" style="display:block;text-align:center;margin-top:8px">Inventory</a>
     <p class="fine" id="snote" style="margin:6px 0 14px">Searches every unit at every Spark store on the digital tags. Your store comes first.</p>
+    <div id="shclimb"></div>
     ${top.length || TX_STORES.includes(st) ? `<div class="top3"><div class="t3h">Money Makers</div>
       ${top.length ? `<div class="t3s">Post these next. Oldest Fire Sale units at ${esc(st)} first. Post one and the next oldest moves up.</div><ol>${top.map(li).join("")}</ol>` : ""}
       ${TX_STORES.includes(st) ? `<div class="t3s" style="margin-top:10px"><b>Every Fire Sale unit in Texas</b> at LSM, ATS and Landscape Supply, oldest first.</div>
@@ -1493,7 +1705,7 @@ function storeHome(st){
   document.getElementById("sout").onclick = () => { signOut(st); storeHome(st); };
   const mmf = document.getElementById("mmf");
   if (mmf) { const txFire = DATA.units.filter(u => u.fire && TX_STORES.includes(u.store)).sort((a, b) => (FIRE_AGE[b.id] || 0) - (FIRE_AGE[a.id] || 0));
-    const paint = () => { const v = mmf.value, list = txFire.filter(u => !v || (v[0] === "=" ? u.store === v.slice(1) : TX_DBA[u.dba] === v));
+    const paint = () => { const v = mmf.value, list = txFire.filter(u => !v || (v[0] === "=" ? u.store === v.slice(1) : TX_DBA[(LOC_INFO[u.store] || u).dba] === v));
       document.getElementById("mml").innerHTML = list.map(u => urow(u, st)).join("") || `<li class="none">No Fire Sale units here.</li>`;
       document.getElementById("mmn").textContent = list.length + " Fire Sale units" + (list.length > 5 ? ", scroll for more" : ""); };
     mmf.onchange = paint; paint(); }
@@ -1554,8 +1766,8 @@ window.addEventListener("appinstalled", () => { const st = /^#admin$/i.test(loca
    every Spark location, filtered by DBA brand, state, location and manufacturer. All access code only. No prices shown here. */
 const SPARK_LOCS = [
   ["LSM Outdoor Power","TX",["Burleson","Colleyville","Denton","Farmers Branch","Keller","Lewisville","Renfro"]],
-  ["ATS Outdoors","TX",["Tyler","Weatherford","Springtown","Gatesville"]],
-  ["Landscape Supply","TX",["Waco"]],
+  ["ATS Outdoors","TX",["Tyler","Weatherford","Springtown"]],
+  ["Landscape Supply","TX",["Waco","Gatesville"]],
   ["Mowers Inc","FL",["Sarasota","Bradenton","Naples","Belleview","Tampa","Lakeland"]],
   ["Outdoor Equipment Co","GA",["Augusta"]],
   ["Taylor","GA",["Waynesboro"]],
@@ -1618,6 +1830,7 @@ const ADMIN_CSS = `<style>.adm{max-width:1000px;margin:0 auto;padding:14px;font:
 .admfire{background:#C8102E;color:#fff;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px}</style>`;
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
+  ["tledit","tlpanel","coach","shmodal"].forEach(id => document.getElementById(id)?.remove());
   { const ch = /^chat(?:\/(.+))?$/i.exec(h); if (ch) { setManifest(""); window.scrollTo(0, 0); return ch[1] ? chatRoom(ch[1]) : chatHome(); } }
   { const iv = /^inventory(?:\/(.+))?$/i.exec(h); if (iv) { setManifest(""); window.scrollTo(0, 0); return inventory(iv[1] ? STORES.find(x => slug(x) === slug(iv[1])) : ""); } }
   if (/^admin$/i.test(h)) { const mf = document.getElementById("mf"); if (mf) mf.setAttribute("href", "/m/admin.webmanifest"); const t = document.getElementById("amt"); if (t) t.setAttribute("content", "Spark Admin"); window.scrollTo(0, 0); return adminHome(); }
