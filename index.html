@@ -453,13 +453,15 @@ function locShow(u, r){
     ${map}
     <div class="lrow"><button class="copy" id="lupd">${r.loc ? "Update location" : "Set location"}</button><button class="ghost" id="lout">Sign out</button></div>
     ${r.canMap ? `<button class="ghost" id="lmapedit" style="width:100%;margin-top:8px">Edit store map labels</button>` : ""}
+    <button class="copy" id="lprint" style="width:100%;margin-top:8px">Print this tag</button>
+    <div class="lmsg" id="lprintm"></div>
     <button class="ghost" id="lhang" style="width:100%;margin-top:8px">Update QR Code Hanger Locations</button>
     ${PRQ_ON[u.store] ? `<button class="ghost" id="lprq" style="width:100%;margin-top:8px">Request a price change</button>` : ""}
     ${r.name ? `<div class="locmeta">Signed in as ${esc(r.name)}</div>` : ""}`;
   const lm = document.getElementById("lmap");
   if (lm) lm.onclick = () => { const o = document.createElement("div"); o.className="full"; o.innerHTML = `<div class="locmap">${mapSvg(u.store, r.loc)}</div>`; o.onclick=()=>o.remove(); document.body.appendChild(o); };
   document.getElementById("lupd").onclick = () => locEdit(u, r);
-  const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r); document.getElementById("lhang").onclick = () => hangEdit(u, r); const pq = document.getElementById("lprq"); if (pq) pq.onclick = () => priceReqEdit(u, r);
+  const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r); document.getElementById("lhang").onclick = () => hangEdit(u, r); const pq = document.getElementById("lprq"); if (pq) pq.onclick = () => priceReqEdit(u, r); document.getElementById("lprint").onclick = () => printTag(u);
   document.getElementById("lout").onclick = () => { signOut(u.store); document.getElementById("sharesec").hidden = true; document.getElementById("stonesec").hidden = true; document.body.classList.remove("staff"); locSignin(u); leadInit(u); };
   leadInit(u); staffLenders(r);
   if (r.name) { stonesInit(u); shareInit(u, r.name); }
@@ -747,6 +749,27 @@ async function hangEdit(u, r){
       if (!fsel) return; const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse()), it = fx(); if (!it) return;
       it.x = Math.round(Math.min(VW0 - it.w, Math.max(0, p.x - it.w / 2))); it.y = Math.round(Math.min(VH0 - it.h, Math.max(0, p.y - it.h / 2))); draw(it.n + " moved."); }; };
   draw();
+}
+
+/* Print this tag (Brandon Nov 14 2026). Signed in team members pull the real paper tag PDF from the Price Tags Drive folders.
+   The printed tag shows the actual store price, even when the digital tag says Price Too Low to Display.
+   No below MAP price is ever placed on the public page; the PDF only comes back to a signed in team member. */
+async function printTag(u){
+  const m = document.getElementById("lprintm"), w = window.open("", "_blank");
+  if (w) w.document.write('<p style="font:16px system-ui;padding:20px">Getting the tag...</p>');
+  m.textContent = "Getting the tag...";
+  try {
+    const q = await api({action:"tagpdf", store:u.store, unit:u.unit, pin:getPin(u.store) || "", code:getCode()});
+    if (q.ok && q.pdf) {
+      const b = new Blob([Uint8Array.from(atob(q.pdf), c => c.charCodeAt(0))], {type:"application/pdf"}), url = URL.createObjectURL(b);
+      if (w) w.location.href = url; else { const a = document.createElement("a"); a.href = url; a.download = q.name || ("Unit " + u.unit + ".pdf"); a.click(); }
+      m.textContent = "Tag opened. Use Print in that tab. The printed tag shows the in store price. Keep it in the store; never post or text it.";
+    } else {
+      if (w) w.close();
+      if (ERRS[q.error] && q.error !== "nostore") { signOut(u.store); locSignin(u, ERRS[q.error]); return; }
+      m.textContent = q.error === "notag" ? "No printed tag is on file for this unit yet. Ask Brandon to build one." : "Could not get the tag. Try again.";
+    }
+  } catch(err){ if (w) w.close(); m.textContent = "Could not connect. Check your signal and try again."; }
 }
 
 /* Price change requests (Brandon Nov 12 2026, Waco first). A signed in team member suggests a new price for this unit;
