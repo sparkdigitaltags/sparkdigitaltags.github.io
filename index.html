@@ -1856,7 +1856,7 @@ function tourFor(u){
     ['[data-sec=price]', pay + (u.rebate ? " Mention the rebate on the tag." : "")],
     ['[data-sec=apply]', `${lend} ways to pay right on the tag. Good credit, fair credit or still building, everyone has a door.`],
     ...(f1 ? [['[data-sec=specs]', `The one thing to show them: ${f1}.${f2 ? " Then: " + f2 + "." : ""}`]] : []),
-    ['[data-sec=warranty]', `${u.warranty} warranty. Say it out loud. It closes deals.`],
+    ['[data-sec=warranty]', `${/warranty/i.test(u.warranty || "") ? u.warranty : u.warranty + " warranty"}. Say it out loud. It closes deals.`],
     ['#lupd', "Set location tells the whole team where this unit sits right now."],
     ['#lprint', "Print this tag gives you the paper tag with the real in store price."],
     ['#lhang', "Place the QR hangers on your showroom map, and draw your showroom with your finger."],
