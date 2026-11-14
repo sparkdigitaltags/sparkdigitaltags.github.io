@@ -195,7 +195,7 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .rebate{margin-top:8px;padding:8px 10px;border-radius:8px;background:#fff4d6;color:#5a3b00;font-size:14px;font-weight:600;border:1px solid #f0c64a}
 .pvw{margin:12px 0}.pvh{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555;margin-bottom:6px}.pvcard{border:1px solid #ddd;border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}.pvwho{display:flex;align-items:center;gap:8px;padding:10px 12px}.pvav{width:32px;height:32px;border-radius:50%;background:#C8102E;color:#fff;display:grid;place-items:center;font-weight:800}.pvtext{white-space:pre-wrap;padding:0 12px 10px;font-size:14px;line-height:1.4}.pvimg{display:block;width:100%;max-height:360px;object-fit:contain;background:#f4f4f4}.pvnone{padding:18px 12px;background:#fff8e1;color:#7a5b00;font-size:13px}.caplab{display:block;font-size:12px;font-weight:700;color:#555;margin:6px 0 4px}
 .ulist{list-style:none;padding:0;margin:8px 0;max-height:236px;overflow-y:auto;border:1px solid #ddd;border-radius:12px;background:#fff;-webkit-overflow-scrolling:touch}.ulist.tall{max-height:472px}
-.ulist li{border-bottom:1px solid #eee}.ulist li:last-child{border-bottom:0}.ulist a{display:flex;align-items:center;gap:8px;min-height:46px;padding:4px 12px;color:#1d1d1f;text-decoration:none;font-size:15px}
+.ulist li{border-bottom:1px solid #eee;background:#fff !important;margin:0 !important;padding:0 !important}.ulist a,.ulist a:visited{color:#1d1d1f !important;background:#fff !important;text-decoration:none !important}.ulist .ub,.ulist .um{color:#1d1d1f !important}.ulist li:last-child{border-bottom:0}.ulist a{display:flex;align-items:center;gap:8px;min-height:46px;padding:4px 12px;color:#1d1d1f;text-decoration:none;font-size:15px}
 .ulist .ub{font-weight:800;min-width:54px}.ulist .um{flex:1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ulist .ud{color:#C8102E;font-weight:700;font-size:13px;white-space:nowrap}.ulist .us{color:#555;font-size:13px;white-space:nowrap}
 .ulist .ux{color:#888;font-size:12px;white-space:nowrap}.ulist li.none{padding:12px;color:#666}.ufind{display:grid;gap:8px}.ufind input{width:100%;padding:14px;border:2px solid #121212;border-radius:12px;font-size:20px;letter-spacing:.04em;box-sizing:border-box;background:#fff;color:#1d1d1f}
 .ufind .ubtn{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ucount{font-size:13px;color:#666;margin:2px 0 0}
@@ -1396,7 +1396,7 @@ async function chatRefresh(){   // re-check now and then so turning chat on or o
   return chatOn();
 }
 function chatAuth(){ if (isAll()) return {store:"Keller", pin:""}; const st = STORES.find(x => getPin(x)); return st ? {store:st, pin:getPin(st)} : null; }
-const chatBtn = () => chatOn() ? `<a class="copy copyall" href="#chat" style="display:block;text-align:center;margin:8px 0;background:#1F2A5A">Team chat</a>` : "";
+const chatBtn = () => chatOn() ? `<a class="copy copyall" href="#chat" style="display:block;text-align:center;margin:8px 0;background:#1F2A5A;color:#fff">Team chat</a>` : "";
 let CHAT_T = null;
 window.addEventListener("hashchange", () => { if (!/^#chat\//.test(location.hash)) { clearInterval(CHAT_T); CHAT_T = null; } });
 async function chatHome(){
