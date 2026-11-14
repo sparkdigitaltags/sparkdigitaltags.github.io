@@ -207,7 +207,7 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .tlrole.off{background:#FDE8E8;color:#a12020;border-color:#f3c0c0}.tlrm{background:#fff;color:#a12020;border:1px solid #f3c0c0;border-radius:16px;padding:5px 10px;font-size:13px;margin-left:auto}
 .tlsub{font-weight:800;margin:12px 0 4px}.tloffl{list-style:none;padding:0;margin:0}.tloffl li{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px dashed #ccc;border-radius:10px;margin:4px 0;color:#1d1d1f}
 .tloffl button{background:#1F2A5A;color:#fff;border:0;border-radius:16px;padding:6px 12px;font-weight:700}.tlbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.climb{background:#fff;color:#1d1d1f;border-radius:14px;padding:12px 14px;margin:14px 0;border:2px solid #F5B400}.climbh{font-weight:800;font-size:15px;color:#1d1d1f}.climbh span{display:block;font-weight:600;font-size:13px;color:#666}
+.climb{background:#fff;color:#1d1d1f;border-radius:14px;padding:12px 14px;margin:14px 0;border:2px solid #F5B400}.climbh{font-weight:800;font-size:15px;color:#1d1d1f}.climbn{float:right;background:#1a7f37;color:#fff;border-radius:12px;padding:2px 10px;font-size:13px}.climbh span{display:block;font-weight:600;font-size:13px;color:#666}
 .climbbar{height:8px;background:#eee;border-radius:4px;overflow:hidden;margin:8px 0}.climbbar i{display:block;height:100%;background:linear-gradient(90deg,#F5B400,#1a7f37)}
 .climb ol{list-style:none;padding:0;margin:0}.climb li{padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#1d1d1f}.climb li.ok{color:#1a7f37}.climb li.nx{font-weight:800}
 .climbgo{display:block;margin-top:6px;background:#C8102E;color:#fff;border:0;border-radius:10px;padding:8px 12px;font-weight:700}.climbtour{width:100%;margin-top:10px}
@@ -1611,7 +1611,7 @@ function tlEditor(){
 }
 
 /* ======================= Sherpa (Brandon Nov 14 2026) =======================
-   The DT is each team member's sherpa up Spark OPE Mountain. First sign in: a welcome with their first name and a tour.
+   The DT is each team member's guide. First sign in: a welcome with their first name and a tour.
    The tour stays available on every tag. Five ISR motions are tracked from what they actually do (add more to CLIMB).
    First open of the day, and first open after noon, prompts the next motion they have not done yet. */
 const CLIMB = [
@@ -1633,9 +1633,9 @@ function sherpaMark(step){ if (tourMode()) { const d = tmDone(); d[step] = d[ste
 const climbDone = S => CLIMB.filter(c => S && S.done[c[0]]).length;
 function climbCard(S){
   if (!S) return "";
-  if (feat("scene")) return sceneCard(S, !!FLAGS.scene);
-  const n = climbDone(S), next = CLIMB.find(c => !S.done[c[0]]);
-  return `<div class="climb" id="tlclimb"><div class="climbh">⛰ Your climb up Spark OPE Mountain <span>${n === CLIMB.length ? "Summit reached!" : "At " + CAMPS[n] + ", " + n + " of " + CLIMB.length + " done"}</span></div>
+  const n = climbDone(S), next = CLIMB.find(c => !S.done[c[0]]), all = CLIMB.length;
+  const pep = n >= all ? "All 5 done. You're a pro on the digital tags." : n === 0 ? "Start with one. Each takes about 2 minutes." : n <= 2 ? "Nice start. Keep it rolling." : "Almost there. Finish strong.";
+  return `<div class="climb" id="tlclimb"><div class="climbh">Your first 5 <b class="climbn">${n} of ${all}</b><span>${esc(pep)}</span></div>
     <div class="climbbar"><i style="width:${Math.round(n / CLIMB.length * 100)}%"></i></div>
     <ol>${CLIMB.map(([k, t]) => `<li class="${S.done[k] ? "ok" : next && next[0] === k ? "nx" : ""}">${S.done[k] ? "✓" : "○"} ${esc(t)}${!S.done[k] && next && next[0] === k ? ` <button type="button" class="climbgo" data-show="${k}">Show me how</button>` : ""}</li>`).join("")}</ol>
     <button type="button" class="ghost climbtour" data-tour="1">New Location Tour</button>${feat("isrtour") ? `<button type="button" class="ghost climbtour" data-hunt="1">New ISR Tour: scavenger hunt</button>` : ""}</div>`;
@@ -1652,11 +1652,11 @@ async function sherpaGreet(){
   const S = await sherpaLoad(); if (!S) return;
   const now = new Date(), slot = now.toDateString() + (now.getHours() >= 12 ? " pm" : " am"), key = "sparkslot" + getCode() + (tourMode() ? "tm" + (sessionStorage.getItem("sparktmsess") || (sessionStorage.setItem("sparktmsess", String(Date.now())), sessionStorage.getItem("sparktmsess"))) : "");
   if (!S.done.welcome) { sherpaMark("welcome"); ls.set(key, slot);
-    return sherpaModal(`Welcome to Spark Digital Tags, ${S.first || "team"}!`, `Think of this app as your sherpa for the climb up Spark OPE Mountain. Take the 1 minute tour to see how a digital tag works for you and your customers. The tour is always here when you come back to any tag: just tap <b>Take the tour</b>.`, [["Take the tour", () => tourStart()], ["Later", null]]); }
+    return sherpaModal(`Welcome to Spark Digital Tags, ${S.first || "team"}!`, `This app is your guide to the digital tags. Take the 1 minute tour to see how a digital tag works for you and your customers. The tour is always here when you come back to any tag: just tap <b>Take the tour</b>.`, [["Take the tour", () => tourStart()], ["Later", null]]); }
   if (ls.get(key) === slot) return; ls.set(key, slot);
   const n = climbDone(S), next = CLIMB.find(c => !S.done[c[0]]), hi = now.getHours() < 12 ? "Good morning" : "Good afternoon";
-  if (next) return sherpaModal(`${hi}, ${S.first}. Next stop: ${CAMPS[n + 1]}`, `<b>${esc(next[1])}.</b> ${esc(next[2])}<br><br>You're at ${CAMPS[n]} with ${n} of ${CLIMB.length} done.`, [["Show me how", () => sherpaShow(next[0])], ["Not now", null]]);
-  if (!S.done.tour) return sherpaModal(`${hi}, ${S.first}. You reached the summit!`, `All ${CLIMB.length} motions are done. Want the quick tour as a refresher?`, [["Take the tour", () => tourStart()], ["Not now", null]]);
+  if (next) return sherpaModal(`${hi}, ${S.first}. Next up: ${next[1]}`, `${esc(next[2])}<br><br>You've done ${n} of ${CLIMB.length}. ${n >= 3 ? "Almost there!" : n ? "Keep it rolling." : "It takes about 2 minutes."}`, [["Show me how", () => sherpaShow(next[0])], ["Not now", null]]);
+  if (!S.done.tour) return sherpaModal(`${hi}, ${S.first}. All 5 done!`, `All ${CLIMB.length} motions are done. Want the quick tour as a refresher?`, [["Take the tour", () => tourStart()], ["Not now", null]]);
 }
 function sherpaUnit(){
   const cur = byId[decodeURIComponent(location.hash.slice(1))], st = cur ? cur.store : (STORES.find(x => getPin(x)) || (STORES.includes("Keller") ? "Keller" : STORES[0]));
@@ -1683,7 +1683,7 @@ const TOUR = [
   ['#lmodel', "See every Texas Fire Sale unit of this same model."],
   ['#sharesec', "Post this unit. The caption is written for you and never shows a price, payment or rate."],
   ['#stonesec', "Stepping Stones walk a customer down the tag, top to bottom, and always end with Buy."],
-  ['#tlclimb', "Your climb up Spark OPE Mountain. Finish these five motions and you reach the summit."],
+  ['#tlclimb', "Your first 5. Finish these and you're up to speed on the digital tags."],
   [null, "Last stop: on your store page, find any unit by the last 4 of its serial number, or a photo of the serial plate. This tour is always here: tap Take the tour on any tag."]];
 function tourStart(){
   if (!document.getElementById("locsec") || document.getElementById("locsec").hidden || !document.getElementById("lupd")) { sessionStorage.setItem("sparktour", "1"); location.hash = sherpaUnit(); return; }
@@ -1718,7 +1718,7 @@ let FLAGS = (() => { try { return JSON.parse(ls.get("sparkflags") || "{}") || {}
 const LAB_EX = {flames:["farmersbranch-109225-fce43e"], mow:["farmersbranch-109225-fce43e"], stone3:["farmersbranch-109122-4ef97e","farmersbranch-109225-fce43e"]};
 const ADMIN_ONLY = ["flames", "mow", "scene"];   // Brandon Nov 14 2026: nobody else sees the flames, the mower stones or the mower scenes, even if a flag is set
 /* Saved for later (Brandon Nov 14 2026): the OPE scenes, the mower Stepping Stones and the avatar are kept but switched off,
-   even for Brandon, so the tags use the Spark OPE Mountain climb. The Lab can preview them on this phone only. */
+   even for Brandon. The scenes are scrapped (Brandon Nov 14 2026); the training uses a simple checklist. Lab preview on this phone only. */
 const PARKED = ["scene", "mow", "avatar"];
 const parkPreview = () => isAdm() && ls.get("sparkparkprev") === "1";
 function feat(k, u){ if (PARKED.includes(k) && !parkPreview()) return false; if (ADMIN_ONLY.includes(k) && !isAdm()) return false; if (FLAGS[k] === true) return true; if (!isAdm()) return false; const ex = LAB_EX[k]; return ex ? !!(u && ex.includes(u.id)) : true; }
@@ -1954,7 +1954,7 @@ function tourFor(u){
     ...(twins ? [['#lmodel', `${twins} more of this model ${twins === 1 ? "is" : "are"} on Fire Sale around Texas. Tap here to see them.`]] : []),
     ['#sharesec', "Post this unit. The caption is written for you and never shows a price, payment or rate."],
     ...(feat("avatar") && !(SHERPA && SHERPA.avatar) ? [[null, "Now let's put you in the picture. Take a profile pic and pick your avatar. It stars in your progress scene.", {btn:"Make my avatar", fn:() => avatarMaker()}]] : []),
-    ['#tlclimb', feat("scene") ? `${SCENES[sceneV()].title}: your progress. Finish all five and you're done.` : "Your climb. Finish these five motions and you reach the summit."],
+    ['#tlclimb', "Your first 5. Finish these and you're up to speed on the digital tags."],
     [null, "Last stop: on your store page, find any unit by the last 4 of its serial, or a photo of the serial plate. This tour is always here: tap New Location Tour on any tag."]];
 }
 
@@ -2023,11 +2023,10 @@ function labPills(){
 
 /* ---- The Lab page ---- */
 const LAB_TESTS = [
-  ["training", "Spark OPE Mountain training", "First sign in welcome, the New Location Tour, the climb card with the 5 ISR motions, the morning and afternoon prompts, and the glowing showroom drawing buttons.", ""],
+  ["training", "Team training", "First sign in welcome, the New Location Tour, the Your first 5 checklist with a progress bar, the morning and afternoon prompts, and the glowing showroom drawing buttons.", ""],
   ["flames", "Fire Sale! in flames", "The words Fire Sale! burn across the unit photo on Fire Sale tags.", "#farmersbranch-109225-fce43e"],
   ["mow", "Mow to reveal the Stepping Stones", "Grass covers each stone. Touch the mower and swipe right to cut it and read the line. The section takes the scene's name.", "#farmersbranch-109225-fce43e"],
   ["stone3", "Stone 3 (Bill) wording", "Never say the APR unless it's 0%. Under $1,500: \"$49 down plus tax\" with the lease to own line. Examples: a $459 lease unit and an 11.99% unit.", "#farmersbranch-109122-4ef97e"],
-  ["scene", "Progress scene", "Replaces Your climb up Spark OPE Mountain with the scene you pick below. Their avatar is the main character.", ""],
   ["avatar", "Profile pic avatar", "A tour step to take a selfie and flip through 6 looks (Classic, Comic, Spark Pop, Sketch, 8 Bit, Neon).", ""],
   ["talk", "Tag specific New Location Tour", "The tour's talking points come from the tag they're on: Fire Sale days, payment, top feature, warranty, Texas twins.", ""],
   ["isrtour", "New ISR Tour (scavenger hunt)", "Five clues on real tags at their store: oldest Money Maker, serial sleuth, twin hunt, floor walk, paper trail.", ""]];
@@ -2041,10 +2040,8 @@ async function labPage(){
     <h2 style="margin-top:18px">Tests not live yet</h2>
     ${LAB_TESTS.filter(([k]) => !PARKED.includes(k)).map(([k, n, d, ex]) => `<div class="labrow"><div><b>${esc(k === "scene" ? n + ": " + SCENES[sceneV()].title : k === "mow" ? n + " (" + SCENES[sceneV()].stones + ")" : n)}</b> <span class="labst ${FLAGS[k] ? "live" : ""}">${FLAGS[k] ? "Live" : "Offline"}</span><small>${esc(d)}</small>${ex ? `<a href="${ex}">Try it on the example tag ›</a>` : k === "isrtour" ? `<a href="#" data-hunt="1">Start the hunt ›</a>` : k === "avatar" ? `<a href="#" data-av="1">Make my avatar ›</a>` : ""}</div>
       ${ADMIN_ONLY.includes(k) ? `<span class="labst">Only you</span>` : `<button type="button" class="${FLAGS[k] ? "ghost" : "copy"}" data-flag="${k}" data-val="${FLAGS[k] ? 0 : 1}">${FLAGS[k] ? "Take offline" : "Make live"}</button>`}</div>`).join("")}
-    <h2 style="margin-top:18px">Saved for later</h2><p class="fine" style="margin-top:0">Switched off everywhere, including your phones. The tags use the Spark OPE Mountain climb and regular Stepping Stones. Preview brings them back on this phone only.</p>
+    <h2 style="margin-top:18px">Saved for later</h2><p class="fine" style="margin-top:0">Switched off everywhere, including your phones. The tags use regular Stepping Stones. Preview brings them back on this phone only.</p>
     <div class="labrow"><div><b>Preview saved items on this phone</b><small>${LAB_TESTS.filter(([k]) => PARKED.includes(k)).map(([, n]) => esc(n)).join(", ")}.</small></div><button type="button" class="${parkPreview() ? "copy" : "ghost"}" id="labpark">${parkPreview() ? "On" : "Off"}</button></div>
-    <h2 style="margin-top:18px">Progress scenes (saved for later)</h2><p class="fine" style="margin-top:0">Your avatar is the star. Shown here at 2 of 5 done.</p>
-    <div class="labscenes">${Object.entries(SCENES).map(([v, sc]) => `<button type="button" class="labscene ${sceneV() === v ? "on" : ""}" data-scene="${v}">${sceneSvg(v, 2, demo, "l" + v)}<b>${esc(sc.title)}</b><small>${esc(sc.sub)}. Stepping Stones become ${esc(sc.stones)}.</small>${sceneV() === v ? "<em>Selected</em>" : ""}</button>`).join("")}</div>
     <div class="lmsg" id="labmsg"></div></div></article>`;
   const msg = document.getElementById("labmsg"), a = chatAuth();
   const set = async (key, val) => { msg.textContent = "Saving..."; try { const r = await api({action:"setflag", store:a.store, pin:a.pin, code:getCode(), key, val}); if (r.ok) { setFlags(r.flags); labPage(); } else msg.textContent = "Could not save."; } catch(e){ msg.textContent = "Could not connect."; } };
