@@ -145,7 +145,7 @@ function draw(){
       <select id="st" aria-label="Store">${stores.map(s => `<option ${s === store ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
       <button class="ghost" id="rf">Refresh</button><span class="mut">${word[0]}: ${cur.length} interactions, ${chg(cur.length, prev.length)} vs ${word[1]}</span></div>
     ${store === "All stores" || store === "All LSM" || LSM.includes(store) ? rollCard() : ""}
-    <div class="kpis">${KPI.map(t => `<div class="kpi"><b>${c(t)}</b><span>${TYPES[t].n}</span><br>${chg(c(t), p(t))} <span>vs ${word[1]} (${p(t)})</span></div>`).join("")}</div>
+    <div class="kpis">${KPI.concat(Object.keys(TYPES).filter(t => !KPI.includes(t) && (c(t) || p(t)))).map(t => `<div class="kpi"><b>${c(t)}</b><span>${TYPES[t].n}</span><br>${chg(c(t), p(t))} <span>vs ${word[1]} (${p(t)})</span></div>`).join("")}</div>
     ${chart(S)}
     <div class="grid">
       <div class="card"><h2>${word[0]} by type</h2><table><tr><th>Interaction</th><th class="n">${word[0]}</th><th class="n">${word[1][0].toUpperCase() + word[1].slice(1)}</th><th class="n">Change</th></tr>

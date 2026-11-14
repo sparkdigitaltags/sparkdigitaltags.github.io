@@ -1276,9 +1276,77 @@ function setManifest(st){
   if (mf && mf.getAttribute("href") !== href) mf.setAttribute("href", href);
   const t = document.getElementById("amt"); if (t) t.setAttribute("content", st ? (st.length <= 7 ? st + " Tags" : st) : "Spark Tags");
 }
-window.addEventListener("appinstalled", () => { const st = (/^#store\/(.+)$/i.exec(location.hash) || [])[1] || ""; track("install", {store: st, d: "home screen"}); });
+window.addEventListener("appinstalled", () => { const st = /^#admin$/i.test(location.hash) ? "Admin" : (/^#store\/(.+)$/i.exec(location.hash) || [])[1] || ""; track("install", {store: st, d: "home screen"}); });
+
+/* Spark Admin (Brandon Nov 14 2026): sparkdigitaltags.github.io/#admin . One home screen app for all access leaders:
+   every Spark location, filtered by DBA brand, state, location and manufacturer. All access code only. No prices shown here. */
+const SPARK_LOCS = [
+  ["LSM Outdoor Power","TX",["Burleson","Colleyville","Denton","Farmers Branch","Keller","Lewisville","Renfro"]],
+  ["ATS Outdoors","TX",["Tyler","Weatherford","Springtown","Gatesville"]],
+  ["Landscape Supply","TX",["Waco"]],
+  ["Mowers Inc","FL",["Sarasota","Bradenton","Naples","Belleview","Tampa","Lakeland"]],
+  ["Outdoor Equipment Co","GA",["Augusta"]],
+  ["Taylor","GA",["Waynesboro"]],
+  ["Outdoor Turf Products","KY",["Louisville","Shelbyville"]]];
+const LOC_INFO = {}; SPARK_LOCS.forEach(([d, s, L]) => L.forEach(st => LOC_INFO[st] = {dba:d, state:s}));
+STORES.forEach(st => { if (!LOC_INFO[st]) { const u = DATA.units.find(x => x.store === st); LOC_INFO[st] = {dba:(u && u.dba) || "Spark", state:"TX"}; } });
+const mfg = b => { const k = String(b || "").toLowerCase(); return k === "stihl" ? "STIHL" : k === "echo" ? "ECHO" : String(b || "Other"); };
+let ADM = {q:"", dba:"", state:"", loc:"", mfg:"", fire:""};
+function adminHome(){
+  document.title = "Spark Admin";
+  const app = document.getElementById("app") || document.body;
+  if (!(getCode() && isAll())) {
+    app.innerHTML = `${ADMIN_CSS}<div class="adm"><div class="admh"><img src="/m/icon-192.png" alt=""><div><b>Spark Admin</b><small>All Spark locations</small></div></div>
+      <form id="admf" class="admcard" style="max-width:380px;margin:30px auto"><h2 style="margin-top:0">Sign in</h2><p class="admmut">For leaders with all store access. Enter your personal code.</p>
+      <input id="admc" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Your code"><button>Open Spark Admin</button><p class="admmut" id="admm"></p></form></div>`;
+    document.getElementById("admf").onsubmit = async e => { e.preventDefault(); const code = document.getElementById("admc").value.trim(), m = document.getElementById("admm"); m.textContent = "Checking...";
+      try { const r = await api({action:"check", store:"Keller", pin:"", code}); if (r.ok && r.all) { keepKey(r); MEM._code = code; ls.set("sparkcode", code); MEM._all = true; ls.set("sparkall", "1"); track("signin", {store:"Admin", pin:"", code, d:"admin"}); adminHome(); } else m.textContent = "That code does not have all store access."; }
+      catch(err){ m.textContent = "Could not connect. Try again."; } };
+    return;
+  }
+  const all = DATA.units.map(u => Object.assign({}, u, LOC_INFO[u.store], {m: mfg(u.brand)}));
+  const q = ADM.q.toLowerCase().trim();
+  const pass = (u, skip) => (skip === "dba" || !ADM.dba || u.dba === ADM.dba) && (skip === "state" || !ADM.state || u.state === ADM.state) && (skip === "loc" || !ADM.loc || u.store === ADM.loc)
+    && (skip === "mfg" || !ADM.mfg || u.m === ADM.mfg) && (!ADM.fire || (ADM.fire === "fire" ? u.fire : !u.fire))
+    && (!q || [u.brand, u.name, u.model, u.unit, u.serial, u.store].join(" ").toLowerCase().includes(q));
+  const units = all.filter(u => pass(u));
+  const opts = (key, vals, label) => `<select data-k="${key}" aria-label="${label}"><option value="">${label}</option>${[...new Set(vals)].sort().map(v => `<option ${ADM[key] === v ? "selected" : ""}>${esc(v)}</option>`).join("")}</select>`;
+  const locsAll = Object.entries(LOC_INFO).filter(([st, i]) => (!ADM.dba || i.dba === ADM.dba) && (!ADM.state || i.state === ADM.state) && (!ADM.loc || st === ADM.loc));
+  const cards = locsAll.map(([st, i]) => { const mine = units.filter(u => u.store === st), live = STORES.includes(st);
+    return `<div class="admcard"><div class="admrow"><b>${esc(st)}</b><span class="admmut">${esc(i.state)}</span></div><div class="admmut">${esc(i.dba)}</div>
+      ${live ? `<div class="admnums"><span><b>${mine.length}</b> units</span><span><b>${mine.filter(u => u.fire).length}</b> Fire Sale</span></div><a class="admbtn" href="#store/${slug(st)}">Open store page</a>` : `<div class="admmut" style="margin-top:8px">Not on digital tags yet</div>`}</div>`; }).join("");
+  const list = units.slice(0, 150).map(u => `<li><a href="#${esc(u.id)}">${u.fire ? `<span class="admfire">Fire Sale</span> ` : ""}${esc(u.m + " " + u.name)}</a><small>${esc(u.store)}, unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}</small></li>`).join("");
+  app.innerHTML = `${ADMIN_CSS}<div class="adm"><div class="admh"><img src="/m/icon-192.png" alt=""><div><b>Spark Admin</b><small>${all.length} units across ${STORES.length} live locations</small></div></div>
+    <div class="admlinks"><a href="/dash/" target="_blank" rel="noopener">Activity dashboard and LSM rollout ›</a></div>
+    <input id="admq" type="search" placeholder="Search brand, model, unit or serial" value="${esc(ADM.q)}">
+    <div class="admf">${opts("dba", Object.values(LOC_INFO).map(i => i.dba), "All brands (DBA)")}${opts("state", Object.values(LOC_INFO).map(i => i.state), "All states")}
+      ${opts("loc", Object.keys(LOC_INFO).filter(st => (!ADM.dba || LOC_INFO[st].dba === ADM.dba) && (!ADM.state || LOC_INFO[st].state === ADM.state)), "All locations")}
+      ${opts("mfg", all.filter(u => pass(u, "mfg")).map(u => u.m), "All manufacturers")}
+      <select data-k="fire" aria-label="Fire Sale"><option value="">Fire Sale and regular</option><option value="fire" ${ADM.fire === "fire" ? "selected" : ""}>Fire Sale only</option><option value="reg" ${ADM.fire === "reg" ? "selected" : ""}>Regular only</option></select>
+      ${Object.values(ADM).some(Boolean) ? `<button class="admclear" id="admx">Clear</button>` : ""}</div>
+    <div class="admnums big"><span><b>${units.length}</b> units</span><span><b>${units.filter(u => u.fire).length}</b> Fire Sale</span><span><b>${new Set(units.map(u => u.store)).size}</b> locations</span><span><b>${new Set(units.map(u => u.m)).size}</b> manufacturers</span></div>
+    <h2>Locations</h2><div class="admgrid">${cards || `<p class="admmut">No locations match.</p>`}</div>
+    <h2>Units ${units.length > 150 ? `<small class="admmut">(first 150 of ${units.length}, narrow the filters)</small>` : ""}</h2><ul class="admlist">${list || `<li class="admmut">No units match.</li>`}</ul>
+    <p class="admmut" style="margin:18px 0">Add this page to your home screen for the Spark Admin app. Signed in as ${esc(getCode() ? "all store access" : "")}. <a href="#" id="admout">Sign out</a></p></div>`;
+  app.querySelectorAll("select[data-k]").forEach(el => el.onchange = () => { ADM[el.dataset.k] = el.value; if (el.dataset.k === "dba" || el.dataset.k === "state") ADM.loc = ""; adminHome(); });
+  const qi = document.getElementById("admq"); let t; qi.oninput = () => { clearTimeout(t); t = setTimeout(() => { ADM.q = qi.value; adminHome(); const n = document.getElementById("admq"); n.focus(); n.setSelectionRange(n.value.length, n.value.length); }, 300); };
+  const x = document.getElementById("admx"); if (x) x.onclick = () => { ADM = {q:"", dba:"", state:"", loc:"", mfg:"", fire:""}; adminHome(); };
+  document.getElementById("admout").onclick = e => { e.preventDefault(); signOut(""); adminHome(); };
+}
+const ADMIN_CSS = `<style>.adm{max-width:1000px;margin:0 auto;padding:14px;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f}
+.admh{display:flex;gap:12px;align-items:center;background:#121212;color:#fff;margin:-14px -14px 14px;padding:14px;border-bottom:4px solid #F5B400}.admh img{width:44px;height:44px;border-radius:10px}.admh b{display:block;font-size:20px}.admh small{color:#bbb}
+.adm h2{font-size:17px;margin:18px 0 8px}.admmut{color:#666;font-size:13px}.admlinks{margin-bottom:10px}.admlinks a{color:#C8102E;font-weight:700;text-decoration:none}
+.adm input,.adm select,.adm button{font:inherit;font-size:16px}.adm input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ccc;border-radius:10px;margin:0 0 10px}
+.admf{display:flex;flex-wrap:wrap;gap:8px}.admf select{padding:9px;border:1px solid #ccc;border-radius:10px;background:#fff;max-width:100%}.admclear{background:#fff;border:1px solid #ccc;border-radius:10px;padding:9px 14px}
+.adm form button{width:100%;background:#C8102E;color:#fff;border:0;border-radius:10px;padding:12px;font-weight:700}
+.admnums{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}.admnums.big{margin:14px 0 4px;background:#fff;border-radius:12px;padding:10px 14px}.admnums.big b{font-size:22px}
+.admgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}.admcard{background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.admrow{display:flex;justify-content:space-between}.admbtn{display:block;margin-top:10px;text-align:center;background:#121212;color:#fff;border-radius:10px;padding:8px;text-decoration:none;font-weight:700;font-size:14px}
+.admlist{list-style:none;padding:0;margin:0;background:#fff;border-radius:12px}.admlist li{padding:10px 14px;border-bottom:1px solid #eee}.admlist a{color:#1d1d1f;font-weight:600;text-decoration:none;display:block}.admlist small{color:#666}
+.admfire{background:#C8102E;color:#fff;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px}</style>`;
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
+  if (/^admin$/i.test(h)) { const mf = document.getElementById("mf"); if (mf) mf.setAttribute("href", "/m/admin.webmanifest"); const t = document.getElementById("amt"); if (t) t.setAttribute("content", "Spark Admin"); window.scrollTo(0, 0); return adminHome(); }
   { const sm0 = /^store\/(.+)$/i.exec(h), st0 = sm0 ? STORES.find(x => slug(x) === slug(sm0[1])) : (byId[h] && getCode() && (isAll() || getPin(byId[h].store)) ? byId[h].store : ""); setManifest(st0); }
   const sm = /^store\/(.+)$/i.exec(h);
   if (sm) { const st = STORES.find(x => slug(x) === slug(sm[1])); if (st) return storeHome(st); }
