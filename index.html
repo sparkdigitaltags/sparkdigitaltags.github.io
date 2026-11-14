@@ -603,6 +603,18 @@ const LAYOUT_BASE = [
 const ROOMS = {}, LAYOUT_PENDING = {};
 const VW0 = 860, VH0 = 620;
 function roomOf(store){ return ROOMS[store] || LAYOUT_BASE; }
+/* Edit handles on the box being edited (Brandon Nov 14 2026): X top right cancels the edits to that box, the circle arrow top left
+   turns it (drag, or tap for 15 degrees), the corner arrows bottom right resize it (drag). Drawn inside the box's own rotation. */
+function editHandles(x, y, w, h, Z){
+  const r = 24 * Z, c = (cx, cy, fill, inner, k) => `<g data-h="${k}" style="cursor:pointer"><circle cx="${cx}" cy="${cy}" r="${r * 1.45}" fill="transparent"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="#fff" stroke-width="${3 * Z}"/>${inner}</g>`;
+  const R = 10 * Z, A = d => d * Math.PI / 180, rx = x, ry = y, s0 = [rx + R * Math.cos(A(-60)), ry + R * Math.sin(A(-60))], e0 = [rx + R * Math.cos(A(200)), ry + R * Math.sin(A(200))];
+  const tip = [e0[0] + 6 * Z * Math.cos(A(290)), e0[1] + 6 * Z * Math.sin(A(290))], b1 = [e0[0] + 5 * Z * Math.cos(A(200)), e0[1] + 5 * Z * Math.sin(A(200))], b2 = [e0[0] - 5 * Z * Math.cos(A(200)), e0[1] - 5 * Z * Math.sin(A(200))];
+  const rot = `<path d="M${s0[0]} ${s0[1]} A${R} ${R} 0 1 0 ${e0[0]} ${e0[1]}" fill="none" stroke="#fff" stroke-width="${3.5 * Z}" stroke-linecap="round"/><path d="M${b1[0]} ${b1[1]} L${tip[0]} ${tip[1]} L${b2[0]} ${b2[1]} Z" fill="#fff"/>`;
+  const qx = x + w, qy = y + h, d = 9 * Z, ah = 5 * Z;
+  const size = `<path d="M${qx - d} ${qy - d} L${qx + d} ${qy + d} M${qx - d} ${qy - d + ah} L${qx - d} ${qy - d} L${qx - d + ah} ${qy - d} M${qx + d} ${qy + d - ah} L${qx + d} ${qy + d} L${qx + d - ah} ${qy + d}" fill="none" stroke="#fff" stroke-width="${3.5 * Z}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const xx = x + w, xy = y, xd = 8 * Z, cancel = `<path d="M${xx - xd} ${xy - xd} L${xx + xd} ${xy + xd} M${xx + xd} ${xy - xd} L${xx - xd} ${xy + xd}" stroke="#fff" stroke-width="${4 * Z}" stroke-linecap="round"/>`;
+  return c(rx, ry, "#1F2A5A", rot, "rot") + c(qx, qy, "#1F2A5A", size, "size") + c(xx, xy, "#C8102E", cancel, "x");
+}
 function fxSvg(items, sel){
   return items.map(it => {
     const {x, y, w, h} = it, s = it.s || 19, n = esc(it.n || ""), cx = x + w / 2, cy = y + h / 2;
@@ -612,26 +624,26 @@ function fxSvg(items, sel){
     else if (it.t === "pads") { const gap = w * 0.0714, pw = (w - 2 * gap) / 3; for (let i = 0; i < 3; i++) g += `<rect x="${x + i * (pw + gap)}" y="${y}" width="${pw}" height="${h}" rx="14" fill="${it.f || "#DCE5D0"}"/>`; g += _T(cx, y + h + 30, n, {s}); }
     else if (it.t === "text") g = _T(cx, cy + s * 0.35, n, {s});
     else g = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${it.f || "#E6DCCB"}"/>` + (it.r ? _T(cx + s * 0.35, cy, n, {s, r:it.r}) : _T(cx, cy + s * 0.38, n, {s}));
-    if (it.k === sel) g += `<rect x="${x - 6}" y="${y - 6}" width="${w + 12}" height="${h + 12}" fill="none" stroke="#C8102E" stroke-width="5" stroke-dasharray="14 8"/>`;
-    return `<g class="fx" data-f="${esc(it.k)}">${g}</g>`; }).join("");
+    if (it.k === sel) g += `<rect x="${x - 6}" y="${y - 6}" width="${w + 12}" height="${h + 12}" fill="none" stroke="#C8102E" stroke-width="5" stroke-dasharray="14 8"/>` + editHandles(x - 6, y - 6, w + 12, h + 12, 1);
+    return `<g class="fx" data-f="${esc(it.k)}"${it.a ? ` transform="rotate(${it.a} ${cx} ${cy})"` : ""}>${g}</g>`; }).join("");
 }
 function roomBg(store, items, sel){
   return `<rect width="${VW0}" height="${VH0}" fill="#F4EFE6"/><rect x="22" y="22" width="816" height="576" fill="none" stroke="#2c2725" stroke-width="10"/>` +
     fxSvg(items || roomOf(store), sel) + (ROOMS[store] || items ? "" : _T(430, 140, "Best guess layout. Add showroom photos so we can draw yours.", {s:15, c:"#8a817c"}));
 }
 function showroomOf(store){ return SHOWROOMS[store] || {vb:[VW0, VH0], bg: roomBg(store)}; }
-function hangSvg(store, H, sel, items, fsel){
+function hangSvg(store, H, sel, items, fsel, hand){
   const s = SHOWROOMS[store] && !items ? SHOWROOMS[store] : {vb:[VW0, VH0], bg: roomBg(store, items, fsel)}, [VW, VH] = s.vb, Z = VW / 860;
-  const pins = H.map(([k, n, x, y, sz]) => { const X = x * VW / 100, Y = y * VH / 100, on = k === sel, m = Math.min(2, Math.max(0.6, Number(sz) || 1)), fs = (on ? 28 : 24) * Z * m, w = Math.max(60 * Z * m, n.length * fs * 0.56 + 44 * Z * m), h = fs * 1.9, q = Z * m;
-    return `<g class="zp" data-z="${esc(k)}"${items ? ' opacity=".45"' : ""}><rect x="${X - w / 2}" y="${Y - h / 2}" width="${w}" height="${h}" rx="${6 * q}" fill="${on ? "#C8102E" : "#1F2A5A"}" stroke="#fff" stroke-width="${3 * Z}"/>
+  const pins = H.map(([k, n, x, y, sz, rt]) => { const X = x * VW / 100, Y = y * VH / 100, on = k === sel, m = Math.min(2, Math.max(0.6, Number(sz) || 1)), fs = (on ? 28 : 24) * Z * m, w = Math.max(60 * Z * m, n.length * fs * 0.56 + 44 * Z * m), h = fs * 1.9, q = Z * m;
+    return `<g class="zp" data-z="${esc(k)}"${items ? ' opacity=".45"' : ""}${Number(rt) ? ` transform="rotate(${Number(rt)} ${X} ${Y})"` : ""}><rect x="${X - w / 2}" y="${Y - h / 2}" width="${w}" height="${h}" rx="${6 * q}" fill="${on ? "#C8102E" : "#1F2A5A"}" stroke="#fff" stroke-width="${3 * Z}"/>
       <rect x="${X - w / 2 + 8 * q}" y="${Y - 7 * q}" width="${14 * q}" height="${14 * q}" fill="#fff"/><rect x="${X - w / 2 + 11 * q}" y="${Y - 4 * q}" width="${8 * q}" height="${8 * q}" fill="${on ? "#C8102E" : "#1F2A5A"}"/>
-      <text x="${X + 10 * q}" y="${Y + fs * 0.36}" text-anchor="middle" ${_F} font-size="${fs}" fill="#fff">${esc(n)}</text></g>`; }).join("");
+      <text x="${X + 10 * q}" y="${Y + fs * 0.36}" text-anchor="middle" ${_F} font-size="${fs}" fill="#fff">${esc(n)}</text>${hand && on ? editHandles(X - w / 2, Y - h / 2, w, h, Z) : ""}</g>`; }).join("");
   return `<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${esc(store)} showroom with ${H.length} QR code hangers">${s.bg}${pins}</svg>`;
 }
 async function hangEdit(u, r){
   const box = document.getElementById("locsec");
   box.innerHTML = `<h2>QR code hanger locations</h2><div class="locmeta">Loading...</div>`;
-  let H = [], sel = "", mode = "hang", L = null, fsel = "";
+  let H = [], sel = "", mode = "hang", L = null, fsel = "", snapK = "", snap = null, suppress = false;
   try { const g = await api({action:"hangers", store:u.store}); if (g.ok && Array.isArray(g.hangers)) H = g.hangers;
     if (g.ok && Array.isArray(g.layout) && g.layout.length) ROOMS[u.store] = g.layout; LAYOUT_PENDING[u.store] = !!(g && g.pending); } catch(e){}
   const pb = i => "PB" + String(i).padStart(2, "0"), free = () => { const o = []; for (let i = 1; i <= 20; i++) if (!H.some(a => a[0] === pb(i))) o.push(pb(i)); return o; };
@@ -640,14 +652,49 @@ async function hangEdit(u, r){
     if (H.some(a => a[1].toLowerCase() === n.toLowerCase())) return "There's already a hanger with that name.";
     c = c || free()[0]; if (!c) return "All 20 hanger numbers are used."; H.push([c, n, 50, 55, 1]); sel = c; return c + " " + n + " added in the middle. Tap the spot where it hangs."; };
   const fx = () => L.find(a => a.k === fsel);
+  const curIt = kind => kind === "room" ? (L && fx()) : H.find(a => a[0] === sel);
+  const takeSnap = kind => { const k = (kind === "room" ? "r:" + fsel : "h:" + sel); if (k !== snapK) { snapK = k; const it = curIt(kind); snap = it ? JSON.parse(JSON.stringify(it)) : null; } };
+  const setAng = (kind, it, v) => { v = ((Math.round(v) % 360) + 540) % 360 - 180; if (kind === "room") { if (v) it.a = v; else delete it.a; } else { it[4] = it[4] || 1; if (v) it[5] = v; else it.length = 5; } };
+  const angOf = (kind, it) => kind === "room" ? (it.a || 0) : (Number(it[5]) || 0);
+  const cancelEdit = kind => { const it = curIt(kind); if (it && snap) { if (kind === "room") { Object.keys(it).forEach(k => delete it[k]); Object.assign(it, JSON.parse(JSON.stringify(snap))); } else { it.length = 0; snap.forEach(v => it.push(v)); } }
+    const nm = it ? (kind === "room" ? it.n : it[1]) : ""; if (kind === "room") fsel = ""; else sel = ""; snapK = ""; draw(nm ? "Changes to " + nm + " canceled." : ""); };
+  /* Drag the handles: circle arrow turns the box, corner arrows resize it. Taps on handles are handled in the click handlers. */
+  const attach = (svg, kind) => {
+    const it0 = curIt(kind); svg.style.touchAction = it0 ? "none" : "";
+    if (!it0) return;
+    let drag = null;
+    const P = e => { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
+    const center = it => { if (kind === "room") return [it.x + it.w / 2, it.y + it.h / 2]; const vb = showroomOf(u.store).vb; return [it[2] * vb[0] / 100, it[3] * vb[1] / 100]; };
+    const repaint = () => { const html = kind === "room" ? hangSvg(u.store, H, "", L, fsel) : hangSvg(u.store, H, sel, null, "", true); svg.innerHTML = html.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, ""); };
+    svg.addEventListener("pointerdown", e => { const hd = e.target.closest("[data-h]"), it = curIt(kind); if (!hd || !it || hd.dataset.h === "x") return; e.preventDefault();
+      const p = P(e), c = center(it); drag = {h:hd.dataset.h, c, p0:p, a0:angOf(kind, it), t0:Math.atan2(p.y - c[1], p.x - c[0]), w0:it.w, h0:it.h, m0:Number(it[4]) || 1, d0:Math.hypot(p.x - c[0], p.y - c[1]) || 1, moved:false};
+      try { svg.setPointerCapture(e.pointerId); } catch(err){} });
+    svg.addEventListener("pointermove", e => { if (!drag) return; const it = curIt(kind); if (!it) return; const p = P(e);
+      if (!drag.moved && Math.hypot(p.x - drag.p0.x, p.y - drag.p0.y) < 6) return; drag.moved = true;
+      if (drag.h === "rot") setAng(kind, it, Math.round((drag.a0 + (Math.atan2(p.y - drag.c[1], p.x - drag.c[0]) - drag.t0) * 180 / Math.PI) / 5) * 5);
+      else if (kind === "room") { const t = -drag.a0 * Math.PI / 180, dx = p.x - drag.p0.x, dy = p.y - drag.p0.y, lx = dx * Math.cos(t) - dy * Math.sin(t), ly = dx * Math.sin(t) + dy * Math.cos(t);
+        it.w = Math.round(Math.min(VW0, Math.max(10, drag.w0 + 2 * lx))); it.h = Math.round(Math.min(VH0, Math.max(6, drag.h0 + 2 * ly)));
+        it.x = Math.round(Math.min(VW0 - it.w, Math.max(0, drag.c[0] - it.w / 2))); it.y = Math.round(Math.min(VH0 - it.h, Math.max(0, drag.c[1] - it.h / 2))); }
+      else it[4] = Math.round(Math.min(2, Math.max(0.6, drag.m0 * Math.hypot(p.x - drag.c[0], p.y - drag.c[1]) / drag.d0)) * 100) / 100;
+      repaint(); });
+    const end = () => { if (!drag) return; const d = drag; drag = null; if (!d.moved) return; suppress = true; setTimeout(() => suppress = false, 400);
+      const it = curIt(kind), nm = it ? (kind === "room" ? it.n : it[1]) : "", m = document.getElementById("hmsg");
+      if (m) m.textContent = nm + (d.h === "rot" ? " turned." : " resized.") + (kind === "room" ? " Submit for approval when you're done." : " Tap Save hangers when you're done."); };
+    svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
+  };
+  const handleTap = (e, kind) => { if (suppress) return true; const hd = e.target.closest("[data-h]"); if (!hd) return false; const it = curIt(kind); if (!it) return true;
+    if (hd.dataset.h === "x") cancelEdit(kind);
+    else if (hd.dataset.h === "rot") { setAng(kind, it, angOf(kind, it) + 15); draw((kind === "room" ? it.n : it[1]) + " turned. Drag the circle arrow to turn it any amount."); }
+    else draw("Drag the corner arrows to make it bigger or smaller.");
+    return true; };
   const roomPanel = () => {
     const it = fsel && fx();
-    return `<div class="locmeta"><b>Edit the showroom drawing.</b> Tap a counter, door or display to pick it, then tap a new spot to move it. Use the buttons to resize, rename or delete it. Your changes go to your branch manager and Brandon. The drawing changes for everyone once one of them approves.</div>
+    return `<div class="locmeta"><b>Edit the showroom drawing.</b> Tap a counter, door or display to pick it, then tap a new spot to move it. Drag the corner arrows to resize it, drag or tap the circle arrow to turn it, and tap the red X to cancel your changes to it. The buttons below rename, resize or delete it. Your changes go to your branch manager and Brandon. The drawing changes for everyone once one of them approves.</div>
       ${LAYOUT_PENDING[u.store] ? `<div class="lmsg">A drawing change for ${esc(u.store)} is waiting for approval. Submitting again replaces it.</div>` : ""}
       <div class="locmap mapedit" id="hmap">${hangSvg(u.store, H, "", L, fsel)}</div>
       ${it ? `<div class="fxed"><label for="fxn">Name</label><input id="fxn" maxlength="24" value="${esc(it.n)}">
         <div class="fxb"><button class="ghost" data-z="w+">Wider</button><button class="ghost" data-z="w-">Narrower</button><button class="ghost" data-z="h+">Taller</button><button class="ghost" data-z="h-">Shorter</button>
-        <button class="ghost" data-z="s+">Bigger name</button><button class="ghost" data-z="s-">Smaller name</button><button class="ghost" data-z="rot">Turn name</button><button class="ghost del" data-z="del">Delete</button></div></div>`
+        <button class="ghost" data-z="s+">Bigger name</button><button class="ghost" data-z="s-">Smaller name</button><button class="ghost" data-z="a-">Turn left</button><button class="ghost" data-z="a+">Turn right</button><button class="ghost" data-z="rot">Turn name</button><button class="ghost del" data-z="del">Delete</button></div></div>`
         : `<div class="locmeta">Tap something on the drawing to edit it.</div>`}
       <form id="fxadd" class="addf"><input id="fxaddn" maxlength="24" placeholder="Add a display, like Zero Turn Row" aria-label="New display name"><button class="copy" type="submit">Add</button></form>
       <div class="lrow"><button class="copy" id="fxsub">Submit for approval</button><button class="ghost" id="fxback">Back to hangers</button></div>
@@ -658,10 +705,10 @@ async function hangEdit(u, r){
     if (mode === "room") { box.innerHTML = `<h2>Showroom drawing</h2>` + roomPanel(); wireRoom(msg); return; }
     const left = HANG_SUGGEST.filter(n => !H.some(a => a[1].toLowerCase() === n.toLowerCase()));
     box.innerHTML = `<h2>QR code hanger locations</h2>
-      <div class="locmeta">Pick the hanger number printed in its top right corner (PB01 to PB10) and name the spot, like Front Door. Tap the hanger in the list, then tap the spot on the showroom where it hangs. Use Bigger and Smaller to size its label. Tap Save when you're done.</div>
+      <div class="locmeta">Pick the hanger number printed in its top right corner (PB01 to PB10) and name the spot, like Front Door. Tap the hanger in the list, then tap the spot on the showroom where it hangs. Drag the corner arrows to size its label, drag or tap the circle arrow to turn it, and tap the red X to cancel your changes to it. Tap Save when you're done.</div>
       ${LAYOUT_PENDING[u.store] ? `<div class="locmeta">A showroom drawing change is waiting for approval.</div>` : ""}
-      <div class="locmap mapedit" id="hmap">${hangSvg(u.store, H, sel)}</div>
-      <div class="lablist">${H.length ? H.map(([k, n]) => `<div class="labrow${k === sel ? " on" : ""}"><button class="lab" data-s="${esc(k)}"><b>${esc(k)}</b> ${esc(n)}</button><button class="ghost del" data-d="${esc(k)}">Remove</button></div>${k === sel ? `<div class="fxb"><button class="ghost" data-g="1">Bigger label</button><button class="ghost" data-g="-1">Smaller label</button></div>` : ""}`).join("") : `<div class="locmeta">No hangers on this showroom yet.</div>`}</div>
+      <div class="locmap mapedit" id="hmap">${hangSvg(u.store, H, sel, null, "", true)}</div>
+      <div class="lablist">${H.length ? H.map(([k, n]) => `<div class="labrow${k === sel ? " on" : ""}"><button class="lab" data-s="${esc(k)}"><b>${esc(k)}</b> ${esc(n)}</button><button class="ghost del" data-d="${esc(k)}">Remove</button></div>${k === sel ? `<div class="fxb"><button class="ghost" data-g="1">Bigger label</button><button class="ghost" data-g="-1">Smaller label</button><button class="ghost" data-t="-15">Turn left</button><button class="ghost" data-t="15">Turn right</button></div>` : ""}`).join("") : `<div class="locmeta">No hangers on this showroom yet.</div>`}</div>
       ${left.length ? `<div class="locmeta" style="margin-top:4px">Quick add:</div><div class="hsug">${left.map(n => `<button class="ghost" data-a="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
       <form id="haddf" class="addf"><select id="haddc" aria-label="Hanger number">${free().map(c => `<option>${c}</option>`).join("")}</select><input id="haddn" maxlength="30" placeholder="Spot name, like Battery Endcap" aria-label="New hanger name"><button class="copy" type="submit">Add</button></form>
       <div class="lrow"><button class="copy" id="hsave">Save hangers</button><button class="ghost" id="hcancel">Back</button></div>
@@ -672,7 +719,9 @@ async function hangEdit(u, r){
         <label class="copy copyall galadd">Add showroom photos<input type="file" accept="image/*" capture="environment" multiple hidden id="hfile"></label>
         <div class="lmsg" id="hpmsg"></div></div>`;
     const svg = box.querySelector("#hmap svg");
+    takeSnap("hang"); attach(svg, "hang");
     svg.onclick = e => {
+      if (handleTap(e, "hang")) return;
       const g = e.target.closest(".zp"); if (g) { sel = g.dataset.z; return draw(); }
       if (!sel) return draw(H.length ? "Tap a hanger name first." : "Add a hanger first.");
       const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse());
@@ -681,6 +730,7 @@ async function hangEdit(u, r){
       draw(a[1] + " moved. Tap Save hangers when you're done.");
     };
     box.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { sel = b.dataset.s; draw(); document.getElementById("hmap").scrollIntoView({block:"center", behavior:"smooth"}); });
+    box.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { const a = H.find(x => x[0] === sel); if (!a) return; setAng("hang", a, (Number(a[5]) || 0) + Number(b.dataset.t)); draw(a[1] + " turned. Tap Save hangers when you're done."); });
     box.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { const a = H.find(x => x[0] === sel); if (!a) return; const v = Math.round(Math.min(2, Math.max(0.6, (Number(a[4]) || 1) + 0.15 * Number(b.dataset.g))) * 100) / 100; a[4] = v; draw(a[1] + (Number(b.dataset.g) > 0 ? " is bigger." : " is smaller.") + " Tap Save hangers when you're done."); });
     box.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { H = H.filter(a => a[0] !== b.dataset.d); if (sel === b.dataset.d) sel = ""; draw("Removed. Tap Save hangers to keep the change."); });
     box.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { draw(add(b.dataset.a)); document.getElementById("hmap").scrollIntoView({block:"center", behavior:"smooth"}); });
@@ -715,7 +765,9 @@ async function hangEdit(u, r){
   const wireRoom = (msg) => {
     if (msg) document.getElementById("hmsg").textContent = msg;
     const svg = box.querySelector("#hmap svg");
+    takeSnap("room"); attach(svg, "room");
     svg.onclick = e => {
+      if (handleTap(e, "room")) return;
       const g = e.target.closest(".fx"); if (g && g.dataset.f !== fsel) { fsel = g.dataset.f; return draw(); }
       if (!fsel) return draw("Tap a counter, door or display first.");
       const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse()), it = fx(); if (!it) return;
@@ -726,6 +778,7 @@ async function hangEdit(u, r){
     box.querySelectorAll(".fxb [data-z]").forEach(b => b.onclick = () => { const it = fx(); if (!it) return; const z = b.dataset.z, c = [it.x + it.w / 2, it.y + it.h / 2];
       if (z === "del") { L = L.filter(a => a.k !== fsel); const nm = it.n; fsel = ""; return draw(nm + " deleted."); }
       if (z === "rot") it.r = it.r ? 0 : -90;
+      if (z === "a+" || z === "a-") setAng("room", it, (it.a || 0) + (z === "a+" ? 15 : -15));
       if (z === "s+" || z === "s-") it.s = Math.min(40, Math.max(10, Math.round((it.s || 19) * (z === "s+" ? 1.15 : 0.87))));
       if (z[0] === "w" || z[0] === "h") { const d = z[0], k = z[1] === "+" ? 1.15 : 0.87, max = d === "w" ? VW0 : VH0; it[d] = Math.round(Math.min(max, Math.max(10, it[d] * k)));
         it.x = Math.round(Math.min(VW0 - it.w, Math.max(0, c[0] - it.w / 2))); it.y = Math.round(Math.min(VH0 - it.h, Math.max(0, c[1] - it.h / 2))); }
@@ -744,7 +797,8 @@ async function hangEdit(u, r){
       } catch(e){ m.textContent = "Could not connect. Check your signal and try again."; }
     };
   };
-  const wireRoomSvg = () => { const svg = box.querySelector("#hmap svg"); svg.onclick = e => {
+  const wireRoomSvg = () => { const svg = box.querySelector("#hmap svg"); attach(svg, "room"); svg.onclick = e => {
+      if (handleTap(e, "room")) return;
       const g = e.target.closest(".fx"); if (g && g.dataset.f !== fsel) { fsel = g.dataset.f; return draw(); }
       if (!fsel) return; const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse()), it = fx(); if (!it) return;
       it.x = Math.round(Math.min(VW0 - it.w, Math.max(0, p.x - it.w / 2))); it.y = Math.round(Math.min(VH0 - it.h, Math.max(0, p.y - it.h / 2))); draw(it.n + " moved."); }; };
@@ -1189,13 +1243,17 @@ function lookup(){
 /* Store home page (Nov 14 2026): sparkdigitaltags.github.io/#store/keller . Team signs in once here with the store PIN and the
    last 4 of their cell, then opens any unit. No prices on this page. */
 const STORES = [...new Set(DATA.units.map(u => u.store))];
+/* Days in stock for every Fire Sale unit, from the Fire Sale lists (week of Nov 2 2026). Money Makers sort oldest first. */
+const FIRE_AGE = {"keller-73009-36ca88":840,"keller-76140-85cd69":698,"keller-76141-ecf69d":698,"keller-84536-85a0f1":440,"keller-84537-db848d":440,"keller-107794-e8ca69":347,"keller-107795-7e1d1c":347,"keller-107797-e573d6":347,"keller-171989-dbad1d":218,"keller-171990-c06e3a":218,"keller-171991-cc9d93":218,"keller-171992-838055":218,"keller-60033-0951d7":1317,"keller-60036-99618c":1317,"keller-114051-f94644":247,"keller-180552-13d07b":61,"keller-171876-38bf03":222,"keller-172043-aed338":218,"keller-172044-e6c9a3":218,"keller-116056-07315b":237,"keller-109215-6bf40a":312,"keller-107762-c7459f":348,"keller-109571-b33208":296,"keller-81416-c4e094":551,"burleson-117161-4f6d0a":231,"burleson-111554-b859b7":249,"burleson-111555-ec7cb3":249,"burleson-173519-0c72e7":196,"burleson-173520-3be162":196,"burleson-79329-d8c002":595,"burleson-175627-6a96c3":167,"colleyville-174729-7af5ec":182,"colleyville-174730-2141e6":182,"colleyville-174731-ac1d21":182,"colleyville-180387-71d892":66,"colleyville-107613-fb3bc5":352,"colleyville-172487-42cd93":222,"colleyville-109419-7a62a3":299,"colleyville-109420-5f010e":299,"colleyville-109421-01d00f":299,"colleyville-109422-093322":299,"colleyville-109423-68ce72":299,"colleyville-109424-b63865":299,"colleyville-180540-0c8803":62,"colleyville-109255-94531b":300,"colleyville-171663-ba17c9":223,"colleyville-171768-c5bb25":223,"denton-110911-253b60":255,"denton-110793-e9e70f":257,"denton-110795-465365":257,"denton-180142-f55fc3":71,"denton-69418-abe2d4":952,"denton-180885-0d5cc2":54,"denton-180886-34616b":54,"farmersbranch-180538-a34cbf":62,"farmersbranch-172190-2a0600":217,"lewisville-115204-810e23":624,"lewisville-114711-856b35":378,"lewisville-117101-aee375":232,"lewisville-115243-02f680":644,"lewisville-115245-3f0384":644,"renfro-113306-ce91c4":324,"renfro-113310-b6a7d4":666,"renfro-113311-817caa":666,"renfro-113313-f28aa0":666,"renfro-113314-bd4625":666,"renfro-113320-cff3b5":286,"renfro-180558-dd68fd":61,"tyler-36476-f34285":64,"tyler-32795-dc9684":291,"tyler-30514-ad0764":107,"tyler-30515-2ca75a":107,"tyler-30212-6eb7fa":455,"tyler-30213-6fe35b":455,"weatherford-36475-652be1":64,"weatherford-31713-4950f7":329,"weatherford-19866-055c13":695,"weatherford-31709-fa82ec":329,"weatherford-32119-0d306a":201,"springtown-36523-7315b9":14,"springtown-19878-845dfb":695,"springtown-19879-9520e4":695,"springtown-19882-45e8c3":695,"springtown-31944-00ee06":327,"springtown-30932-9917b4":411,"waco-61726-8d1021":138,"waco-61727-7fc442":138,"waco-61224-806960":174,"waco-61333-bb22a2":167,"colleyville-108180-dd2f12":341,"colleyville-108182-2ce34d":341,"colleyville-108183-71d1a1":341,"colleyville-108185-e469e7":341,"colleyville-108187-62bdde":341,"colleyville-108190-5d54f9":341,"colleyville-108191-aeb0e7":341,"colleyville-108192-79680c":333,"colleyville-108193-28b121":341,"colleyville-108195-bbb7e9":341,"colleyville-108200-e72d78":341,"colleyville-108201-e09f2b":341,"colleyville-108202-013bd0":341,"colleyville-108203-52eda0":341,"colleyville-107600-e537c5":360,"colleyville-107601-0203c6":360,"colleyville-107603-2051b9":360,"colleyville-107604-eaa29d":360,"colleyville-107759-036880":348,"colleyville-107760-3b7365":348,"colleyville-107761-7ef2e2":348,"colleyville-107768-3a03b9":348,"colleyville-107769-f65af5":348,"colleyville-107772-48265d":348,"colleyville-109412-8b76f7":291,"colleyville-107606-2fbea4":352,"colleyville-108011-a29d50":347,"colleyville-84440-cf0232":456,"colleyville-108012-ad32d5":347,"colleyville-108870-816e1c":327,"colleyville-108016-2c1aa9":347,"colleyville-108018-18eafc":347,"colleyville-109614-a060f3":295,"colleyville-109615-cb4ecb":295,"colleyville-109616-01561f":295,"colleyville-109617-84df1a":295,"colleyville-109618-f93d6c":295,"colleyville-109619-c7768a":295,"colleyville-109620-775d18":295,"colleyville-109621-149fc2":295,"colleyville-109623-af1c83":295,"colleyville-109625-1d14fb":287,"lewisville-115299-a1b3d1":630,"lewisville-114719-de6353":889,"lewisville-119629-a88c17":200,"lewisville-172751-566930":208,"lewisville-114726-0d90ae":652,"lewisville-115207-64d9fc":512,"lewisville-115206-a0829f":512,"lewisville-115208-702f3c":1371,"lewisville-115209-67e02a":512,"farmersbranch-109225-fce43e":312,"farmersbranch-109240-afd1ff":312,"farmersbranch-78713-30e0a3":613,"farmersbranch-81799-86ee21":532,"farmersbranch-84904-13ba99":428,"farmersbranch-109622-d8e16c":295,"keller-108186-a9da50":341,"keller-108188-e27ba2":341,"keller-109223-948c99":312,"keller-84402-759ac6":459,"keller-109574-d6f5a6":296,"keller-109575-715d7d":296,"keller-177146-f3e76e":146,"keller-177147-c84fad":146,"keller-107763-171f3d":348,"keller-85738-808177":399,"keller-85740-378fe0":399,"keller-70236-09c08f":933,"keller-75051-548f1e":749,"keller-82353-25ddb6":524,"keller-82356-e420d0":516,"keller-82363-4b64e9":516,"keller-81800-aa7eca":532,"keller-81802-5063ce":532,"keller-84911-874d95":428,"keller-71603-d97d01":894,"keller-81417-de6397":551,"keller-81817-3951b9":532,"burleson-109218-f61f4c":312,"burleson-109562-287a8b":296,"burleson-86040-f8e390":390,"burleson-86042-429147":390,"burleson-109227-bf67db":312,"burleson-109238-927543":312,"burleson-109570-fed3fc":296,"burleson-109611-4107b2":287,"burleson-73862-f28cff":798,"burleson-173145-f391e7":200,"burleson-172511-5e2527":214,"burleson-86007-142569":391,"burleson-86008-50d3ff":391,"burleson-81803-dc2c7e":532,"burleson-84912-bc0caa":428,"burleson-84914-828864":428,"burleson-84851-3e75f9":433,"burleson-84853-e6252c":433,"denton-109212-96272a":312,"denton-109216-7f11d8":312,"denton-109219-532b06":312,"denton-109561-c20e94":296,"denton-84398-1091ad":459,"denton-109222-3721af":312,"denton-109224-28061d":312,"denton-109563-6aafaa":296,"denton-109564-fd822b":296,"denton-109228-d53c62":312,"denton-174289-c36ec6":186,"denton-109569-458ce3":296,"denton-109572-71447f":296,"denton-77236-95ecb9":637,"denton-73860-b9210b":798,"denton-22041-292864":1745,"denton-73859-3f15c8":798,"denton-177140-e608c2":146,"denton-73687-79470d":806,"denton-76388-72d3e4":687,"denton-77126-8230bd":637,"denton-82350-343e6a":516,"denton-84215-1e65bd":470,"denton-84222-89314f":470,"denton-82352-e3d6f1":524,"denton-82357-0d152d":524,"denton-82359-0b2b53":524,"denton-82361-5431cb":524,"denton-82365-fa4584":524,"denton-82367-025a2b":524,"denton-82368-6fd2b8":524,"denton-82890-16038f":509,"denton-85660-bcd8dd":401,"denton-85661-3c5b1c":401,"denton-106796-09b1e6":364,"denton-106797-d373b5":364,"denton-84913-26fcf4":428,"denton-85662-6c16e2":401,"denton-85663-5d0e07":401,"denton-85665-a8c788":401,"denton-85666-07d95e":401,"denton-85668-38ac27":401,"denton-106799-50512f":364,"denton-85732-29a331":400,"renfro-113333-af29d7":666,"renfro-113337-97919b":540,"renfro-113340-1c6158":324,"renfro-180182-0104ad":70,"renfro-179769-6b1df3":84,"renfro-113363-65a5a9":457,"renfro-113358-c005d4":902,"renfro-113359-c7d933":902,"renfro-114163-657259":964,"renfro-114166-53626f":1632,"renfro-114167-67ca22":1632,"tyler-30206-551009":455,"tyler-35829-a1d4d7":307,"tyler-31421-02182f":357,"tyler-31422-6095bb":357,"tyler-31423-b73f52":357,"tyler-31424-82cc31":357,"tyler-31426-00f4c4":357,"tyler-31431-6fa5e7":357,"tyler-31433-280dcf":357,"tyler-31434-bd04da":357,"tyler-31435-a2c87b":357,"tyler-31436-ea711a":357,"tyler-31437-5eaa46":357,"tyler-31440-047151":357,"tyler-31442-ef03d5":357,"tyler-31509-f230b4":352,"tyler-31510-a2d28d":352,"tyler-31515-c2e34c":352,"tyler-31516-52225b":352,"tyler-31518-500562":352,"tyler-30605-a3aa74":432,"tyler-34762-8b7df1":180,"tyler-32182-082a40":329,"tyler-32183-60762e":329,"tyler-32186-efb19c":329,"tyler-32187-2d6f2d":329,"tyler-32688-bf6224":309,"weatherford-36748-cc6408":19,"weatherford-30542-27cd6f":436,"weatherford-35828-faa671":6,"weatherford-31243-03fc35":372,"weatherford-32759-3128f6":301,"weatherford-31237-dd49dd":380,"weatherford-31456-6ff9d7":356,"weatherford-31470-e75189":356,"weatherford-31472-7323b9":356,"weatherford-31473-bb8aff":356,"weatherford-31474-717e8e":356,"weatherford-33613-1a85b4":242,"weatherford-31481-bd172d":356,"weatherford-31483-52f83b":356,"weatherford-31484-fb80bb":356,"weatherford-31485-e6e9d2":356,"weatherford-31489-62fee2":356,"weatherford-31374-8b7473":354,"weatherford-30997-bece13":224,"weatherford-31151-b20772":9,"weatherford-30929-568c07":1,"weatherford-31832-75b5ff":336,"weatherford-32889-44146c":289,"weatherford-32890-b668a7":289,"weatherford-32767-e552a8":301,"weatherford-32768-1e5426":301,"weatherford-22245-8769a1":447,"weatherford-20412-ba7004":587,"weatherford-36259-bbb3cd":88,"weatherford-35562-254065":133,"springtown-31217-63a999":120,"springtown-31502-ac07c2":352,"springtown-31503-695914":352,"springtown-31391-57c32d":358,"springtown-31392-075529":358,"springtown-31007-a14a4e":175,"springtown-36688-011b3a":29,"springtown-36738-0beb1d":21,"springtown-36687-e4e3b6":29,"springtown-31812-99f604":61,"springtown-32185-fb3d66":6,"springtown-20414-7ce35e":653,"gatesville-31218-5812a3":112,"gatesville-31006-d38a19":406,"gatesville-30988-aa71a1":406,"gatesville-30989-6a4406":406,"gatesville-31786-6abe4f":303,"gatesville-31825-049266":225,"waco-59109-dc764b":270,"waco-60791-0c03e4":194,"waco-53075-e91a70":568,"waco-57044-36e74b":467,"waco-58010-9f04ef":412,"waco-60349-53cd56":224,"waco-60428-c073cb":221,"waco-61742-664c49":127,"waco-55939-881ec3":524,"waco-61571-d8bb1a":139,"waco-57609-c5c8b9":440,"waco-57611-7c5dcc":440,"waco-57612-f6b3cf":440,"waco-57615-234bce":440,"waco-57617-7622b0":440,"waco-57983-0478f6":413,"waco-58056-29686d":406,"waco-58057-b46ce1":406,"waco-58058-89234e":406,"waco-58078-b4995a":406,"waco-58262-e96950":399,"waco-58271-8bab76":397,"waco-58272-7e1c7b":397,"waco-58273-524438":397,"waco-58274-c76cb5":397,"waco-58275-b2d0c6":397,"waco-58276-1fee06":397,"waco-58277-ee5771":397,"waco-58278-945e11":397,"waco-58279-616081":397,"waco-58280-65899e":397,"waco-58281-81aff1":397,"waco-58282-f15dca":397,"waco-58283-40b2e8":397,"waco-58306-8eac2b":394,"waco-58308-95cfaf":394,"waco-58309-21e2ab":394,"waco-58338-42a8c2":392,"waco-58339-22d5a7":392,"waco-58340-24c855":392,"waco-58341-97c8e4":392,"waco-58342-9e8d63":392,"waco-58345-52f8b8":392,"waco-58346-29d869":392,"waco-58347-5c43ca":384,"waco-58608-276d41":357,"waco-58609-1901d1":357,"waco-58610-23b72d":357,"waco-58611-f40de6":357,"waco-58612-bff102":357,"waco-58613-392e3b":357,"waco-58614-5b1434":357,"waco-62835-e96190":44,"waco-62836-972121":44,"waco-62956-b98e87":26,"waco-62957-bb5f41":26,"waco-62958-1f972a":26,"waco-57009-08ec5d":468,"waco-61748-89c94d":126,"waco-58012-279dbd":412,"waco-58960-2727e3":291,"waco-58962-4fd708":299,"waco-58672-7cff78":352,"waco-61020-6b2a54":179,"waco-56142-173e93":520,"waco-55958-bd0238":524,"waco-59886-2d6221":242,"waco-55655-ab5ce9":537,"waco-58892-df03eb":295,"waco-58893-412574":295,"waco-58930-d4e63b":294,"colleyville-107605-7feb34":352,"keller-172695-04b014":209,"keller-76138-909357":698,"keller-177883-3b5508":142,"keller-177882-b1bada":142,"keller-177881-b6cff9":142,"keller-177884-dc3cec":142,"keller-78308-381974":620,"keller-109538-cfad88":288,"keller-81833-0d9b36":524,"keller-72708-7435c9":860,"keller-81626-ce551a":531,"keller-73839-d344a8":799,"keller-108098-9f27b8":345,"keller-84668-5ae862":441,"renfro-112610-126f8f":476,"renfro-112609-753a02":476,"renfro-112612-ad34f9":569,"renfro-112611-b0c20c":569,"renfro-112613-5198fe":569,"renfro-112614-6267a9":569,"renfro-112813-d84528":239,"renfro-113303-f67d8f":324,"renfro-113327-fe6d61":536,"renfro-176516-56195a":154,"renfro-113345-4bfb4a":239,"renfro-113353-979912":383,"renfro-113348-3670ed":540,"renfro-179025-32f22f":113,"renfro-113364-e888ec":324,"renfro-114162-204844":1413,"farmersbranch-106827-a12fdd":355,"farmersbranch-177075-42d6cd":154,"farmersbranch-64138-a4d2a3":309,"denton-106829-643f20":355,"denton-77094-6a11b1":638,"denton-77095-6c79d0":638,"denton-106460-ad1b3a":377,"denton-109555-a085ed":288,"denton-109542-4e5354":288,"denton-109534-866239":288,"denton-109526-232a3a":288,"denton-109546-f9f14b":288,"denton-109543-9aefcc":288,"denton-109531-ab7b63":288,"denton-107752-1825a1":348,"denton-107624-487a88":360,"denton-83258-07b099":499,"burleson-116352-499795":236,"burleson-175254-6ad230":175,"burleson-109263-afacfd":300,"burleson-76353-d9d7e8":691,"colleyville-106465-87d337":377,"colleyville-109545-272726":288,"colleyville-109536-424bc2":288,"colleyville-109528-547ba5":288,"colleyville-109554-c111ab":288,"lewisville-107616-ec700c":360,"lewisville-115229-9933af":967,"lewisville-115322-72c8ba":337,"lewisville-115321-5304c7":337,"lewisville-115295-f73492":337};
+const TX_STORES = ["Burleson", "Colleyville", "Denton", "Farmers Branch", "Gatesville", "Keller", "Lewisville", "Renfro", "Springtown", "Tyler", "Waco", "Weatherford"];
+const TX_DBA = {"LSM Outdoor Power":"LSM", "ATS Outdoors":"ATS", "Landscape Supply":"LNDS"};
 const slug = st => String(st).toLowerCase().replace(/[^a-z0-9]+/g, "");
 function storeHome(st){
   document.title = "Spark Digital Tags | " + st;
   const units = DATA.units.filter(u => u.store === st);
   const dba = (units[0] && units[0].dba) || "LSM Outdoor Power";
   const signed = !!(getCode() && (isAll() || getPin(st)));
-  const li = u => `<li><a href="#${esc(u.id)}">${esc(u.brand + " " + u.name)}</a><small> Unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}</small></li>`;
+  const li = u => `<li><a href="#${esc(u.id)}">${esc(u.brand + " " + u.name)}</a><small> Unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}${u.store !== st ? ", at " + esc(u.store) : ""}${u.fire && FIRE_AGE[u.id] ? ", " + FIRE_AGE[u.id] + " days" : ""}</small></li>`;
   const top = (TOP3[st] || []).filter(i => byId[i]).slice(0, 3).map(i => byId[i]);
   const fire = units.filter(u => u.fire);
   app.innerHTML = `<article class="card"><div class="sect">
@@ -1216,17 +1274,39 @@ function storeHome(st){
     return;
   }
   box.innerHTML = `<p class="lmsg">You are signed in. Open any unit below, or scan the Spark code on any tag.</p>
-    ${top.length ? `<div class="top3"><div class="t3h">Money Makers</div><div class="t3s">Oldest Fire Sale units first. Post one and the next oldest moves up.</div><ol>${top.map(li).join("")}</ol></div>` : ""}
-    <h2>Find a unit</h2><input id="sq" type="search" placeholder="Brand, model, unit number or last 4 of SN" aria-label="Find a unit" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;font-size:16px">
-    <label class="copy copyall" style="display:block;text-align:center;margin-top:8px;cursor:pointer">Scan serial number<input type="file" accept="image/*" capture="environment" id="sscan" hidden></label>
+    ${top.length || TX_STORES.includes(st) ? `<div class="top3"><div class="t3h">Money Makers</div>
+      ${top.length ? `<div class="t3s">Post these next. Oldest Fire Sale units at ${esc(st)} first. Post one and the next oldest moves up.</div><ol>${top.map(li).join("")}</ol>` : ""}
+      ${TX_STORES.includes(st) ? `<div class="t3s" style="margin-top:10px"><b>Every Fire Sale unit in Texas</b> at LSM, ATS and Landscape Supply, oldest first.</div>
+        <select id="mmf" aria-label="Which Fire Sale units" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:10px;font-size:16px;margin:6px 0;background:#fff;color:#1d1d1f">
+          <option value="">All Texas</option><option value="=${esc(st)}">${esc(st)} only</option><option value="LSM">LSM stores</option><option value="ATS">ATS stores</option><option value="LNDS">Landscape Supply</option>
+          ${TX_STORES.filter(x => x !== st).map(x => `<option value="=${esc(x)}">${esc(x)}</option>`).join("")}</select>
+        <ol id="mml" class="slist"></ol><button class="ghost" id="mmmore" style="width:100%" hidden>Show more</button>` : ""}</div>` : ""}
+    <h2>Find a unit</h2><input id="sq" type="search" placeholder="Last 4 of SN, unit number, brand or model" aria-label="Find a unit" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;font-size:16px">
+    <p class="fine" style="margin:4px 0 0">Searches every Spark store on the digital tags. Your store comes first.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <label class="copy copyall" style="display:block;text-align:center;cursor:pointer;margin:0">Take serial photo<input type="file" accept="image/*" capture="environment" id="sscan" hidden></label>
+      <label class="copy copyall" style="display:block;text-align:center;cursor:pointer;margin:0">Upload serial photo<input type="file" accept="image/*" id="sscan2" hidden></label></div>
     <div class="lmsg" id="sscanmsg"></div><ol id="sscanres" class="slist" hidden></ol>
     <ol id="slist" class="slist">${(fire.length ? fire : units).map(li).join("")}</ol>
-    <p class="fine" id="snote">${fire.length ? "Showing Fire Sale units. Type to search every unit in the store." : ""}</p>
+    <p class="fine" id="snote">${fire.length ? "Showing Fire Sale units. Type to search every unit." : ""}</p>
     <button class="copy" id="sout">Sign out</button>`;
   const q = document.getElementById("sq"), L = document.getElementById("slist");
-  q.oninput = () => { const t = q.value.trim().toLowerCase(); const hit = !t ? (fire.length ? fire : units) : units.filter(u => [u.brand, u.name, u.model, u.unit, u.serial].join(" ").toLowerCase().includes(t)); L.innerHTML = hit.slice(0, 60).map(li).join("") || "<li>No match in this store.</li>"; document.getElementById("snote").textContent = t ? hit.length + " found" : (fire.length ? "Showing Fire Sale units. Type to search every unit in the store." : ""); };
+  q.oninput = () => { const t = q.value.trim().toLowerCase(), tn = t.replace(/[^a-z0-9]/g, "");
+    if (!t) { L.innerHTML = (fire.length ? fire : units).map(li).join(""); document.getElementById("snote").textContent = fire.length ? "Showing Fire Sale units. Type to search every unit." : ""; return; }
+    const sn = u => String(u.serial || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const score = u => (tn.length >= 3 && sn(u).endsWith(tn) ? 0 : String(u.unit) === t ? 1 : 2) * 2 + (u.store === st ? 0 : 1);
+    const hit = DATA.units.filter(u => (tn.length >= 3 && sn(u).endsWith(tn)) || [u.brand, u.name, u.model, u.unit, u.serial, u.store].join(" ").toLowerCase().includes(t)).sort((a, b) => score(a) - score(b));
+    const exact = tn.length >= 4 ? hit.filter(u => sn(u).endsWith(tn)) : [];
+    L.innerHTML = hit.slice(0, 60).map(li).join("") || "<li>No unit matches. Check the last 4 of the serial, or try a photo of the serial plate.</li>";
+    document.getElementById("snote").textContent = exact.length === 1 ? "Serial match. Tap it to open the digital tag." : hit.length + " found" + (hit.some(u => u.store !== st) ? ", including other stores" : ""); };
   document.getElementById("sout").onclick = () => { signOut(st); storeHome(st); };
-  document.getElementById("sscan").onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) serialScan(f, st); };
+  ["sscan", "sscan2"].forEach(id => document.getElementById(id).onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) serialScan(f, st); });
+  const mmf = document.getElementById("mmf");
+  if (mmf) { let shown = 25; const txFire = DATA.units.filter(u => u.fire && TX_STORES.includes(u.store)).sort((a, b) => (FIRE_AGE[b.id] || 0) - (FIRE_AGE[a.id] || 0));
+    const paint = () => { const v = mmf.value, list = txFire.filter(u => !v || (v[0] === "=" ? u.store === v.slice(1) : TX_DBA[u.dba] === v));
+      document.getElementById("mml").innerHTML = list.slice(0, shown).map(li).join("") || "<li>No Fire Sale units here.</li>";
+      const b = document.getElementById("mmmore"); b.hidden = list.length <= shown; b.textContent = `Show more (${list.length - shown} more)`; };
+    mmf.onchange = () => { shown = 25; paint(); }; document.getElementById("mmmore").onclick = () => { shown += 50; paint(); }; paint(); }
 }
 /* Scan serial number (Nov 14 2026). Team takes a photo of the serial plate. The phone reads the barcode if there is one,
    then reads the printed text, and we match it to a unit's serial (or model). Everything runs on the phone; the photo is
@@ -1264,7 +1344,8 @@ async function serialScan(file, st){
     track("serialscan", {store:st, pin:getPin(st)||"", code:getCode(), d: found.m.length ? found.how : "none"});
     if (!found.m.length) { msg.textContent = "No unit matched that photo. Get close, fill the screen with the serial plate and try again, or type the last 4 of the serial above."; return; }
     const mine = found.m.filter(u => u.store === st);
-    if (found.how === "serial" && mine.length === 1) { msg.textContent = "Found it. Opening the digital tag..."; location.hash = mine[0].id; return; }
+    const one = mine.length === 1 ? mine[0] : found.m.length === 1 ? found.m[0] : null;
+    if (found.how === "serial" && one) { msg.textContent = "Found it" + (one.store !== st ? " at " + one.store : "") + ". Opening the digital tag..."; location.hash = one.id; return; }
     msg.textContent = (found.how === "serial" ? "Serial match" : "No serial match. These units have the same model") + ":";
     res.innerHTML = found.m.slice(0, 20).map(u => `<li><a href="#${esc(u.id)}">${esc(u.brand + " " + u.name)}</a><small> Unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}${u.store !== st ? ", at " + esc(u.store) : ""}</small></li>`).join("");
     res.hidden = false;
