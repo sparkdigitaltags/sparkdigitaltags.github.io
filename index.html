@@ -269,7 +269,7 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .clip:nth-child(odd){background:#9BE04B}
 @keyframes clipfly{from{transform:translate(0,0) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
 .mwunit{bottom:2px !important;filter:none !important;isolation:auto}.mower.mwunit{background:transparent}.mwsprite{position:relative;display:block;width:104px;height:70px;animation:mwbob .45s ease-in-out infinite alternate}.mower.go .mwsprite{animation-duration:.12s}
-.mwsprite>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply;pointer-events:none}
+.mwsprite>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 3px 2px rgba(0,0,0,.35))}
 .mwshadow{position:absolute;left:12%;right:12%;bottom:2px;height:8px;border-radius:50%;background:rgba(0,0,0,.35);filter:blur(2px)}
 .mwav{position:absolute;left:34%;top:-12px;width:26px;height:26px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2.5px #F5B400,0 2px 4px rgba(0,0,0,.4);background:#1F2A5A;color:#fff;font-weight:800;font-size:14px;display:grid;place-items:center}
 .mwav img{width:100%;height:100%;object-fit:cover}
@@ -1860,6 +1860,22 @@ function avatarMaker(after){
 function refreshClimb(){ const c = document.getElementById("tlclimb"); if (!c || !SHERPA) return; const host = c.parentElement; c.outerHTML = climbCard(SHERPA); wireClimb(host); }
 
 /* ---- Mow to reveal: grass covers each stone; touch the mower and swipe right to cut ---- */
+/* Cut the white studio background out of a unit photo so the mini unit sits right on the grass (flood fill from the edges). */
+const CUT = {}, CUT_DONE = {};
+function cutout(src){
+  if (CUT[src]) return CUT[src];
+  return CUT[src] = new Promise(res => { const im = new Image(); im.onload = () => { try {
+    const W = 220, H = Math.max(1, Math.round(im.height * W / im.width)), c = document.createElement("canvas"); c.width = W; c.height = H; const x = c.getContext("2d"); x.drawImage(im, 0, 0, W, H);
+    const d = x.getImageData(0, 0, W, H), p = d.data, seen = new Uint8Array(W * H), q = [];
+    const bg = i => { const r = p[i * 4], g = p[i * 4 + 1], b = p[i * 4 + 2]; return Math.min(r, g, b) > 222 && Math.max(r, g, b) - Math.min(r, g, b) < 26; };
+    for (let X = 0; X < W; X++) { q.push(X, (H - 1) * W + X); } for (let Y = 0; Y < H; Y++) { q.push(Y * W, Y * W + W - 1); }
+    while (q.length) { const i = q.pop(); if (seen[i] || !bg(i)) continue; seen[i] = 1; p[i * 4 + 3] = 0; const X = i % W, Y = (i / W) | 0;
+      if (X > 0) q.push(i - 1); if (X < W - 1) q.push(i + 1); if (Y > 0) q.push(i - W); if (Y < H - 1) q.push(i + W); }
+    for (let i = 0; i < W * H; i++) if (!seen[i]) { const X = i % W, Y = (i / W) | 0; let n = 0;   // soften the edge
+      if (X > 0 && seen[i - 1]) n++; if (X < W - 1 && seen[i + 1]) n++; if (Y > 0 && seen[i - W]) n++; if (Y < H - 1 && seen[i + W]) n++;
+      if (n) { const l = Math.min(p[i * 4], p[i * 4 + 1], p[i * 4 + 2]); if (l > 190) p[i * 4 + 3] = Math.round(255 * (1 - (l - 190) / 65) * (1 - n * 0.15)); } }
+    x.putImageData(d, 0, 0); res(CUT_DONE[src] = c.toDataURL("image/png")); } catch(e){ res(src); } }; im.onerror = () => res(src); im.src = src; });
+}
 function grassSvg(w, h, seed){   // layered blades with light tips, soft shading and sway, Fortnite style
   let r = seed || 7; const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
   const k = "gr" + Math.random().toString(36).slice(2, 7); let back = "", front = "", tufts = "";
@@ -1881,8 +1897,9 @@ function mowStones(box, u, S){
   box.innerHTML = `<h2>${esc(sc.stones)}</h2><div class="locmeta">Touch the mower and swipe right to cut the grass. Walk the tag top to bottom.${!FLAGS.mow && isAdm() ? " <b>Testing: only you see this, on this example tag.</b>" : ""}</div>
     <ol class="stones mowl">${S.map(([k, say, why], i) => `<li class="mowrow"><div class="mowc"><b>${esc(k)}</b><span>${esc(say)}</span><small>${esc(why)}</small></div>
       <div class="grass" aria-hidden="true"></div><button type="button" class="mower${u.photo ? " mwunit" : ""}" aria-label="Swipe right to mow and reveal stone ${i + 1}">${u.photo
-        ? `<span class="mwsprite"><span class="mwshadow"></span><img src="${u.photo}" alt="" draggable="false"><span class="mwav">${url ? `<img src="${url}" alt="">` : esc((first || "?")[0].toUpperCase())}</span></span>`
+        ? `<span class="mwsprite"><span class="mwshadow"></span><img src="${CUT_DONE[u.photo] || "data:image/gif;base64,R0lGODlhAQABAAAAACw="}" alt="" draggable="false"><span class="mwav">${url ? `<img src="${url}" alt="">` : esc((first || "?")[0].toUpperCase())}</span></span>`
         : `<svg viewBox="-56 -76 106 104" width="84" height="82">${mowerSvg(0, 0, 0.92, url, first, "m" + i)}</svg>`}</button></li>`).join("")}</ol>`;
+  if (u.photo) cutout(u.photo).then(src => box.querySelectorAll(".mwsprite>img").forEach(im => { im.src = src; im.style.mixBlendMode = "normal"; }));
   box.querySelectorAll(".mowrow").forEach((li, n) => {
     const g = li.querySelector(".grass"), m = li.querySelector(".mower"); let x = 0, x0 = 0, p0 = 0, on = false, lastBits = 0;
     g.innerHTML = grassSvg(Math.max(200, li.clientWidth), Math.max(70, li.clientHeight), 11 + n * 17);
