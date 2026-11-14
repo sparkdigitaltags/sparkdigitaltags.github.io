@@ -1327,7 +1327,7 @@ function adminHome(){
     <div class="admnums big"><span><b>${units.length}</b> units</span><span><b>${units.filter(u => u.fire).length}</b> Fire Sale</span><span><b>${new Set(units.map(u => u.store)).size}</b> locations</span><span><b>${new Set(units.map(u => u.m)).size}</b> manufacturers</span></div>
     <h2>Locations</h2><div class="admgrid">${cards || `<p class="admmut">No locations match.</p>`}</div>
     <h2>Units ${units.length > 150 ? `<small class="admmut">(first 150 of ${units.length}, narrow the filters)</small>` : ""}</h2><ul class="admlist">${list || `<li class="admmut">No units match.</li>`}</ul>
-    <p class="admmut" style="margin:18px 0">Add this page to your home screen for the Spark Admin app. Signed in as ${esc(getCode() ? "all store access" : "")}. <a href="#" id="admout">Sign out</a></p></div>`;
+    <p class="admmut" style="margin:18px 0;color:#bbb">Add this page to your home screen for the Spark Admin app. Signed in with all store access. <a href="#" id="admout">Sign out</a></p></div>`;
   app.querySelectorAll("select[data-k]").forEach(el => el.onchange = () => { ADM[el.dataset.k] = el.value; if (el.dataset.k === "dba" || el.dataset.k === "state") ADM.loc = ""; adminHome(); });
   const qi = document.getElementById("admq"); let t; qi.oninput = () => { clearTimeout(t); t = setTimeout(() => { ADM.q = qi.value; adminHome(); const n = document.getElementById("admq"); n.focus(); n.setSelectionRange(n.value.length, n.value.length); }, 300); };
   const x = document.getElementById("admx"); if (x) x.onclick = () => { ADM = {q:"", dba:"", state:"", loc:"", mfg:"", fire:""}; adminHome(); };
@@ -1335,12 +1335,12 @@ function adminHome(){
 }
 const ADMIN_CSS = `<style>.adm{max-width:1000px;margin:0 auto;padding:14px;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f}
 .admh{display:flex;gap:12px;align-items:center;background:#121212;color:#fff;margin:-14px -14px 14px;padding:14px;border-bottom:4px solid #F5B400}.admh img{width:44px;height:44px;border-radius:10px}.admh b{display:block;font-size:20px}.admh small{color:#bbb}
-.adm h2{font-size:17px;margin:18px 0 8px}.admmut{color:#666;font-size:13px}.admlinks{margin-bottom:10px}.admlinks a{color:#C8102E;font-weight:700;text-decoration:none}
-.adm input,.adm select,.adm button{font:inherit;font-size:16px}.adm input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ccc;border-radius:10px;margin:0 0 10px}
-.admf{display:flex;flex-wrap:wrap;gap:8px}.admf select{padding:9px;border:1px solid #ccc;border-radius:10px;background:#fff;max-width:100%}.admclear{background:#fff;border:1px solid #ccc;border-radius:10px;padding:9px 14px}
+.adm h2{font-size:17px;margin:18px 0 8px;color:#fff}.adm h2 small{color:#bbb}.admmut{color:#666;font-size:13px}.admlinks{margin-bottom:10px}.admlinks a{color:#C8102E;font-weight:700;text-decoration:none}
+.adm input,.adm select,.adm button{font:inherit;font-size:16px}.adm input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ccc;border-radius:10px;margin:0 0 10px;background:#fff;color:#1d1d1f}
+.admf{display:flex;flex-wrap:wrap;gap:8px}.admf select{padding:9px;border:1px solid #ccc;border-radius:10px;background:#fff;color:#1d1d1f;max-width:100%}.admf select option{color:#1d1d1f}.admclear{color:#1d1d1f;background:#fff;border:1px solid #ccc;border-radius:10px;padding:9px 14px}
 .adm form button{width:100%;background:#C8102E;color:#fff;border:0;border-radius:10px;padding:12px;font-weight:700}
-.admnums{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}.admnums.big{margin:14px 0 4px;background:#fff;border-radius:12px;padding:10px 14px}.admnums.big b{font-size:22px}
-.admgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}.admcard{background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.admnums{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}.admnums.big{color:#1d1d1f;margin:14px 0 4px;background:#fff;border-radius:12px;padding:10px 14px}.admnums.big b{font-size:22px}
+.admgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}.admcard{color:#1d1d1f;background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
 .admrow{display:flex;justify-content:space-between}.admbtn{display:block;margin-top:10px;text-align:center;background:#121212;color:#fff;border-radius:10px;padding:8px;text-decoration:none;font-weight:700;font-size:14px}
 .admlist{list-style:none;padding:0;margin:0;background:#fff;border-radius:12px}.admlist li{padding:10px 14px;border-bottom:1px solid #eee}.admlist a{color:#1d1d1f;font-weight:600;text-decoration:none;display:block}.admlist small{color:#666}
 .admfire{background:#C8102E;color:#fff;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px}</style>`;
