@@ -1691,7 +1691,8 @@ async function sherpaTag(){
    phones (admin codes), and tag features show only on their example tag. */
 let FLAGS = (() => { try { return JSON.parse(ls.get("sparkflags") || "{}") || {}; } catch(e){ return {}; } })();
 const LAB_EX = {flames:["farmersbranch-109225-fce43e"], mow:["farmersbranch-109225-fce43e"], stone3:["farmersbranch-109122-4ef97e","farmersbranch-109225-fce43e"]};
-function feat(k, u){ if (FLAGS[k] === true) return true; if (!isAdm()) return false; const ex = LAB_EX[k]; return ex ? !!(u && ex.includes(u.id)) : true; }
+const ADMIN_ONLY = ["flames", "mow", "scene"];   // Brandon Nov 14 2026: nobody else sees the flames, the mower stones or the mower scenes, even if a flag is set
+function feat(k, u){ if (ADMIN_ONLY.includes(k) && !isAdm()) return false; if (FLAGS[k] === true) return true; if (!isAdm()) return false; const ex = LAB_EX[k]; return ex ? !!(u && ex.includes(u.id)) : true; }
 const tourMode = () => isAdm() && ls.get("sparktourmode") === "1";
 function setFlags(f){ if (!f) return; const a = JSON.stringify(FLAGS); FLAGS = f; ls.set("sparkflags", JSON.stringify(f)); if (a !== JSON.stringify(f)) { const u = byId[decodeURIComponent(location.hash.slice(1))]; if (u) labTag(u); } }
 
@@ -1948,7 +1949,7 @@ async function labPage(){
     <div class="labrow"><div><b>Tour mode on this phone</b><small>See the tags as a brand new team member. Practice doesn't count toward your real progress.</small></div><button type="button" class="${tourMode() ? "copy" : "ghost"}" id="labtm">${tourMode() ? "On" : "Off"}</button></div>
     <h2 style="margin-top:18px">Tests not live yet</h2>
     ${LAB_TESTS.map(([k, n, d, ex]) => `<div class="labrow"><div><b>${esc(k === "scene" ? n + ": " + SCENES[sceneV()].title : k === "mow" ? n + " (" + SCENES[sceneV()].stones + ")" : n)}</b> <span class="labst ${FLAGS[k] ? "live" : ""}">${FLAGS[k] ? "Live" : "Offline"}</span><small>${esc(d)}</small>${ex ? `<a href="${ex}">Try it on the example tag ›</a>` : k === "isrtour" ? `<a href="#" data-hunt="1">Start the hunt ›</a>` : k === "avatar" ? `<a href="#" data-av="1">Make my avatar ›</a>` : ""}</div>
-      <button type="button" class="${FLAGS[k] ? "ghost" : "copy"}" data-flag="${k}" data-val="${FLAGS[k] ? 0 : 1}">${FLAGS[k] ? "Take offline" : "Make live"}</button></div>`).join("")}
+      ${ADMIN_ONLY.includes(k) ? `<span class="labst">Only you</span>` : `<button type="button" class="${FLAGS[k] ? "ghost" : "copy"}" data-flag="${k}" data-val="${FLAGS[k] ? 0 : 1}">${FLAGS[k] ? "Take offline" : "Make live"}</button>`}</div>`).join("")}
     <h2 style="margin-top:18px">Pick the progress scene</h2><p class="fine" style="margin-top:0">Your avatar is the star. Shown here at 2 of 5 done.</p>
     <div class="labscenes">${Object.entries(SCENES).map(([v, sc]) => `<button type="button" class="labscene ${sceneV() === v ? "on" : ""}" data-scene="${v}">${sceneSvg(v, 2, demo, "l" + v)}<b>${esc(sc.title)}</b><small>${esc(sc.sub)}. Stepping Stones become ${esc(sc.stones)}.</small>${sceneV() === v ? "<em>Selected</em>" : ""}</button>`).join("")}</div>
     <div class="lmsg" id="labmsg"></div></div></article>`;
