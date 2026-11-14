@@ -1069,7 +1069,7 @@ function lookup(){
 /* Store home page (Nov 14 2026): sparkdigitaltags.github.io/#store/keller . Team signs in once here with the store PIN and the
    last 4 of their cell, then opens any unit. No prices on this page. */
 const STORES = [...new Set(DATA.units.map(u => u.store))];
-const slug = st => st.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+const slug = st => String(st).toLowerCase().replace(/[^a-z0-9]+/g, "");
 function storeHome(st){
   document.title = "Spark Digital Tags | " + st;
   const units = DATA.units.filter(u => u.store === st);
