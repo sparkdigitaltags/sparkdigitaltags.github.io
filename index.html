@@ -268,7 +268,7 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .clip{position:absolute;width:5px;height:3px;border-radius:2px;background:#5DB82A;z-index:3;pointer-events:none;animation:clipfly .65s ease-out forwards}
 .clip:nth-child(odd){background:#9BE04B}
 @keyframes clipfly{from{transform:translate(0,0) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
-.mwunit{bottom:2px !important}.mwsprite{position:relative;display:block;width:104px;height:70px;animation:mwbob .45s ease-in-out infinite alternate}.mower.go .mwsprite{animation-duration:.12s}
+.mwunit{bottom:2px !important;filter:none !important;isolation:auto}.mower.mwunit{background:transparent}.mwsprite{position:relative;display:block;width:104px;height:70px;animation:mwbob .45s ease-in-out infinite alternate}.mower.go .mwsprite{animation-duration:.12s}
 .mwsprite>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply;pointer-events:none}
 .mwshadow{position:absolute;left:12%;right:12%;bottom:2px;height:8px;border-radius:50%;background:rgba(0,0,0,.35);filter:blur(2px)}
 .mwav{position:absolute;left:34%;top:-12px;width:26px;height:26px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2.5px #F5B400,0 2px 4px rgba(0,0,0,.4);background:#1F2A5A;color:#fff;font-weight:800;font-size:14px;display:grid;place-items:center}
@@ -1877,7 +1877,7 @@ function grassSvg(w, h, seed){   // layered blades with light tips, soft shading
     <rect width="${w}" height="${h}" fill="url(#${k}g)" opacity=".0"/></svg>`;
 }
 function mowStones(box, u, S){
-  const sc = SCENES[sceneV()], url = avUrl(SHERPA), first = SHERPA && SHERPA.first;
+  const sc = SCENES[sceneV()], url = avUrl(SHERPA), first = (SHERPA && SHERPA.first) || ls.get("sparkfirst") || "";
   box.innerHTML = `<h2>${esc(sc.stones)}</h2><div class="locmeta">Touch the mower and swipe right to cut the grass. Walk the tag top to bottom.${!FLAGS.mow && isAdm() ? " <b>Testing: only you see this, on this example tag.</b>" : ""}</div>
     <ol class="stones mowl">${S.map(([k, say, why], i) => `<li class="mowrow"><div class="mowc"><b>${esc(k)}</b><span>${esc(say)}</span><small>${esc(why)}</small></div>
       <div class="grass" aria-hidden="true"></div><button type="button" class="mower${u.photo ? " mwunit" : ""}" aria-label="Swipe right to mow and reveal stone ${i + 1}">${u.photo
