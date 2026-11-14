@@ -21,6 +21,10 @@ table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;b
 .barc{height:4px;background:var(--red);border-radius:2px;margin-top:3px;opacity:.75}
 .legend{display:flex;gap:14px;font-size:13px;color:var(--mut);margin:4px 0 0}.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;background:var(--c)}
 .chart svg{width:100%;height:auto;display:block}
+.roll{overflow-x:auto}.roll table{min-width:860px}.roll th{text-align:center;line-height:1.2}.roll td{text-align:center;vertical-align:middle}.roll td.st{text-align:left;white-space:nowrap}
+.ck{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-weight:800;font-size:14px;border:2px solid #d0d0d0;color:#999;background:#fff;padding:0}
+.ck.y{background:var(--up);border-color:var(--up);color:#fff}.ck.p{background:#F5B400;border-color:#F5B400;color:#111;font-size:11px}.ck.m{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--up)}
+button.ck{cursor:pointer}.pbar{height:8px;background:#eee;border-radius:4px;overflow:hidden;margin-top:4px}.pbar i{display:block;height:100%;background:var(--up)}
 .feed td:first-child{white-space:nowrap;color:var(--mut);font-size:13px}
 .mut{color:var(--mut)}.err{color:var(--down)}
 .tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6px;color:#fff}
@@ -74,12 +78,42 @@ function signin(msg){
   <input id="c" type="text" inputmode="numeric" maxlength="4" placeholder="Your code" value="${esc(ls.get("sparkcode"))}"><button>Open dashboard</button><p class="err">${esc(msg||"")}</p></form>`;
   document.getElementById("f").onsubmit = e => { e.preventDefault(); const c = document.getElementById("c").value.trim(); ls.set("sparkcode", c); load(c); };
 }
+
+/* LSM rollout progress: the first assignments in the Welcome to Spark Digital Tags email, per store.
+   Green = done (read from the digital tag data). Gold = started. Tap an empty circle to check it off by hand. */
+const RT = [["confirm","Reply: Drive and PDF","Reply to the welcome email confirming they can open the Price Tags Drive folder and Reading the LSM Tag. You check this one off."],
+  ["bm","1. BM signed in","Branch manager signed in on the store page."],["isr","1. ISR signed in","Nominated ISR signed in on the store page."],
+  ["install","1. Home screen","Someone at the store added the store page to a phone home screen."],["hangers","2. QR hangers","PB01 to PB10 placed on the showroom drawing."],
+  ["firetags","3. Fire Sale tags","Every Fire Sale unit has its tag front and back. You check this one off."],["maploc","4. Map location","A location named on the store map."],
+  ["unitloc","5. Unit location set","A unit's location set on its digital tag."],["post","6. Money Maker posted","A unit posted from the Post this unit section."],
+  ["lead","7. Customer test","A Hold this unit or Contact me request sent from the store."]];
+let RO = null;
+function rollCard(){
+  if (!RO) return "";
+  const when = a => a ? new Date(a).toLocaleDateString("en-US", {month:"numeric", day:"numeric"}) : "";
+  const rows = Object.entries(RO.stores).map(([st, o]) => {
+    const done = RT.filter(([k]) => o.tasks[k] && o.tasks[k].done).length, pct = Math.round(done / RT.length * 100);
+    return `<tr><td class="st"><b>${esc(st)}</b><div class="mut" style="font-size:12px">${done} of ${RT.length} done</div><div class="pbar"><i style="width:${pct}%"></i></div></td>${RT.map(([k, n]) => { const t = o.tasks[k] || {};
+      const tip = n + (t.done ? ": done" + (t.by ? " by " + t.by : "") + (t.at ? " " + when(t.at) : "") + (t.manual ? " (checked by hand)" : "") : t.n ? ": " + t.n + (t.of ? " of " + t.of : "") + " so far" : ": not yet") + (k === "bm" || k === "isr" ? (t.done ? "" : " (" + (t.by || "name not on file") + ")") : "");
+      const cls = "ck" + (t.done ? " y" : t.n ? " p" : "") + (t.manual ? " m" : ""), lbl = t.done ? "✓" : t.n ? (t.of ? t.n + "/" + t.of : t.n) : "";
+      const tap = !t.done || t.manual;
+      return `<td>${tap ? `<button class="${cls}" data-rs="${esc(st)}" data-rk="${k}" data-rd="${t.done ? 0 : 1}" title="${esc(tip)}. Tap to ${t.done ? "uncheck" : "check off by hand"}." aria-label="${esc(st + ", " + tip)}">${lbl}</button>` : `<span class="${cls}" title="${esc(tip)}" aria-label="${esc(st + ", " + tip)}">${lbl}</span>`}</td>`; }).join("")}</tr>`; }).join("");
+  const tot = Object.values(RO.stores).reduce((a, o) => a + RT.filter(([k]) => o.tasks[k] && o.tasks[k].done).length, 0), all = Object.keys(RO.stores).length * RT.length;
+  return `<div class="card roll" style="margin-bottom:14px"><h2>LSM rollout progress: first assignments (${tot} of ${all} done)</h2>
+    <table><tr><th style="text-align:left">Store</th>${RT.map(([k, n, d]) => `<th title="${esc(d)}">${esc(n)}</th>`).join("")}</tr>${rows}</table>
+    <p class="mut" style="font-size:13px;margin:8px 0 0">Green is done, read straight from the digital tags. Gold means started. Hover or long press a circle for who and when. Tap an empty circle to check it off by hand (Reply and Fire Sale tags always need you). Your own tests and anything named Test are not counted.</p></div>`;
+}
+async function rollLoad(c){ try { const r = await fetch(API + "?" + new URLSearchParams({action:"rollout", store:"Keller", pin:"", code:c})).then(x => x.json()); RO = r.ok ? r : null; } catch(e){ RO = null; } }
+async function rollSet(st, k, d){
+  const c = ls.get("sparkcode");
+  try { const r = await fetch(API + "?" + new URLSearchParams({action:"rolloutset", store:st, task:k, done:d, pin:"", code:c})).then(x => x.json()); if (r.ok) { RO = r; draw(); } } catch(e){}
+}
 async function load(c){
   app.innerHTML = `<p class="mut">Loading activity...</p>`;
   try {
     const r = await fetch(API + "?" + new URLSearchParams({action:"dash", store:"Keller", pin:"", code:c})).then(x => x.json());
     if (!r.ok) return signin(r.error === "owner" ? "This dashboard is for all store access only." : "Code not accepted.");
-    A = normalize(r); draw();
+    await rollLoad(c); A = normalize(r); draw();
   } catch(e){ signin("Could not reach the server. Try again."); }
 }
 function chg(a, b){ if (!b) return a ? `<i class="up">new</i>` : `<i class="flat">same</i>`; const p = Math.round((a - b) / b * 100); return `<i class="${p > 0 ? "up" : p < 0 ? "down" : "flat"}">${p > 0 ? "up " : p < 0 ? "down " : ""}${Math.abs(p)}%</i>`; }
@@ -110,6 +144,7 @@ function draw(){
   app.innerHTML = `<div class="bar"><div class="seg">${[["day","Daily"],["week","Weekly"],["month","Monthly"]].map(([v, n]) => `<button data-p="${v}" class="${v === per ? "on" : ""}">${n}</button>`).join("")}</div>
       <select id="st" aria-label="Store">${stores.map(s => `<option ${s === store ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
       <button class="ghost" id="rf">Refresh</button><span class="mut">${word[0]}: ${cur.length} interactions, ${chg(cur.length, prev.length)} vs ${word[1]}</span></div>
+    ${store === "All stores" || store === "All LSM" || LSM.includes(store) ? rollCard() : ""}
     <div class="kpis">${KPI.map(t => `<div class="kpi"><b>${c(t)}</b><span>${TYPES[t].n}</span><br>${chg(c(t), p(t))} <span>vs ${word[1]} (${p(t)})</span></div>`).join("")}</div>
     ${chart(S)}
     <div class="grid">
@@ -123,6 +158,7 @@ function draw(){
     <p class="mut" style="margin-top:12px">Every interaction is also emailed to Brandon within a minute under the Spark Tag Alerts label. Customer names and phone numbers stay in the Leads tab of the Spark Tag Location PINs sheet.</p>`;
   app.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { per = b.dataset.p; draw(); });
   document.getElementById("st").onchange = e => { store = e.target.value; draw(); };
+  app.querySelectorAll("[data-rk]").forEach(b => b.onclick = () => { b.disabled = true; b.textContent = "..."; rollSet(b.dataset.rs, b.dataset.rk, b.dataset.rd); });
   document.getElementById("rf").onclick = () => load(ls.get("sparkcode"));
 }
 ls.get("sparkcode") ? load(ls.get("sparkcode")) : signin();
