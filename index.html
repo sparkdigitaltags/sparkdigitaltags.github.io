@@ -248,6 +248,26 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .avph{font-size:46px}.avimg{width:100%;height:100%}.avname{font-weight:800;margin:4px 0}.avbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
 .avbtns .ghost,#avmodal .ghost{color:#1d1d1f !important;background:#fff !important;border:1px solid #bbb !important}
 .huntbar{border-top-color:#1a7f37}.hunthint{color:#F5B400 !important;font-size:14px}
+
+.firewords{position:absolute;left:16px;right:16px;top:14px;z-index:3;pointer-events:none;text-align:center;transform:rotate(-5deg)}
+.fwtext{position:relative;font-family:"Anton","Bebas Neue","Arial Black",Impact,sans-serif;font-weight:900;font-size:clamp(34px,11vw,64px);line-height:1;letter-spacing:.02em;
+  background:linear-gradient(0deg,#B30F14 0%,#F03A17 30%,#F78F1E 55%,#FFD23F 78%,#FFF7C2 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:1.5px #5a0a07;filter:drop-shadow(0 0 6px rgba(255,120,20,.9)) drop-shadow(0 3px 0 rgba(90,10,7,.8))}
+.fwtext span{display:inline-block;animation:fwflick 1.1s ease-in-out infinite alternate;transform-origin:50% 100%}
+@keyframes fwflick{0%{transform:translateY(0) scaleY(1)}40%{transform:translateY(-2px) scaleY(1.06) skewX(-2deg)}100%{transform:translateY(1px) scaleY(.97) skewX(2deg)}}
+.fwflames{position:absolute;left:0;right:0;bottom:62%;height:46px}
+.fwflames i{position:absolute;bottom:0;width:26px;height:26px;transform-origin:50% 100%;animation:flick .75s ease-in-out infinite alternate}
+.fwflames i::before{content:"";position:absolute;inset:0;border-radius:50% 0 50% 50%;transform:rotate(-45deg) scale(var(--s,1));transform-origin:50% 60%;background:radial-gradient(circle at 62% 38%,#FFF6C2 0,#FFC93A 28%,#F37021 60%,#C8102E 95%);box-shadow:0 0 12px rgba(243,112,33,.7);opacity:.95}
+.fwnote{display:inline-block;margin-top:4px;background:rgba(0,0,0,.6);color:#F5B400;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;transform:rotate(5deg)}
+.grass{background:none !important;overflow:hidden}.grass .grsvg{display:block;width:100%;height:100%}
+.sway1{animation:sway 3.2s ease-in-out infinite alternate;transform-origin:50% 100%}.sway2{animation:sway 2.4s ease-in-out infinite alternate-reverse;transform-origin:50% 100%}
+@keyframes sway{from{transform:skewX(-2.5deg)}to{transform:skewX(2.5deg)}}
+.mowrow{background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(0,0,0,.08)),repeating-linear-gradient(90deg,#9BD46F 0 36px,#7FC253 36px 72px) !important;box-shadow:inset 0 -6px 10px rgba(0,0,0,.12)}
+.mowrow .mowc{background:rgba(255,255,255,.88);margin:8px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.mower{top:auto !important;bottom:-6px;transform:none !important}.mower.go .mwbob{animation-duration:.12s}
+.clip{position:absolute;width:5px;height:3px;border-radius:2px;background:#5DB82A;z-index:3;pointer-events:none;animation:clipfly .65s ease-out forwards}
+.clip:nth-child(odd){background:#9BE04B}
+@keyframes clipfly{from{transform:translate(0,0) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
 .ulist{list-style:none;padding:0;margin:8px 0;max-height:236px;overflow-y:auto;border:1px solid #ddd;border-radius:12px;background:#fff;-webkit-overflow-scrolling:touch}.ulist.tall{max-height:472px}
 .ulist li{border-bottom:1px solid #eee;background:#fff !important;margin:0 !important;padding:0 !important}.ulist a,.ulist a:visited{color:#1d1d1f !important;background:#fff !important;text-decoration:none !important}.ulist .ub,.ulist .um{color:#1d1d1f !important}.ulist li:last-child{border-bottom:0}.ulist a{display:flex;align-items:center;gap:8px;min-height:46px;padding:4px 12px;color:#1d1d1f;text-decoration:none;font-size:15px}
 .ulist .ub{font-weight:800;min-width:54px}.ulist .um{flex:1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ulist .ud{color:#C8102E;font-weight:700;font-size:13px;white-space:nowrap}.ulist .us{color:#555;font-size:13px;white-space:nowrap}
@@ -1710,12 +1730,30 @@ function avHead(cx, cy, r, url, first, id){
     (url ? `<image href="${url}" x="${cx - r}" y="${cy - r}" width="${r * 2}" height="${r * 2}" clip-path="url(#${cid})" preserveAspectRatio="xMidYMid slice"/>`
          : `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#1F2A5A"/><text x="${cx}" y="${cy + r * 0.38}" text-anchor="middle" font-size="${r * 1.05}" font-weight="800" fill="#fff" font-family="Arial,sans-serif">${esc((first || "?")[0].toUpperCase())}</text>`);
 }
-function mowerSvg(x, y, s, url, first, id){   // zero turn mower with the avatar in the seat, facing right
-  return `<g transform="translate(${x} ${y}) scale(${s})"><g class="mwbob">
-    <rect x="-34" y="-6" width="58" height="12" rx="5" fill="#3a3a3a"/><rect x="-30" y="-20" width="44" height="16" rx="6" fill="#C8102E"/>
-    <rect x="-24" y="-30" width="16" height="12" rx="3" fill="#1d1d1f"/><rect x="2" y="-26" width="4" height="12" rx="2" fill="#555"/><rect x="2" y="-27" width="12" height="3" rx="1.5" fill="#555"/>
-    <circle cx="-22" cy="8" r="11" fill="#1d1d1f"/><circle cx="-22" cy="8" r="4" fill="#888"/><circle cx="20" cy="11" r="6" fill="#1d1d1f"/><circle cx="20" cy="11" r="2" fill="#888"/>
-    <rect x="-8" y="2" width="30" height="7" rx="3" fill="#F5B400"/>${avHead(-16, -42, 12, url, first, id)}</g></g>`;
+function mowerSvg(x, y, s, url, first, id){   // stylized 3D zero turn (Fortnite style), the avatar drives, facing right
+  const k = "mw" + (id || Math.random().toString(36).slice(2, 7));
+  return `<g transform="translate(${x} ${y}) scale(${s})"><defs>
+    <linearGradient id="${k}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF4A3D"/><stop offset=".45" stop-color="#D3141B"/><stop offset="1" stop-color="#7E0A10"/></linearGradient>
+    <linearGradient id="${k}d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9CED6"/><stop offset=".5" stop-color="#7C848F"/><stop offset="1" stop-color="#3F454D"/></linearGradient>
+    <radialGradient id="${k}t" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#4a4a4a"/><stop offset=".7" stop-color="#1a1a1a"/><stop offset="1" stop-color="#050505"/></radialGradient>
+    <radialGradient id="${k}r" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFF4B8"/><stop offset=".5" stop-color="#F5B400"/><stop offset="1" stop-color="#A86F00"/></radialGradient>
+    <linearGradient id="${k}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B4B8F"/><stop offset="1" stop-color="#141C42"/></linearGradient>
+    <linearGradient id="${k}y" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFE27A"/><stop offset=".5" stop-color="#F5B400"/><stop offset="1" stop-color="#C98A00"/></linearGradient></defs>
+    <ellipse cx="0" cy="21" rx="44" ry="6.5" fill="rgba(0,0,0,.32)"/>
+    <g class="mwbob">
+      <path d="M-34 -24 v-24 q0 -7 7 -7 h6 q7 0 7 7 v24" fill="none" stroke="url(#${k}y)" stroke-width="5" stroke-linecap="round"/>
+      <path d="M-36 9 h64 q8 0 8 7 v2 h-80 v-2 q0 -7 8 -7z" fill="url(#${k}d)"/><path d="M-36 11 h62" stroke="#E6EAF0" stroke-width="1.2" opacity=".7"/>
+      <rect x="-44" y="-14" width="16" height="20" rx="4" fill="#26282c"/><rect x="-42" y="-12" width="12" height="3" rx="1.5" fill="#55595f"/><rect x="-46" y="-22" width="4" height="10" rx="2" fill="#6b6f75"/>
+      <path d="M-36 -6 q0 -16 15 -18 h30 q13 0 16 11 l5 11 q2 8 -6 8 h-56 q-6 0 -4 -12z" fill="url(#${k}b)" stroke="#5a070b" stroke-width="1.2"/>
+      <path d="M-30 -18 q12 -5 34 -3" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".45" fill="none"/>
+      <text x="0" y="-2" text-anchor="middle" font-size="7" font-weight="900" font-family="Arial Black,Arial,sans-serif" fill="#fff" letter-spacing=".5">SPARK</text>
+      <path d="M-30 -26 q0 -8 8 -8 h8 q4 0 4 5 v7 h-20z" fill="#1d1d1f"/><path d="M-27 -30 h12" stroke="#4a4a4a" stroke-width="2" stroke-linecap="round"/>
+      <path d="M-24 -30 q-2 -14 6 -17 h7 q8 2 6 17z" fill="url(#${k}s)"/>
+      <path d="M-10 -40 q12 2 16 14" stroke="#141C42" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M-12 -38 q10 6 14 14" stroke="#141C42" stroke-width="4.5" stroke-linecap="round" fill="none" opacity=".8"/>
+      <path d="M4 -30 v-6 h8 v12" stroke="#2c2c2c" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <circle cx="-24" cy="9" r="14" fill="url(#${k}t)"/><circle cx="-24" cy="9" r="14" fill="none" stroke="#000" stroke-width="2.5" stroke-dasharray="3 2.2"/><circle cx="-24" cy="9" r="6" fill="url(#${k}r)"/><circle cx="-26" cy="7" r="1.8" fill="#fff" opacity=".7"/>
+      <circle cx="24" cy="14" r="7" fill="url(#${k}t)"/><circle cx="24" cy="14" r="3" fill="url(#${k}r)"/>
+      ${avHead(-15, -55, 13, url, first, k)}</g></g>`;
 }
 function sceneSvg(v, n, S, id){
   const url = avUrl(S), first = S && S.first, N = 5, k = Math.min(n, N);
@@ -1817,18 +1855,38 @@ function avatarMaker(after){
 function refreshClimb(){ const c = document.getElementById("tlclimb"); if (!c || !SHERPA) return; const host = c.parentElement; c.outerHTML = climbCard(SHERPA); wireClimb(host); }
 
 /* ---- Mow to reveal: grass covers each stone; touch the mower and swipe right to cut ---- */
+function grassSvg(w, h, seed){   // layered blades with light tips, soft shading and sway, Fortnite style
+  let r = seed || 7; const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
+  const k = "gr" + Math.random().toString(36).slice(2, 7); let back = "", front = "", tufts = "";
+  for (let x = -4; x < w + 4; x += 4.2) { const hh = h * (0.55 + rnd() * 0.5), bend = (rnd() - 0.5) * 14, wd = 3 + rnd() * 3;
+    back += `<path d="M${x.toFixed(1)} ${h} Q${(x + bend * 0.4).toFixed(1)} ${(h - hh * 0.55).toFixed(1)} ${(x + bend).toFixed(1)} ${(h - hh).toFixed(1)} Q${(x + wd * 0.7 + bend * 0.3).toFixed(1)} ${(h - hh * 0.45).toFixed(1)} ${(x + wd).toFixed(1)} ${h}Z" fill="url(#${k}${rnd() > .5 ? "a" : "b"})"/>`; }
+  for (let x = -2; x < w + 4; x += 6.5) { const hh = h * (0.4 + rnd() * 0.45), bend = (rnd() - 0.5) * 18, wd = 4 + rnd() * 3;
+    front += `<path d="M${x.toFixed(1)} ${h} Q${(x + bend * 0.5).toFixed(1)} ${(h - hh * 0.5).toFixed(1)} ${(x + bend).toFixed(1)} ${(h - hh).toFixed(1)} Q${(x + wd * 0.8 + bend * 0.2).toFixed(1)} ${(h - hh * 0.4).toFixed(1)} ${(x + wd).toFixed(1)} ${h}Z" fill="url(#${k}c)"/>`;
+    if (rnd() > 0.93) tufts += `<g transform="translate(${x.toFixed(1)} ${(h * 0.55 + rnd() * h * 0.3).toFixed(1)})"><circle r="3.2" fill="#FFF6D6"/><circle r="1.4" fill="#F5B400"/></g>`; }
+  return `<svg class="grsvg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" preserveAspectRatio="none" aria-hidden="true"><defs>
+    <linearGradient id="${k}a" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#123F0B"/><stop offset=".55" stop-color="#2F7A17"/><stop offset="1" stop-color="#5DB82A"/></linearGradient>
+    <linearGradient id="${k}b" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#174A0D"/><stop offset=".6" stop-color="#3A8C1E"/><stop offset="1" stop-color="#7ACB35"/></linearGradient>
+    <linearGradient id="${k}c" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#1F5E12"/><stop offset=".5" stop-color="#4FAE24"/><stop offset=".85" stop-color="#9BE04B"/><stop offset="1" stop-color="#D8FF8A"/></linearGradient>
+    <linearGradient id="${k}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2F7A17"/><stop offset="1" stop-color="#0F3608"/></linearGradient></defs>
+    <rect width="${w}" height="${h}" fill="url(#${k}g)"/><g class="sway1">${back}</g><g class="sway2">${front}</g>${tufts}
+    <rect width="${w}" height="${h}" fill="url(#${k}g)" opacity=".0"/></svg>`;
+}
 function mowStones(box, u, S){
   const sc = SCENES[sceneV()], url = avUrl(SHERPA), first = SHERPA && SHERPA.first;
   box.innerHTML = `<h2>${esc(sc.stones)}</h2><div class="locmeta">Touch the mower and swipe right to cut the grass. Walk the tag top to bottom.${!FLAGS.mow && isAdm() ? " <b>Testing: only you see this, on this example tag.</b>" : ""}</div>
     <ol class="stones mowl">${S.map(([k, say, why], i) => `<li class="mowrow"><div class="mowc"><b>${esc(k)}</b><span>${esc(say)}</span><small>${esc(why)}</small></div>
-      <div class="grass" aria-hidden="true"></div><button type="button" class="mower" aria-label="Swipe right to mow and reveal stone ${i + 1}"><svg viewBox="-50 -60 90 80" width="78" height="70">${mowerSvg(0, 0, 0.9, url, first, "m" + i)}</svg></button></li>`).join("")}</ol>`;
-  box.querySelectorAll(".mowrow").forEach(li => {
-    const g = li.querySelector(".grass"), m = li.querySelector(".mower"); let x = 0, x0 = 0, p0 = 0, on = false;
-    const set = v => { const w = li.clientWidth; x = Math.max(x, Math.min(w, v)); g.style.clipPath = `inset(0 0 0 ${x}px)`; m.style.left = Math.min(x, w - 54) + "px";
-      if (x >= w - 30) { li.classList.add("cut"); m.remove(); g.remove(); } };
-    m.onpointerdown = e => { on = true; x0 = x; p0 = e.clientX; try { m.setPointerCapture(e.pointerId); } catch(err){} e.preventDefault(); };
+      <div class="grass" aria-hidden="true"></div><button type="button" class="mower" aria-label="Swipe right to mow and reveal stone ${i + 1}"><svg viewBox="-56 -76 106 104" width="84" height="82">${mowerSvg(0, 0, 0.92, url, first, "m" + i)}</svg></button></li>`).join("")}</ol>`;
+  box.querySelectorAll(".mowrow").forEach((li, n) => {
+    const g = li.querySelector(".grass"), m = li.querySelector(".mower"); let x = 0, x0 = 0, p0 = 0, on = false, lastBits = 0;
+    g.innerHTML = grassSvg(Math.max(200, li.clientWidth), Math.max(70, li.clientHeight), 11 + n * 17);
+    const bits = () => { const now = Date.now(); if (now - lastBits < 45) return; lastBits = now;
+      for (let j = 0; j < 4; j++) { const b = document.createElement("i"); b.className = "clip"; b.style.left = Math.max(0, x - 6) + "px"; b.style.top = (li.clientHeight * (0.35 + Math.random() * 0.4)) + "px";
+        b.style.setProperty("--dx", (-20 - Math.random() * 40) + "px"); b.style.setProperty("--dy", (-18 - Math.random() * 30) + "px"); b.style.setProperty("--r", (Math.random() * 540) + "deg"); li.appendChild(b); setTimeout(() => b.remove(), 650); } };
+    const set = v => { const w = li.clientWidth; const nx = Math.max(x, Math.min(w, v)); if (nx > x + 1) bits(); x = nx; g.style.clipPath = `inset(0 0 0 ${x}px)`; m.style.left = Math.min(x - 10, w - 70) + "px";
+      if (x >= w - 34) { li.classList.add("cut"); m.remove(); g.remove(); } };
+    m.onpointerdown = e => { on = true; x0 = x; p0 = e.clientX; m.classList.add("go"); try { m.setPointerCapture(e.pointerId); } catch(err){} e.preventDefault(); };
     m.onpointermove = e => { if (on && e.clientX > p0) set(x0 + (e.clientX - p0)); };
-    m.onpointerup = m.onpointercancel = () => { on = false; };
+    m.onpointerup = m.onpointercancel = () => { on = false; m.classList.remove("go"); };
     m.onkeydown = e => { if (e.key === "ArrowRight") { e.preventDefault(); set(x + li.clientWidth / 6); } };
   });
 }
@@ -1837,8 +1895,12 @@ function mowStones(box, u, S){
 function labTag(u){
   const pr = document.querySelector('#app [data-sec="price"]');
   document.querySelectorAll(".flames,.labnote").forEach(e => e.remove()); document.querySelectorAll(".pill.fire").forEach(e => e.classList.remove("blaze"));
-  if (u.fire && pr && feat("flames", u)) { pr.insertAdjacentHTML("afterbegin", `<div class="flames" aria-hidden="true">${Array.from({length:22}, (_, i) => `<i style="left:${i * 4.7 - 2}%;animation-delay:${(i * 137 % 900) / 1000}s;--s:${(0.7 + (i * 53 % 50) / 100).toFixed(2)}"></i>`).join("")}</div>${!FLAGS.flames && isAdm() ? `<div class="fine labnote">Testing: flames show only for you, on this example tag.</div>` : ""}`);
-    document.querySelectorAll(".pill.fire").forEach(e => e.classList.add("blaze")); }
+  document.querySelectorAll(".firewords").forEach(e => e.remove());
+  const ph = document.querySelector('#app [data-sec="photo"]');
+  if (u.fire && ph && feat("flames", u)) { ph.style.position = "relative";
+    const word = "FIRE SALE!";
+    ph.insertAdjacentHTML("afterbegin", `<div class="firewords" aria-label="Fire Sale"><div class="fwflames" aria-hidden="true">${Array.from({length:14}, (_, i) => `<i style="left:${4 + i * 6.8}%;animation-delay:${(i * 173 % 900) / 1000}s;--s:${(0.6 + (i * 37 % 60) / 100).toFixed(2)}"></i>`).join("")}</div>
+      <div class="fwtext" aria-hidden="true">${[...word].map((c, i) => `<span style="animation-delay:${(i * 97 % 700) / 1000}s">${c === " " ? "&nbsp;" : c}</span>`).join("")}</div>${!FLAGS.flames && isAdm() ? `<div class="fwnote">Testing: only you see this</div>` : ""}</div>`); }
   huntCheck("open", u);
   labPills();
 }
@@ -1933,7 +1995,7 @@ function labPills(){
 
 /* ---- The Lab page ---- */
 const LAB_TESTS = [
-  ["flames", "Fire Sale flames", "Animated flames across the price box and a glowing Fire Sale pill on Fire Sale tags.", "#farmersbranch-109225-fce43e"],
+  ["flames", "Fire Sale! in flames", "The words Fire Sale! burn across the unit photo on Fire Sale tags.", "#farmersbranch-109225-fce43e"],
   ["mow", "Mow to reveal the Stepping Stones", "Grass covers each stone. Touch the mower and swipe right to cut it and read the line. The section takes the scene's name.", "#farmersbranch-109225-fce43e"],
   ["stone3", "Stone 3 (Bill) wording", "Never say the APR unless it's 0%. Under $1,500: \"$49 down plus tax\" with the lease to own line. Examples: a $459 lease unit and an 11.99% unit.", "#farmersbranch-109122-4ef97e"],
   ["scene", "Progress scene", "Replaces Your climb up Spark OPE Mountain with the scene you pick below. Their avatar is the main character.", ""],
