@@ -268,6 +268,11 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .clip{position:absolute;width:5px;height:3px;border-radius:2px;background:#5DB82A;z-index:3;pointer-events:none;animation:clipfly .65s ease-out forwards}
 .clip:nth-child(odd){background:#9BE04B}
 @keyframes clipfly{from{transform:translate(0,0) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
+.mwunit{bottom:2px !important}.mwsprite{position:relative;display:block;width:104px;height:70px;animation:mwbob .45s ease-in-out infinite alternate}.mower.go .mwsprite{animation-duration:.12s}
+.mwsprite>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply;pointer-events:none}
+.mwshadow{position:absolute;left:12%;right:12%;bottom:2px;height:8px;border-radius:50%;background:rgba(0,0,0,.35);filter:blur(2px)}
+.mwav{position:absolute;left:34%;top:-12px;width:26px;height:26px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2.5px #F5B400,0 2px 4px rgba(0,0,0,.4);background:#1F2A5A;color:#fff;font-weight:800;font-size:14px;display:grid;place-items:center}
+.mwav img{width:100%;height:100%;object-fit:cover}
 .ulist{list-style:none;padding:0;margin:8px 0;max-height:236px;overflow-y:auto;border:1px solid #ddd;border-radius:12px;background:#fff;-webkit-overflow-scrolling:touch}.ulist.tall{max-height:472px}
 .ulist li{border-bottom:1px solid #eee;background:#fff !important;margin:0 !important;padding:0 !important}.ulist a,.ulist a:visited{color:#1d1d1f !important;background:#fff !important;text-decoration:none !important}.ulist .ub,.ulist .um{color:#1d1d1f !important}.ulist li:last-child{border-bottom:0}.ulist a{display:flex;align-items:center;gap:8px;min-height:46px;padding:4px 12px;color:#1d1d1f;text-decoration:none;font-size:15px}
 .ulist .ub{font-weight:800;min-width:54px}.ulist .um{flex:1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ulist .ud{color:#C8102E;font-weight:700;font-size:13px;white-space:nowrap}.ulist .us{color:#555;font-size:13px;white-space:nowrap}
@@ -1875,7 +1880,9 @@ function mowStones(box, u, S){
   const sc = SCENES[sceneV()], url = avUrl(SHERPA), first = SHERPA && SHERPA.first;
   box.innerHTML = `<h2>${esc(sc.stones)}</h2><div class="locmeta">Touch the mower and swipe right to cut the grass. Walk the tag top to bottom.${!FLAGS.mow && isAdm() ? " <b>Testing: only you see this, on this example tag.</b>" : ""}</div>
     <ol class="stones mowl">${S.map(([k, say, why], i) => `<li class="mowrow"><div class="mowc"><b>${esc(k)}</b><span>${esc(say)}</span><small>${esc(why)}</small></div>
-      <div class="grass" aria-hidden="true"></div><button type="button" class="mower" aria-label="Swipe right to mow and reveal stone ${i + 1}"><svg viewBox="-56 -76 106 104" width="84" height="82">${mowerSvg(0, 0, 0.92, url, first, "m" + i)}</svg></button></li>`).join("")}</ol>`;
+      <div class="grass" aria-hidden="true"></div><button type="button" class="mower${u.photo ? " mwunit" : ""}" aria-label="Swipe right to mow and reveal stone ${i + 1}">${u.photo
+        ? `<span class="mwsprite"><span class="mwshadow"></span><img src="${u.photo}" alt="" draggable="false"><span class="mwav">${url ? `<img src="${url}" alt="">` : esc((first || "?")[0].toUpperCase())}</span></span>`
+        : `<svg viewBox="-56 -76 106 104" width="84" height="82">${mowerSvg(0, 0, 0.92, url, first, "m" + i)}</svg>`}</button></li>`).join("")}</ol>`;
   box.querySelectorAll(".mowrow").forEach((li, n) => {
     const g = li.querySelector(".grass"), m = li.querySelector(".mower"); let x = 0, x0 = 0, p0 = 0, on = false, lastBits = 0;
     g.innerHTML = grassSvg(Math.max(200, li.clientWidth), Math.max(70, li.clientHeight), 11 + n * 17);
