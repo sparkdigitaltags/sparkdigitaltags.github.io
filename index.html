@@ -1623,7 +1623,7 @@ const CLIMB = [
 const CAMPS = ["Base Camp", "Camp 1", "Camp 2", "Camp 3", "Camp 4", "the Summit"];
 let SHERPA = null;
 async function sherpaLoad(force){
-  if (!getCode()) return null; if (SHERPA && !force && Date.now() - SHERPA._at < 120000) return SHERPA;
+  if (!getCode() || !feat("training")) return null;   // Brandon Nov 14 2026: the training is a Lab test until he makes it live if (SHERPA && !force && Date.now() - SHERPA._at < 120000) return SHERPA;
   const a = chatAuth(); if (!a) return null;
   try { const r = await api({action:"sherpa", store:a.store, pin:a.pin, code:getCode()}); if (r.ok) { r._at = Date.now(); r.done = r.done || {}; chatFlag(r); if (tourMode()) r.done = tmDone(); SHERPA = r; } } catch(e){}
   return SHERPA;
@@ -2023,6 +2023,7 @@ function labPills(){
 
 /* ---- The Lab page ---- */
 const LAB_TESTS = [
+  ["training", "Spark OPE Mountain training", "First sign in welcome, the New Location Tour, the climb card with the 5 ISR motions, the morning and afternoon prompts, and the glowing showroom drawing buttons.", ""],
   ["flames", "Fire Sale! in flames", "The words Fire Sale! burn across the unit photo on Fire Sale tags.", "#farmersbranch-109225-fce43e"],
   ["mow", "Mow to reveal the Stepping Stones", "Grass covers each stone. Touch the mower and swipe right to cut it and read the line. The section takes the scene's name.", "#farmersbranch-109225-fce43e"],
   ["stone3", "Stone 3 (Bill) wording", "Never say the APR unless it's 0%. Under $1,500: \"$49 down plus tax\" with the lease to own line. Examples: a $459 lease unit and an 11.99% unit.", "#farmersbranch-109122-4ef97e"],
