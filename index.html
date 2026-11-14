@@ -293,7 +293,11 @@ function tag(u){
 
 /* Team only unit location. The page never holds locations or PINs; the Apps Script checks the store PIN on every call. */
 const SID = Math.random().toString(36).slice(2,10);
-function track(t, o){ try { if (!LOC_API) return; const p = Object.assign({action:"ev", t, sid:SID}, o||{}); fetch(LOC_API + "?" + new URLSearchParams(p), {mode:"no-cors", keepalive:true}); } catch(e){} }
+/* Device id (Brandon Nov 14 2026): a random id kept on this phone so a sign in from a new device can be flagged. Not tied to the hardware. */
+const DEV = (() => { try { let d = localStorage.getItem("sparkdev"); if (!d) { d = (Math.random().toString(36).slice(2) + Date.now().toString(36) + Math.random().toString(36).slice(2)).slice(0, 24); localStorage.setItem("sparkdev", d); } return d; } catch(e){ return ""; } })();
+const UA = (() => { const a = navigator.userAgent || ""; const os = /iPhone/.test(a) ? "iPhone" : /iPad/.test(a) ? "iPad" : /Android/.test(a) ? ((a.match(/Android[^;]*;\s*([^;)]+)/) || [])[1] || "Android") : /Windows/.test(a) ? "Windows PC" : /Mac/.test(a) ? "Mac" : "Other";
+  const br = /SamsungBrowser/.test(a) ? "Samsung Internet" : /CriOS|Chrome/.test(a) ? "Chrome" : /FxiOS|Firefox/.test(a) ? "Firefox" : /Safari/.test(a) ? "Safari" : "Browser"; return (os + " " + br).slice(0, 60); })();
+function track(t, o){ try { if (!LOC_API) return; const p = Object.assign({action:"ev", t, sid:SID, dev:DEV, ua:UA}, o||{}); fetch(LOC_API + "?" + new URLSearchParams(p), {mode:"no-cors", keepalive:true}); } catch(e){} }
 const LOC_API = "https://script.google.com/macros/s/AKfycbxcj7HnpGxRFSILwbOjYf-9j11h1KSAHLnhmYvpJvZ6g2sukb_9ldyFG-rN2LoWCZfA/exec";
 /* Store diagrams (Nov 9 2026). Traced from satellite view. Backgrounds are drawn in an 860x1010 box.
    Labels: [code, name, x%, y%]. Every store keeps the four required labels: F1 Floor, L1 Lot, WH1 Warehouse, SHOP Shop.
@@ -435,7 +439,7 @@ function locSignin(u, msg){
     if (!/^\d{4}$/.test(code)) { document.getElementById("lmsg").textContent = "Enter the store PIN and the last 4 of your cell."; return; }
     document.getElementById("lmsg").textContent = "Checking...";
     try { const r = await api({action:"check", store:u.store, pin, code}); 
-      if (r.ok) { keepKey(r); MEM._code=code; ls.set("sparkcode", code); if (r.all) { MEM._all=true; ls.set("sparkall","1"); } else { MEM[u.store]=pin; ls.set(pinKey(u.store), pin); (r.stores||[]).forEach(st => { MEM[st]=pin; ls.set(pinKey(st), pin); }); } locLoad(u); }
+      if (r.ok) { keepKey(r); chatFlag(r); track("signin", {store:u.store, pin, code, d:"tag"}); MEM._code=code; ls.set("sparkcode", code); if (r.all) { MEM._all=true; ls.set("sparkall","1"); } else { MEM[u.store]=pin; ls.set(pinKey(u.store), pin); (r.stores||[]).forEach(st => { MEM[st]=pin; ls.set(pinKey(st), pin); }); } locLoad(u); }
       else locSignin(u, ERRS[r.error] || "That did not work. Try again.");
     } catch(err){ document.getElementById("lmsg").textContent = "Could not connect. Check your signal and try again."; } };
 }
@@ -623,6 +627,56 @@ function editHandles(x, y, w, h, Z){
   const xx = x + w, xy = y, xd = 8 * Z, cancel = `<path d="M${xx - xd} ${xy - xd} L${xx + xd} ${xy + xd} M${xx + xd} ${xy - xd} L${xx - xd} ${xy + xd}" stroke="#fff" stroke-width="${4 * Z}" stroke-linecap="round"/>`;
   return c(rx, ry, "#1F2A5A", rot, "rot") + c(qx, qy, "#1F2A5A", size, "size") + c(xx, xy, "#C8102E", cancel, "x");
 }
+
+/* Finger drawing with the lasso effect (Brandon Nov 14 2026). Retail showrooms are walls, shelves, counters, endcaps and round
+   displays, so a stroke is cleaned up into one of those: a closed boxy loop becomes a square cornered shelf or display, a closed
+   round loop becomes a round display, and an open stroke becomes straight walls. Angles snap to square (0 and 90 degrees) when
+   close, otherwise to the nearest 15 degrees, because store fixtures almost always line up with the building. */
+function rdp(P, eps){
+  if (P.length < 3) return P.slice();
+  const a = P[0], b = P[P.length - 1], L = Math.hypot(b.x - a.x, b.y - a.y) || 1e-9; let dm = 0, ix = 0;
+  for (let i = 1; i < P.length - 1; i++) { const d = Math.abs((b.y - a.y) * P[i].x - (b.x - a.x) * P[i].y + b.x * a.y - b.y * a.x) / L; if (d > dm) { dm = d; ix = i; } }
+  return dm > eps ? rdp(P.slice(0, ix + 1), eps).slice(0, -1).concat(rdp(P.slice(ix), eps)) : [a, b];
+}
+const snapAng = deg => { deg = ((deg % 180) + 180) % 180; for (const t of [0, 90, 180]) if (Math.abs(deg - t) <= 9) return t % 180; return Math.round(deg / 15) * 15 % 180; };
+function lassoShape(P, kid){
+  if (!P || P.length < 3) return null;
+  const D = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  let len = 0; for (let i = 1; i < P.length; i++) len += D(P[i - 1], P[i]);
+  if (len < 25) return null;
+  const xs = P.map(p => p.x), ys = P.map(p => p.y), diag = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) || 1;
+  const T = 10, k = i => kid + i, A = d => ((d + 90) % 180 + 180) % 180 - 90;
+  const walls = V => { const out = []; for (let i = 1; i < V.length; i++) { const a = V[i - 1], b = V[i], L = D(a, b); if (L < 12) continue;
+      const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2, ang = A(Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI);
+      out.push({k:k(out.length), t:"wall", n:"WALL", x:Math.round(cx - (L + T) / 2), y:Math.round(cy - T / 2), w:Math.round(L + T), h:T, s:12, ...(ang ? {a:Math.round(ang)} : {})}); }
+    return out; };
+  const straighten = (V, closed) => {   // snap each side's angle, keep its length, keep the corners joined
+    const W = [V[0]]; for (let i = 1; i < V.length; i++) { const a = W[W.length - 1], L = D(V[i - 1], V[i]), g = snapAng(Math.atan2(V[i].y - V[i - 1].y, V[i].x - V[i - 1].x) * 180 / Math.PI) * Math.PI / 180;
+      const dir = Math.cos(g) * (V[i].x - V[i - 1].x) + Math.sin(g) * (V[i].y - V[i - 1].y) >= 0 ? 1 : -1; W.push({x:a.x + dir * L * Math.cos(g), y:a.y + dir * L * Math.sin(g)}); }
+    if (closed) W[W.length - 1] = W[0]; return W; };
+  const closed = D(P[0], P[P.length - 1]) < Math.max(30, 0.22 * diag) && len > 1.9 * diag;
+  if (closed) {
+    let area = 0; for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length]; area += a.x * b.y - b.x * a.y; } area = Math.abs(area) / 2;
+    let best = null;   // smallest box around the loop, tried at every angle
+    for (let d = 0; d < 90; d++) { const r = d * Math.PI / 180, c = Math.cos(r), sn = Math.sin(r); let a0 = 1e9, a1 = -1e9, b0 = 1e9, b1 = -1e9;
+      for (const p of P) { const u = p.x * c + p.y * sn, v = -p.x * sn + p.y * c; a0 = Math.min(a0, u); a1 = Math.max(a1, u); b0 = Math.min(b0, v); b1 = Math.max(b1, v); }
+      const ar = (a1 - a0) * (b1 - b0); if (!best || ar < best.ar) best = {ar, d, a0, a1, b0, b1}; }
+    let ang = snapAng(best.d);
+    const fill = area / Math.max(1, best.ar);   // how much of its tightest box the loop fills: boxes near 1, circles near 0.79
+    let w = best.a1 - best.a0, h = best.b1 - best.b0; const rb = best.d * Math.PI / 180, um = (best.a0 + best.a1) / 2, vm = (best.b0 + best.b1) / 2, cx = um * Math.cos(rb) - vm * Math.sin(rb), cy = um * Math.sin(rb) + vm * Math.cos(rb);
+    if (fill < 0.84 && Math.max(w, h) / Math.max(1, Math.min(w, h)) < 1.25) ang = 0;   // a circle has no direction
+    if (Math.min(w, h) < 18) {   // a skinny loop is really a wall
+      const L = Math.max(w, h), g = w >= h ? ang : ang + 90; return {items: walls([{x:cx - L / 2 * Math.cos(g * Math.PI / 180), y:cy - L / 2 * Math.sin(g * Math.PI / 180)}, {x:cx + L / 2 * Math.cos(g * Math.PI / 180), y:cy + L / 2 * Math.sin(g * Math.PI / 180)}]), msg:"Straightened into a wall."}; }
+    if (h > w * 1.15) { [w, h] = [h, w]; ang = (ang + 90) % 180; }   // keep the long side as the width so the name reads along it
+    if (Math.max(w, h) / Math.max(1, Math.min(w, h)) < 1.15 && ang % 90 === 0) ang = 0;
+    const a = A(ang), base = {x:Math.round(cx - w / 2), y:Math.round(cy - h / 2), w:Math.round(w), h:Math.round(h), ...(a ? {a:Math.round(a)} : {})};
+    if (fill >= 0.84 || (w / h >= 2.5 && fill >= 0.55)) { const shelf = w / h >= 3; return {items:[{k:k(0), t:"box", n:shelf ? "SHELF" : "DISPLAY", f:shelf ? "#D9CBB4" : "#E6DCCB", s:Math.max(12, Math.min(19, Math.round(h * 0.45))), ...base}], msg:"Squared up into a " + (shelf ? "shelf" : "display") + "."}; }
+    if (fill >= 0.6) return {items:[{k:k(0), t:"oval", n:"ROUND DISPLAY", f:"#DCE5D0", s:Math.max(12, Math.min(19, Math.round(h * 0.3))), ...base}], msg:"Rounded into a round display."};
+    const V = rdp(P.concat([P[0]]), Math.max(10, 0.05 * diag)); return {items:walls(straighten(V, true)), msg:"Straightened into walls."};
+  }
+  const V = rdp(P, Math.max(10, 0.06 * diag)), out = walls(straighten(V, false));
+  return out.length ? {items:out, msg:out.length === 1 ? "Straightened into a wall." : "Straightened into " + out.length + " walls."} : null;
+}
 function fxSvg(items, sel){
   return items.map(it => {
     const {x, y, w, h} = it, s = it.s || 19, n = esc(it.n || ""), cx = x + w / 2, cy = y + h / 2;
@@ -631,6 +685,8 @@ function fxSvg(items, sel){
     else if (it.t === "door") g = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#F4EFE6"/>` + _T(cx, cy > VH0 / 2 ? y - 16 : y + h + 28, n, {s});
     else if (it.t === "pads") { const gap = w * 0.0714, pw = (w - 2 * gap) / 3; for (let i = 0; i < 3; i++) g += `<rect x="${x + i * (pw + gap)}" y="${y}" width="${pw}" height="${h}" rx="14" fill="${it.f || "#DCE5D0"}"/>`; g += _T(cx, y + h + 30, n, {s}); }
     else if (it.t === "text") g = _T(cx, cy + s * 0.35, n, {s});
+    else if (it.t === "wall") g = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${h / 2}" fill="#2c2725"/>`;
+    else if (it.t === "oval") g = `<ellipse cx="${cx}" cy="${cy}" rx="${w / 2}" ry="${h / 2}" fill="${it.f || "#DCE5D0"}"/>` + _T(cx, cy + s * 0.38, n, {s});
     else g = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${it.f || "#E6DCCB"}"/>` + (it.r ? _T(cx + s * 0.35, cy, n, {s, r:it.r}) : _T(cx, cy + s * 0.38, n, {s}));
     if (it.k === sel) g += `<rect x="${x - 6}" y="${y - 6}" width="${w + 12}" height="${h + 12}" fill="none" stroke="#C8102E" stroke-width="5" stroke-dasharray="14 8"/>` + editHandles(x - 6, y - 6, w + 12, h + 12, 1);
     return `<g class="fx" data-f="${esc(it.k)}"${it.a ? ` transform="rotate(${it.a} ${cx} ${cy})"` : ""}>${g}</g>`; }).join("");
@@ -651,7 +707,7 @@ function hangSvg(store, H, sel, items, fsel, hand){
 async function hangEdit(u, r){
   const box = document.getElementById("locsec");
   box.innerHTML = `<h2>QR code hanger locations</h2><div class="locmeta">Loading...</div>`;
-  let H = [], sel = "", mode = "hang", L = null, fsel = "", snapK = "", snap = null, suppress = false;
+  let H = [], sel = "", mode = "hang", L = null, fsel = "", snapK = "", snap = null, suppress = false, drawOn = false;
   try { const g = await api({action:"hangers", store:u.store}); if (g.ok && Array.isArray(g.hangers)) H = g.hangers;
     if (g.ok && Array.isArray(g.layout) && g.layout.length) ROOMS[u.store] = g.layout; LAYOUT_PENDING[u.store] = !!(g && g.pending); } catch(e){}
   const pb = i => "PB" + String(i).padStart(2, "0"), free = () => { const o = []; for (let i = 1; i <= 20; i++) if (!H.some(a => a[0] === pb(i))) o.push(pb(i)); return o; };
@@ -699,6 +755,8 @@ async function hangEdit(u, r){
     const it = fsel && fx();
     return `<div class="locmeta"><b>Edit the showroom drawing.</b> Tap a counter, door or display to pick it, then tap a new spot to move it. Drag the corner arrows to resize it, drag or tap the circle arrow to turn it, and tap the red X to cancel your changes to it. The buttons below rename, resize or delete it. Your changes go to your branch manager and Brandon. The drawing changes for everyone once one of them approves.</div>
       ${LAYOUT_PENDING[u.store] ? `<div class="lmsg">A drawing change for ${esc(u.store)} is waiting for approval. Submitting again replaces it.</div>` : ""}
+      <button class="${drawOn ? "copy" : "ghost"}" id="fxdraw" style="width:100%;margin-bottom:6px">${drawOn ? "Drawing is on. Tap here to stop drawing" : "Draw with your finger"}</button>
+      ${drawOn ? `<div class="locmeta">Draw a wall as a line, a shelf or counter as a box, or a round display as a circle. We straighten and square it up for you. Draw one thing at a time.</div>` : ""}
       <div class="locmap mapedit" id="hmap">${hangSvg(u.store, H, "", L, fsel)}</div>
       ${it ? `<div class="fxed"><label for="fxn">Name</label><input id="fxn" maxlength="24" value="${esc(it.n)}">
         <div class="fxb"><button class="ghost" data-z="w+">Wider</button><button class="ghost" data-z="w-">Narrower</button><button class="ghost" data-z="h+">Taller</button><button class="ghost" data-z="h-">Shorter</button>
@@ -722,6 +780,7 @@ async function hangEdit(u, r){
       <div class="lrow"><button class="copy" id="hsave">Save hangers</button><button class="ghost" id="hcancel">Back</button></div>
       <div class="lmsg" id="hmsg">${msg ? esc(msg) : ""}</div>
       <button class="ghost" id="hroom" style="width:100%;margin-top:8px">Edit the showroom drawing (needs approval)</button>
+      <button class="ghost" id="hdraw" style="width:100%;margin-top:8px">Draw walls and shelves with your finger (needs approval)</button>
       <div class="hphoto"><h3>Showroom photos</h3>
         <p class="fine" style="margin:0 0 6px">${ROOMS[u.store] ? "Add new photos if the layout changes." : "This drawing is our best guess. Fix it with Edit the showroom drawing, or take 3 to 6 photos of your showroom from the front door and each corner so we can draw your real layout. No customers or faces, please."}</p>
         <label class="copy copyall galadd">Add showroom photos<input type="file" accept="image/*" capture="environment" multiple hidden id="hfile"></label>
@@ -744,7 +803,8 @@ async function hangEdit(u, r){
     box.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { draw(add(b.dataset.a)); document.getElementById("hmap").scrollIntoView({block:"center", behavior:"smooth"}); });
     document.getElementById("haddf").onsubmit = e => { e.preventDefault(); draw(add(document.getElementById("haddn").value, document.getElementById("haddc").value)); };
     document.getElementById("hcancel").onclick = () => locShow(u, r);
-    document.getElementById("hroom").onclick = () => { mode = "room"; L = JSON.parse(JSON.stringify(roomOf(u.store))); fsel = ""; draw(); };
+    document.getElementById("hroom").onclick = () => { mode = "room"; drawOn = false; L = JSON.parse(JSON.stringify(roomOf(u.store))); fsel = ""; draw(); };
+    document.getElementById("hdraw").onclick = () => { mode = "room"; drawOn = true; L = JSON.parse(JSON.stringify(roomOf(u.store))); fsel = ""; draw("Draw on the showroom with your finger."); };
     document.getElementById("hsave").onclick = async () => {
       const m = document.getElementById("hmsg"); m.textContent = "Saving...";
       try { const s = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"sethangers", store:u.store, pin:getPin(u.store) || "", code:getCode(), hangers:JSON.stringify(H)}).toString()}).then(x => x.json());
@@ -770,12 +830,28 @@ async function hangEdit(u, r){
       e.target.value = "";
     };
   };
+  const attachDraw = svg => {
+    svg.style.touchAction = "none"; let pts = null, line = null;
+    const P = e => { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse()); return {x:q.x, y:q.y}; };
+    svg.addEventListener("pointerdown", e => { if (e.target.closest("[data-h]")) return; e.preventDefault(); pts = [P(e)];
+      line = document.createElementNS("http://www.w3.org/2000/svg", "polyline"); line.setAttribute("fill", "none"); line.setAttribute("stroke", "#C8102E"); line.setAttribute("stroke-width", "6");
+      line.setAttribute("stroke-linecap", "round"); line.setAttribute("stroke-linejoin", "round"); line.setAttribute("opacity", ".8"); svg.appendChild(line); try { svg.setPointerCapture(e.pointerId); } catch(err){} });
+    svg.addEventListener("pointermove", e => { if (!pts) return; const p = P(e), l = pts[pts.length - 1]; if (Math.hypot(p.x - l.x, p.y - l.y) < 3) return; pts.push(p); line.setAttribute("points", pts.map(q => q.x.toFixed(1) + "," + q.y.toFixed(1)).join(" ")); });
+    const end = () => { if (!pts) return; const got = lassoShape(pts, "d" + Date.now().toString(36)); pts = null; if (line) line.remove(); line = null; if (!got) return;
+      suppress = true; setTimeout(() => suppress = false, 400);
+      if (L.length + got.items.length > 80) return draw("That's the most a drawing can hold. Delete something first.");
+      got.items.forEach(it => L.push(it)); const last = got.items[got.items.length - 1];
+      draw(got.msg + (got.items.length === 1 && last.t !== "wall" ? " Stop drawing to rename it, or keep drawing." : " Keep drawing, or stop drawing to adjust it.") + " Submit for approval when you're done."); };
+    svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
+  };
   const wireRoom = (msg) => {
     if (msg) document.getElementById("hmsg").textContent = msg;
     const svg = box.querySelector("#hmap svg");
-    takeSnap("room"); attach(svg, "room");
+    takeSnap("room"); attach(svg, "room"); if (drawOn) attachDraw(svg);
+    document.getElementById("fxdraw").onclick = () => { drawOn = !drawOn; if (drawOn) fsel = ""; draw(drawOn ? "Draw on the showroom with your finger." : "Drawing is off. Tap something to edit it."); };
     svg.onclick = e => {
       if (handleTap(e, "room")) return;
+      if (drawOn) return;
       const g = e.target.closest(".fx"); if (g && g.dataset.f !== fsel) { fsel = g.dataset.f; return draw(); }
       if (!fsel) return draw("Tap a counter, door or display first.");
       const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse()), it = fx(); if (!it) return;
@@ -792,7 +868,7 @@ async function hangEdit(u, r){
         it.x = Math.round(Math.min(VW0 - it.w, Math.max(0, c[0] - it.w / 2))); it.y = Math.round(Math.min(VH0 - it.h, Math.max(0, c[1] - it.h / 2))); }
       draw(); });
     document.getElementById("fxadd").onsubmit = e => { e.preventDefault(); const v = document.getElementById("fxaddn").value.trim().toUpperCase().slice(0, 24); if (!v) return;
-      if (L.length >= 40) return draw("That's the most a drawing can hold.");
+      if (L.length >= 80) return draw("That's the most a drawing can hold.");
       const k = "fx" + Date.now().toString(36); L.push({k, t:"box", n:v, x:360, y:280, w:140, h:60, f:"#E6DCCB", s:17}); fsel = k; draw(v + " added in the middle. Tap where it goes."); };
     document.getElementById("fxback").onclick = () => { mode = "hang"; draw(); };
     document.getElementById("fxreset").onclick = () => { L = JSON.parse(JSON.stringify(roomOf(u.store))); fsel = ""; draw("Back to the current drawing."); };
@@ -805,8 +881,8 @@ async function hangEdit(u, r){
       } catch(e){ m.textContent = "Could not connect. Check your signal and try again."; }
     };
   };
-  const wireRoomSvg = () => { const svg = box.querySelector("#hmap svg"); attach(svg, "room"); svg.onclick = e => {
-      if (handleTap(e, "room")) return;
+  const wireRoomSvg = () => { const svg = box.querySelector("#hmap svg"); attach(svg, "room"); if (drawOn) attachDraw(svg); svg.onclick = e => {
+      if (handleTap(e, "room")) return; if (drawOn) return;
       const g = e.target.closest(".fx"); if (g && g.dataset.f !== fsel) { fsel = g.dataset.f; return draw(); }
       if (!fsel) return; const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse()), it = fx(); if (!it) return;
       it.x = Math.round(Math.min(VW0 - it.w, Math.max(0, p.x - it.w / 2))); it.y = Math.round(Math.min(VH0 - it.h, Math.max(0, p.y - it.h / 2))); draw(it.n + " moved."); }; };
@@ -1246,7 +1322,7 @@ killCheck();
 
 function lookup(){
   app.innerHTML = `<article class="card"><div class="sect"><h2>Find a unit</h2><p class="fine" style="margin-top:0">Spark team: type the last 4 of the serial number, or take a photo of the serial plate.</p>${finderHtml("lk")}
-    ${getCode() ? `<a class="ghost" href="#inventory" style="display:block;text-align:center;margin-top:8px">Open full inventory</a>` : ""}</div></article>
+    ${getCode() ? `<a class="ghost" href="#inventory" style="display:block;text-align:center;margin-top:8px">Open full inventory</a>${chatBtn()}` : ""}</div></article>
     <article class="card"><div class="sect"><h2>Scan a tag to see a unit</h2><p>Use your phone camera to scan the Spark code on the back of any Spark price tag. That unit's digital tag opens here.</p></div></article>`;
   wireFinder("lk", "", null);
 }
@@ -1308,6 +1384,65 @@ function inventory(st0){
   [["ivs","st"],["ivb","br"],["ivf","fire"]].forEach(([id, key]) => document.getElementById(id).onchange = e => { F[key] = e.target.value; repaint(); });
   setTimeout(() => document.getElementById("ivq").focus({preventScroll:true}), 200);
 }
+
+/* Team chat (Brandon Nov 14 2026). Live only for the codes the server allows (Brandon's two phones for now). Rooms: Announcements
+   plus one per store. Photos are shrunk on the phone before sending. Messages refresh every 12 seconds while a room is open.
+   The server blocks profanity. */
+function chatFlag(r){ if (r && "chat" in r) { ls.set("sparkchat", r.chat ? "1" : "0"); ls.set("sparkchatat", String(Date.now())); } }
+const chatOn = () => ls.get("sparkchat") === "1" && !!getCode();
+async function chatRefresh(){   // re-check now and then so turning chat on or off for someone takes effect without signing in again
+  if (!getCode() || Date.now() - Number(ls.get("sparkchatat") || 0) < 30 * 60 * 1000) return chatOn();
+  try { const a = chatAuth(); if (!a) return false; const r = await api({action:"chatok", store:a.store, pin:a.pin, code:getCode()}); if (r.ok) chatFlag(r); } catch(e){}
+  return chatOn();
+}
+function chatAuth(){ if (isAll()) return {store:"Keller", pin:""}; const st = STORES.find(x => getPin(x)); return st ? {store:st, pin:getPin(st)} : null; }
+const chatBtn = () => chatOn() ? `<a class="copy copyall" href="#chat" style="display:block;text-align:center;margin:8px 0;background:#1F2A5A">Team chat</a>` : "";
+let CHAT_T = null;
+window.addEventListener("hashchange", () => { if (!/^#chat\//.test(location.hash)) { clearInterval(CHAT_T); CHAT_T = null; } });
+async function chatHome(){
+  clearInterval(CHAT_T); CHAT_T = null; document.title = "Spark Team Chat";
+  if (!chatOn()) { app.innerHTML = `<article class="card"><div class="sect"><h2>Team chat</h2><p>Team chat is not turned on for you yet.</p></div></article>`; return; }
+  app.innerHTML = `<article class="card"><div class="sect"><h2>Team chat</h2><p class="fine">Loading rooms...</p></div></article>`;
+  const a = chatAuth(); let r; try { r = await api({action:"chatrooms", store:a.store, pin:a.pin, code:getCode()}); } catch(e){}
+  if (!r || !r.ok) { app.innerHTML = `<article class="card"><div class="sect"><h2>Team chat</h2><p>${r && r.error === "nochat" ? "Team chat is not turned on for you yet." : "Could not load chat. Check your signal and try again."}</p></div></article>`; if (r && r.error === "nochat") chatFlag({chat:false}); return; }
+  const when = t => t ? new Date(t).toLocaleString("en-US", {month:"numeric", day:"numeric", hour:"numeric", minute:"2-digit"}) : "";
+  app.innerHTML = `<article class="card"><div class="sect"><h2>Team chat</h2><p class="fine" style="margin-top:0">Admin view: you can see every room. Nobody is notified when you read a room.</p>
+    <ul class="ulist tall" style="max-height:none">${r.rooms.map(o => `<li><a href="#chat/${encodeURIComponent(o.room)}" style="display:block;padding:10px 12px"><b>${esc(o.room)}</b>${o.n ? `<span class="ux" style="float:right">${esc(when(o.last))}</span><div class="fine" style="margin:2px 0 0;color:#555">${esc(o.by)}: ${esc(o.text)}</div>` : `<div class="fine" style="margin:2px 0 0;color:#888">No messages yet</div>`}</a></li>`).join("")}</ul></div></article>`;
+}
+async function chatRoom(room){
+  clearInterval(CHAT_T); CHAT_T = null; document.title = room + " | Spark Team Chat";
+  if (!chatOn()) return chatHome();
+  let last = 0, sending = false; const a = chatAuth(), seen = new Set();
+  app.innerHTML = `<article class="card"><div class="sect" style="padding-bottom:8px"><p style="margin:0 0 6px"><a href="#chat">‹ All rooms</a></p><h2 style="margin:0 0 8px">${esc(room)}</h2>
+    <div id="cmsgs" style="height:55vh;overflow-y:auto;background:#f4f4f2;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px"><p class="fine">Loading...</p></div>
+    <form id="cform" style="display:grid;grid-template-columns:auto 1fr auto;gap:6px;margin-top:8px;align-items:end">
+      <label class="ghost" style="cursor:pointer;padding:10px 12px;border:1px solid #ccc;border-radius:10px;background:#fff;color:#1d1d1f" aria-label="Add a photo">📷<input type="file" accept="image/*" id="cpic" hidden></label>
+      <textarea id="ctext" rows="1" maxlength="1000" placeholder="Message ${esc(room)}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccc;border-radius:10px;font-size:16px;resize:none;background:#fff;color:#1d1d1f"></textarea>
+      <button class="copy" type="submit" style="margin:0">Send</button></form>
+    <div id="cprev" class="fine"></div><div class="lmsg" id="cmsg"></div></div></article>`;
+  const box = document.getElementById("cmsgs"), M = document.getElementById("cmsg"); let pic = "";
+  const bubble = m => `<div style="background:#fff;border-radius:12px;padding:8px 10px;max-width:88%;box-shadow:0 1px 2px rgba(0,0,0,.06)"><div style="font-size:12px;color:#666"><b style="color:#1d1d1f">${esc(m.by)}</b> ${esc(new Date(m.t).toLocaleString("en-US", {month:"numeric", day:"numeric", hour:"numeric", minute:"2-digit"}))}</div>
+    ${m.text ? `<div style="white-space:pre-wrap;word-wrap:break-word;margin-top:2px">${esc(m.text)}</div>` : ""}${m.photo ? `<a href="https://lh3.googleusercontent.com/d/${encodeURIComponent(m.photo)}=w1600" target="_blank" rel="noopener"><img src="https://lh3.googleusercontent.com/d/${encodeURIComponent(m.photo)}=w600" alt="Photo" loading="lazy" style="display:block;max-width:100%;border-radius:8px;margin-top:6px"></a>` : ""}</div>`;
+  const add = (msgs, first) => { const atEnd = box.scrollHeight - box.scrollTop - box.clientHeight < 60; if (first) box.innerHTML = msgs.length ? "" : `<p class="fine" id="cempty">No messages yet. Say hello.</p>`;
+    msgs.forEach(m => { if (seen.has(m.id)) return; seen.add(m.id); const e = document.getElementById("cempty"); if (e) e.remove(); box.insertAdjacentHTML("beforeend", bubble(m)); last = Math.max(last, m.id); });
+    if (first || atEnd) box.scrollTop = box.scrollHeight; };
+  const pull = async first => { if (document.hidden && !first) return; try { const r = await api({action:"chatget", store:a.store, pin:a.pin, code:getCode(), room, after:last}); if (r.ok) add(r.msgs, first); else if (r.error === "nochat") { chatFlag({chat:false}); chatHome(); } } catch(e){} };
+  await pull(true); CHAT_T = setInterval(() => pull(false), 12000);
+  document.getElementById("cpic").onchange = async e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+    try { const bm = await createImageBitmap(f), k = Math.min(1, 1280 / Math.max(bm.width, bm.height)), c = document.createElement("canvas"); c.width = Math.round(bm.width * k); c.height = Math.round(bm.height * k);
+      c.getContext("2d").drawImage(bm, 0, 0, c.width, c.height); pic = c.toDataURL("image/jpeg", 0.72).split(",")[1];
+      document.getElementById("cprev").innerHTML = `Photo ready (${Math.round(pic.length * 0.75 / 1024)} KB). <a href="#" id="cpx">Remove</a>`; document.getElementById("cpx").onclick = ev => { ev.preventDefault(); pic = ""; document.getElementById("cprev").textContent = ""; }; }
+    catch(err){ M.textContent = "That photo could not be read. Try another."; } };
+  const T = document.getElementById("ctext"); T.oninput = () => { T.style.height = "auto"; T.style.height = Math.min(140, T.scrollHeight) + "px"; };
+  document.getElementById("cform").onsubmit = async e => { e.preventDefault(); if (sending) return; const text = T.value.trim(); if (!text && !pic) return;
+    sending = true; M.textContent = pic ? "Sending photo..." : "Sending...";
+    try { const r = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"chatsend", store:a.store, pin:a.pin, code:getCode(), room, text, img:pic, after:last, dev:DEV}).toString()}).then(x => x.json());
+      if (r.ok) { T.value = ""; T.style.height = "auto"; pic = ""; document.getElementById("cprev").textContent = ""; M.textContent = ""; add(r.msgs, false); box.scrollTop = box.scrollHeight; }
+      else M.textContent = r.error === "language" ? "Message not sent. Please keep it professional, no profanity." : r.error === "nochat" ? "Team chat is not turned on for you." : "Could not send. Try again.";
+    } catch(err){ M.textContent = "Could not connect. Check your signal and try again."; }
+    sending = false; };
+  T.onkeydown = e => { if (e.key === "Enter" && !e.shiftKey && window.matchMedia("(pointer:fine)").matches) { e.preventDefault(); document.getElementById("cform").requestSubmit(); } };
+}
 /* Store home page (Nov 14 2026): sparkdigitaltags.github.io/#store/keller . Team signs in once here with the store PIN and the
    last 4 of their cell, then opens any unit. No prices on this page. */
 const STORES = [...new Set(DATA.units.map(u => u.store))];
@@ -1336,12 +1471,13 @@ function storeHome(st){
       if (!/^\d{4}$/.test(code)) { m.textContent = "Enter the store PIN and the last 4 of your cell."; return; }
       m.textContent = "Checking...";
       try { const r = await api({action:"check", store:st, pin, code});
-        if (r.ok) { keepKey(r); MEM._code = code; ls.set("sparkcode", code); if (r.all) { MEM._all = true; ls.set("sparkall", "1"); } else { MEM[st] = pin; ls.set(pinKey(st), pin); (r.stores||[]).forEach(x => { MEM[x] = pin; ls.set(pinKey(x), pin); }); } track("signin", {store:st, pin, code, d:"storehome"}); storeHome(st); }
+        if (r.ok) { keepKey(r); chatFlag(r); MEM._code = code; ls.set("sparkcode", code); if (r.all) { MEM._all = true; ls.set("sparkall", "1"); } else { MEM[st] = pin; ls.set(pinKey(st), pin); (r.stores||[]).forEach(x => { MEM[x] = pin; ls.set(pinKey(x), pin); }); } track("signin", {store:st, pin, code, d:"storehome"}); storeHome(st); }
         else m.textContent = ERRS[r.error] || "That did not work. Try again.";
       } catch(err){ m.textContent = "Could not connect. Check your signal and try again."; } };
     return;
   }
-  box.innerHTML = `<h2 style="margin-top:4px">Find any unit</h2>${finderHtml("sh")}
+  chatRefresh().then(on => { const cb = document.getElementById("shchat"); if (cb) cb.innerHTML = on ? chatBtn() : ""; });
+  box.innerHTML = `<div id="shchat">${chatBtn()}</div><h2 style="margin-top:4px">Find any unit</h2>${finderHtml("sh")}
     <a class="copy copyall" href="#inventory/${slug(st)}" style="display:block;text-align:center;margin-top:8px">Inventory</a>
     <p class="fine" id="snote" style="margin:6px 0 14px">Searches every unit at every Spark store on the digital tags. Your store comes first.</p>
     ${top.length || TX_STORES.includes(st) ? `<div class="top3"><div class="t3h">Money Makers</div>
@@ -1436,7 +1572,7 @@ function adminHome(){
       <form id="admf" class="admcard" style="max-width:380px;margin:30px auto"><h2 style="margin-top:0">Sign in</h2><p class="admmut">For leaders with all store access. Enter your personal code.</p>
       <input id="admc" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Your code"><button>Open Spark Admin</button><p class="admmut" id="admm"></p></form></div>`;
     document.getElementById("admf").onsubmit = async e => { e.preventDefault(); const code = document.getElementById("admc").value.trim(), m = document.getElementById("admm"); m.textContent = "Checking...";
-      try { const r = await api({action:"check", store:"Keller", pin:"", code}); if (r.ok && r.all) { keepKey(r); MEM._code = code; ls.set("sparkcode", code); MEM._all = true; ls.set("sparkall", "1"); track("signin", {store:"Admin", pin:"", code, d:"admin"}); adminHome(); } else m.textContent = "That code does not have all store access."; }
+      try { const r = await api({action:"check", store:"Keller", pin:"", code}); if (r.ok && r.all) { keepKey(r); chatFlag(r); MEM._code = code; ls.set("sparkcode", code); MEM._all = true; ls.set("sparkall", "1"); track("signin", {store:"Keller", pin:"", code, d:"admin"}); adminHome(); } else m.textContent = "That code does not have all store access."; }
       catch(err){ m.textContent = "Could not connect. Try again."; } };
     return;
   }
@@ -1453,7 +1589,7 @@ function adminHome(){
       ${live ? `<div class="admnums"><span><b>${mine.length}</b> units</span><span><b>${mine.filter(u => u.fire).length}</b> Fire Sale</span></div><a class="admbtn" href="#store/${slug(st)}">Open store page</a>` : `<div class="admmut" style="margin-top:8px">Not on digital tags yet</div>`}</div>`; }).join("");
   const list = units.slice(0, 150).map(u => `<li><a href="#${esc(u.id)}">${u.fire ? `<span class="admfire">Fire Sale</span> ` : ""}${esc(u.m + " " + u.name)}</a><small>${esc(u.store)}, unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}</small></li>`).join("");
   app.innerHTML = `${ADMIN_CSS}<div class="adm"><div class="admh"><img src="/m/icon-192.png" alt=""><div><b>Spark Admin</b><small>${all.length} units across ${STORES.length} live locations</small></div></div>
-    <div class="admlinks"><a href="/dash/" target="_blank" rel="noopener">Activity dashboard and LSM rollout ›</a></div>
+    <div class="admlinks"><a href="/dash/" target="_blank" rel="noopener">Activity dashboard and LSM rollout ›</a> &nbsp; <a href="#inventory">Inventory ›</a>${chatOn() ? ` &nbsp; <a href="#chat">Team chat ›</a>` : ""}</div>
     <input id="admq" type="search" placeholder="Search brand, model, unit or serial" value="${esc(ADM.q)}">
     <div class="admf">${opts("dba", Object.values(LOC_INFO).map(i => i.dba), "All brands (DBA)")}${opts("state", Object.values(LOC_INFO).map(i => i.state), "All states")}
       ${opts("loc", Object.keys(LOC_INFO).filter(st => (!ADM.dba || LOC_INFO[st].dba === ADM.dba) && (!ADM.state || LOC_INFO[st].state === ADM.state)), "All locations")}
@@ -1482,6 +1618,7 @@ const ADMIN_CSS = `<style>.adm{max-width:1000px;margin:0 auto;padding:14px;font:
 .admfire{background:#C8102E;color:#fff;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px}</style>`;
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
+  { const ch = /^chat(?:\/(.+))?$/i.exec(h); if (ch) { setManifest(""); window.scrollTo(0, 0); return ch[1] ? chatRoom(ch[1]) : chatHome(); } }
   { const iv = /^inventory(?:\/(.+))?$/i.exec(h); if (iv) { setManifest(""); window.scrollTo(0, 0); return inventory(iv[1] ? STORES.find(x => slug(x) === slug(iv[1])) : ""); } }
   if (/^admin$/i.test(h)) { const mf = document.getElementById("mf"); if (mf) mf.setAttribute("href", "/m/admin.webmanifest"); const t = document.getElementById("amt"); if (t) t.setAttribute("content", "Spark Admin"); window.scrollTo(0, 0); return adminHome(); }
   { const sm0 = /^store\/(.+)$/i.exec(h), st0 = sm0 ? STORES.find(x => slug(x) === slug(sm0[1])) : (byId[h] && getCode() && (isAll() || getPin(byId[h].store)) ? byId[h].store : ""); setManifest(st0); }

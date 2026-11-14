@@ -44,7 +44,7 @@ const TYPES = {
   scan:   {n:"Customer tag scans", g:"c"}, go: {n:"Lender QR scans", g:"c"}, lead: {n:"Hold or contact requests", g:"c"}, install: {n:"Home screen adds", g:"t"},
   staffscan: {n:"Team tag scans", g:"t"}, signin: {n:"Store page sign ins", g:"t"}, serial: {n:"Serial plate scans", g:"t"}, move: {n:"Units moved", g:"t"},
   map: {n:"Map and hanger changes", g:"t"}, post: {n:"Social posts", g:"t"}, poststart: {n:"Posts started", g:"t"}, price: {n:"Price change requests", g:"t"},
-  photo: {n:"Unit photos", g:"t"}, room: {n:"Showroom photos", g:"t"}, diagram: {n:"Showroom drawing requests", g:"t"}, print: {n:"Tags printed", g:"t"} };
+  photo: {n:"Unit photos", g:"t"}, room: {n:"Showroom photos", g:"t"}, diagram: {n:"Showroom drawing requests", g:"t"}, print: {n:"Tags printed", g:"t"}, newdevice: {n:"New device sign ins", g:"t"} };
 const KPI = ["scan", "lead", "go", "post", "move", "signin"];
 function normalize(D){
   const out = [], P = (t, type, st, who, what) => { const d = new Date(t); if (!isNaN(d)) out.push({d, type, st: st || "", who: who || "", what: what || ""}); };
@@ -55,7 +55,8 @@ function normalize(D){
     else if (ty === "signin") P(t, "signin", st, who, "");
     else if (ty === "serialscan") P(t, "serial", st, who, det === "none" ? "No match" : "Matched by " + det);
     else if (ty === "install") P(t, "install", st, who, "");
-    else if (ty === "print") P(t, "print", st, who, "Unit " + unit); });
+    else if (ty === "print") P(t, "print", st, who, "Unit " + unit);
+    else if (ty === "newdevice") P(t, "newdevice", st, who, det); });
   (D.moves || []).forEach(r => P(r[0], r[2] ? "move" : "map", r[1], r[3], r[2] ? "Unit " + r[2] : "Map or hangers"));
   (D.posts || []).forEach(r => P(r[0], "post", r[1], r[4], "Unit " + r[2] + " to " + r[3]));
   (D.leads || []).forEach(r => P(r[0], "lead", r[1], "Customer", "Unit " + r[2] + (r[3] ? ", prefers " + r[3] : "")));
