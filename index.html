@@ -221,6 +221,32 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 @keyframes standglow{0%,100%{box-shadow:0 0 0 0 rgba(245,180,0,.7)}50%{box-shadow:0 0 0 8px rgba(245,180,0,0)}}
 .tlpanel .ghost,.shbox .ghost,.climb .ghost{color:#1d1d1f !important;background:#fff !important;border:1px solid #bbb !important}
 .standnote{margin-top:10px;font-weight:700;color:#F5B400;font-size:14px}
+.scene{display:block;width:100%;height:auto;border-radius:12px;margin:8px 0;background:#CFE8F7}
+.mwbob{animation:mwbob .5s ease-in-out infinite alternate}@keyframes mwbob{from{transform:translateY(0)}to{transform:translateY(-1.5px)}}
+.mwdrive{animation:mwdrive 6s ease-in-out infinite alternate}@keyframes mwdrive{from{transform:translateX(-150px)}to{transform:translateX(70px)}}
+.sparkf{animation:sparkf .35s steps(2) infinite}@keyframes sparkf{50%{opacity:.25}}
+.mowl{list-style:none;padding:0}.mowrow{position:relative;overflow:hidden;border-radius:12px;margin:8px 0;min-height:64px;background:repeating-linear-gradient(90deg,#EAF6DF 0 28px,#DDF0CC 28px 56px)}
+.mowrow .mowc{padding:10px 12px;color:#1d1d1f}.mowrow .mowc b{display:block;color:#1a5f2d}.mowrow .mowc span{display:block}.mowrow .mowc small{display:block;color:#555}
+.grass{position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='64'%3E%3Cpath d='M2 64 L6 18 L10 64Z M10 64 L15 6 L20 64Z M19 64 L24 22 L28 64Z M27 64 L32 10 L37 64Z' fill='%232F6B14'/%3E%3Cpath d='M6 64 L10 30 L13 64Z M23 64 L27 34 L30 64Z M33 64 L37 26 L40 64Z' fill='%234A8F27'/%3E%3C/svg%3E") repeat-x bottom/40px 100%,linear-gradient(#5DA52F,#3E7D1E);transition:clip-path .05s}
+.mower{position:absolute;left:0;top:50%;transform:translateY(-50%);background:none;border:0;padding:0;touch-action:none;cursor:grab;z-index:2;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.mowrow.cut{animation:mowdone .5s ease}@keyframes mowdone{from{box-shadow:inset 0 0 0 3px #F5B400}to{box-shadow:none}}
+.flames{position:relative;height:42px;margin:-4px 0 2px;overflow:hidden;pointer-events:none}
+.flames i{position:absolute;bottom:0;width:9%;border-radius:50% 50% 20% 20%/60% 60% 40% 40%;background:radial-gradient(ellipse at 50% 85%,#FFF3B0 0,#F5B400 30%,#F37021 60%,rgba(200,16,46,.85) 85%,transparent 100%);transform-origin:50% 100%;animation:flick .9s ease-in-out infinite alternate;filter:blur(.6px)}
+@keyframes flick{0%{transform:scaleY(.75) scaleX(1) translateY(2px);opacity:.85}50%{transform:scaleY(1.15) scaleX(.85) rotate(-3deg)}100%{transform:scaleY(.9) scaleX(1.05) rotate(3deg);opacity:1}}
+.pill.fire.blaze{animation:blaze 1.1s ease-in-out infinite alternate;box-shadow:0 0 0 0 rgba(245,112,33,.8)}@keyframes blaze{to{box-shadow:0 0 14px 4px rgba(245,112,33,.75);background:#E5361B}}
+.labnote{color:#F5B400 !important;margin:0 0 6px}
+.labfab{position:fixed;right:14px;bottom:66px;z-index:9989;background:#F5B400;color:#111 !important;border-radius:22px;padding:9px 16px;font-weight:800;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.tmpill{position:fixed;left:14px;bottom:14px;z-index:9990;background:#1a7f37;color:#fff;border:0;border-radius:22px;padding:11px 16px;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.labrow{display:flex;gap:10px;align-items:center;justify-content:space-between;background:#fff;color:#1d1d1f;border-radius:12px;padding:10px 12px;margin:8px 0}
+.labrow small{display:block;color:#555;margin-top:2px}.labrow a{display:inline-block;margin-top:4px;color:#C8102E;font-weight:700}.labrow button{flex:none;min-width:104px}
+.labst{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:10px;background:#eee;color:#666;margin-left:4px;vertical-align:2px}.labst.live{background:#DDF3E2;color:#1a7f37}
+.labscenes{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}.labscene{background:#fff;color:#1d1d1f;border:2px solid #ddd;border-radius:14px;padding:8px;text-align:left}
+.labscene.on{border-color:#F5B400;box-shadow:0 0 0 3px rgba(245,180,0,.35)}.labscene b{display:block}.labscene small{display:block;color:#555}.labscene em{display:inline-block;margin-top:4px;color:#1a7f37;font-style:normal;font-weight:800}
+.labrow .ghost,.labscene .ghost{color:#1d1d1f !important;background:#fff !important;border:1px solid #bbb !important}
+.avstage{width:200px;height:200px;margin:8px auto;border-radius:50%;overflow:hidden;background:#f1f1f1;display:grid;place-items:center;box-shadow:0 0 0 5px #F5B400}
+.avph{font-size:46px}.avimg{width:100%;height:100%}.avname{font-weight:800;margin:4px 0}.avbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
+.avbtns .ghost,#avmodal .ghost{color:#1d1d1f !important;background:#fff !important;border:1px solid #bbb !important}
+.huntbar{border-top-color:#1a7f37}.hunthint{color:#F5B400 !important;font-size:14px}
 .ulist{list-style:none;padding:0;margin:8px 0;max-height:236px;overflow-y:auto;border:1px solid #ddd;border-radius:12px;background:#fff;-webkit-overflow-scrolling:touch}.ulist.tall{max-height:472px}
 .ulist li{border-bottom:1px solid #eee;background:#fff !important;margin:0 !important;padding:0 !important}.ulist a,.ulist a:visited{color:#1d1d1f !important;background:#fff !important;text-decoration:none !important}.ulist .ub,.ulist .um{color:#1d1d1f !important}.ulist li:last-child{border-bottom:0}.ulist a{display:flex;align-items:center;gap:8px;min-height:46px;padding:4px 12px;color:#1d1d1f;text-decoration:none;font-size:15px}
 .ulist .ub{font-weight:800;min-width:54px}.ulist .um{flex:1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ulist .ud{color:#C8102E;font-weight:700;font-size:13px;white-space:nowrap}.ulist .us{color:#555;font-size:13px;white-space:nowrap}
@@ -318,8 +344,8 @@ function tag(u){
   const cl = document.getElementById("clink"); if (cl) cl.addEventListener("click", e => copyText(e.currentTarget, SHARE_BASE + "#" + u.id));
   locInit(u); galInit(u);
   leadInit(u);
-  applyTagLayout(); tlFab();
-  if (getCode()) meRefresh(!ls.get("sparkrole")).then(() => { applyTagLayout(); tlFab(); });
+  applyTagLayout(); tlFab(); labTag(u);
+  if (getCode()) meRefresh(!ls.get("sparkrole")).then(() => { applyTagLayout(); tlFab(); labTag(u); });
   window.scrollTo(0,0);
 }
 
@@ -564,7 +590,7 @@ function locEdit(u, r){
       if (!pick) { msg.textContent = "Pick a location first."; return; }
       msg.textContent = "Saving...";
       try { const s = await api({action:"set", store:u.store, unit:u.unit, pin:getPin(u.store), code:getCode(), loc:pick});
-        if (s.ok) locShow(u, s); else if (ERRS[s.error] && s.error!=="nostore") { signOut(u.store); locSignin(u, ERRS[s.error]); } else msg.textContent = "Could not save. Try again.";
+        if (s.ok) { locShow(u, s); sparkDo("loc", u); } else if (ERRS[s.error] && s.error!=="nostore") { signOut(u.store); locSignin(u, ERRS[s.error]); } else msg.textContent = "Could not save. Try again.";
       } catch(e){ msg.textContent = "Could not connect. Check your signal and try again."; }
     };
   };
@@ -844,7 +870,7 @@ async function hangEdit(u, r){
     document.getElementById("hsave").onclick = async () => {
       const m = document.getElementById("hmsg"); m.textContent = "Saving...";
       try { const s = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"sethangers", store:u.store, pin:getPin(u.store) || "", code:getCode(), hangers:JSON.stringify(H)}).toString()}).then(x => x.json());
-        if (s.ok) { H = s.hangers || H; m.textContent = `Saved ${H.length} hanger${H.length === 1 ? "" : "s"} for ${u.store}.`; }
+        if (s.ok) { H = s.hangers || H; sparkDo("hanger", u); m.textContent = `Saved ${H.length} hanger${H.length === 1 ? "" : "s"} for ${u.store}.`; }
         else if (ERRS[s.error] && s.error !== "nostore") { signOut(u.store); locSignin(u, ERRS[s.error]); }
         else m.textContent = "Could not save. Check each hanger has a different name and try again.";
       } catch(e){ m.textContent = "Could not connect. Check your signal and try again."; }
@@ -937,7 +963,7 @@ async function printTag(u){
     if (q.ok && q.pdf) {
       const b = new Blob([Uint8Array.from(atob(q.pdf), c => c.charCodeAt(0))], {type:"application/pdf"}), url = URL.createObjectURL(b);
       if (w) w.location.href = url; else { const a = document.createElement("a"); a.href = url; a.download = q.name || ("Unit " + u.unit + ".pdf"); a.click(); }
-      m.textContent = "Tag opened. Use Print in that tab. The printed tag shows the in store price. Keep it in the store; never post or text it.";
+      sparkDo("print", u); m.textContent = "Tag opened. Use Print in that tab. The printed tag shows the in store price. Keep it in the store; never post or text it.";
     } else {
       if (w) w.close();
       if (ERRS[q.error] && q.error !== "nostore") { signOut(u.store); locSignin(u, ERRS[q.error]); return; }
@@ -1020,7 +1046,10 @@ function stonesFor(u){
   return [
     ["Brand", `This is the ${name}. ${BRAND_FACT[B] || ""}`.trim(), "Lead with who makes it. A name they trust earns you the next minute."],
     ["Build", `Built for ${com ? "commercial crews and big properties" : "homeowners"}. Ask: "Is this for your place or your business?"`, "Their answer tells you which stones to lean on."],
-    ["Bill", small ? `Point to "Take it home today. Lease to own, not a loan." You can share the initial payment in person.` : `Point to the big number: $0 down, ${u.term || 60} months${u.apr ? " at " + u.apr + "% APR" : ""}. Say it like a monthly bill, not a price.`, "Never quote a payment from memory. The tag is your proof."],
+    feat("stone3", u)
+      ? ["Bill", small ? `Say "$49 down plus tax takes it home today." Then: "It's lease to own, not a loan. You own it once all the scheduled payments are made."` : `Point to the big number: ${u.pay ? u.pay + " a month for " + (u.term || 60) + " months" : "the monthly payment"}${Number(u.apr) === 0 ? " at 0% APR" : ""}. Say it like a monthly bill, not a price.`,
+         small ? "Any time you say a lease payment, also say lease to own and that they own it after all payments." : Number(u.apr) === 0 ? "0% APR is the only rate we say out loud." : "Don't say the APR out loud. It's printed on the tag for them to read."]
+      : ["Bill", small ? `Point to "Take it home today. Lease to own, not a loan." You can share the initial payment in person.` : `Point to the big number: $0 down, ${u.term || 60} months${u.apr ? " at " + u.apr + "% APR" : ""}. Say it like a monthly bill, not a price.`, "Never quote a payment from memory. The tag is your proof."],
     ["Bargain", u.fire ? `Fire Sale: "This new unit is priced to make room for new inventory." Point to the Fire Sale price.` : `Point to the price on the tag. Need a better number? Use Request a price change.`, "Urgency is honest here: Fire Sale units are one of a kind."],
     ["Brag", f.length ? `Pick one: ${f.slice(0, 2).map(x => '"' + x + '"').join(" or ")}. Tie it to their yard or their job.` : "Pick the one feature that solves their problem.", "One feature that fits beats a tour of all eight."],
     ["Bank", L.includes("dcf") ? `Buying for a business? Direct Credit Funding is our commercial lender for startups, businesses and fleets. They apply with business info and we work it as a business purchase. Personal buyer? Sheffield prequalify.` : `"Good credit, fair credit or still building, we have a way to pay, from 0% APR to no credit needed." Point to the three QR codes.`, L.includes("dcf") ? "Ask early if they buy under a business name. It changes the whole conversation." : "Let them pick the door that sounds like them."],
@@ -1030,6 +1059,7 @@ function stonesFor(u){
 function stonesInit(u){
   const box = document.getElementById("stonesec"); if (!box) return;
   const S = stonesFor(u);
+  if (feat("mow", u)) { mowStones(box, u, S); box.hidden = false; return; }
   box.innerHTML = `<h2>Stepping Stones</h2><div class="locmeta">Brand, Build, Bill, Bargain, Brag, Bank, Buy. Walk the tag top to bottom.</div>
     <ol class="stones">${S.map(([k, say, why]) => `<li><b>${k}</b><span>${esc(say)}</span><small>${esc(why)}</small></li>`).join("")}</ol>`;
   box.hidden = false;
@@ -1253,7 +1283,7 @@ function shareInit(u, name){
   box.hidden = false;
   let plat = "fb", personal = false, started = false, recent = null, media = "photo", vid = null, vurl = "";
   const mkBlock = () => MARKET_OFF[u.brand.toUpperCase()] || (u.maphide ? "Price can't go online" : (!u.now ? "No price on file" : ""));
-  const step = (d) => { if (d !== "open" && !started) step("open"); if (d === "open") { if (started) return; started = true; } track("step", {store:u.store, unit:u.unit, d, pin:getPin(u.store)||"", code:getCode()}); };
+  const step = (d) => { if (d !== "open" && !started) step("open"); if (d === "open") { if (started) return; started = true; } else sparkDo("post", u); track("step", {store:u.store, unit:u.unit, d, pin:getPin(u.store)||"", code:getCode()}); };
   try { api({action:"top", store:u.store, pin:getPin(u.store), code:getCode()}).then(r => { if (r && r.ok) { recent = r.units; draw(); } }).catch(()=>{}); } catch(_){}
   const rotated = () => {          // a unit drops off after a post until the store makes 5 other posts
     const list = (TOP3[u.store] || []).filter(i => byId[i]);
@@ -1398,7 +1428,7 @@ function wireFinder(k, st, base, pool, tall){
     R.hidden = false; R.innerHTML = hit.slice(0, 400).map(u => urow(u, st)).join("") || `<li class="none">No unit matches. Check the last 4 of the serial, or try a photo of the serial plate.</li>`;
     const ex = tn.length >= 4 ? hit.filter(u => snN(u).endsWith(tn.toLowerCase())) : [];
     N.textContent = ex.length === 1 ? "Serial match. Tap it to open the digital tag." : hit.length ? hit.length + " found" + (hit.length > 5 ? ", scroll for more" : "") : ""; };
-  R.addEventListener("click", e => { const a = e.target.closest("a"); if (a && q.value.trim()) { const st0 = st || (STORES.find(x => getPin(x)) || "Keller"); if (getCode()) { track("find", {store:st0, pin:getPin(st0) || "", code:getCode(), d:"sn " + q.value.trim().slice(-4)}); if (SHERPA) SHERPA.done.find = SHERPA.done.find || new Date().toISOString(); } } });
+  R.addEventListener("click", e => { const a = e.target.closest("a"); if (a && q.value.trim()) { const st0 = st || (STORES.find(x => getPin(x)) || "Keller"); if (getCode()) { track("find", {store:st0, pin:getPin(st0) || "", code:getCode(), d:"sn " + q.value.trim().slice(-4)}); if (SHERPA) SHERPA.done.find = SHERPA.done.find || new Date().toISOString(); sparkDo("find", null); } } });
   q.oninput = paint; q.onkeydown = e => { if (e.key === "Enter") { const a = R.querySelector("a"); if (a && q.value.trim()) location.hash = a.getAttribute("href").slice(1); } };
   [k + "c", k + "u"].forEach(id => document.getElementById(id).onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) serialScan(f, st || "", M, R); });
   paint(); return paint;
@@ -1491,14 +1521,14 @@ async function chatRoom(room){
 const TAG_SECS = [["title","Store, brand and unit name"],["photo","Unit photo"],["price","Price and monthly payment"],["apply","Apply for financing"],["leads","Hold this unit and Contact me"],
   ["teaminfo","Unit info and copy buttons"],["loc","Team tools: location, print, hangers, price change"],["stones","Stepping Stones"],["share","Post this unit"],["specs","Key features and specifications"],["warranty","Warranty and Fire Sale terms"]];
 const TEAM_ONLY = ["loc","stones","share"], TL_LOCKED = ["warranty"];
-const TL_ROLES = [["customer","Customers"],["isr","ISRs"],["bm","BMs"],["gm","GMs"],["team","Team members"]];
+const TL_ROLES = [["customer","Customers"],["isr","ISRs"],["bm","BMs"],["gm","GMs"],["dm","Division Managers"],["team","Team members"]];
 const TL_DEF = {order: TAG_SECS.map(x => x[0]), hidden: [], roles: {stones: ["isr"]}};
 const tlName = k => (TAG_SECS.find(x => x[0] === k) || [k, k])[1];
 function tlNorm(L){ L = L || TL_DEF; const keys = TAG_SECS.map(x => x[0]); const order = (L.order || []).filter(k => keys.includes(k)); keys.forEach(k => { if (!order.includes(k)) order.splice(keys.indexOf(k), 0, k); });
   const roles = {}; Object.keys(L.roles || {}).forEach(k => { if (keys.includes(k)) roles[k] = (L.roles[k] || []).filter(r => TL_ROLES.some(x => x[0] === r) && !(TL_LOCKED.includes(k) && r === "customer")); });
   return {order, hidden: (L.hidden || []).filter(k => keys.includes(k) && !TL_LOCKED.includes(k)), roles}; }
 let TL = tlNorm((() => { try { return JSON.parse(ls.get("sparktl") || "null"); } catch(e){ return null; } })());
-(async () => { try { const r = await api({action:"taglayout"}); if (r.ok) { const n = tlNorm(r.layout); if (JSON.stringify(n) !== JSON.stringify(TL)) { TL = n; ls.set("sparktl", JSON.stringify(n)); applyTagLayout(); } } } catch(e){} })();
+(async () => { try { const r = await api({action:"taglayout"}); if (r.ok) { setFlags(r.flags || {}); const n = tlNorm(r.layout); if (JSON.stringify(n) !== JSON.stringify(TL)) { TL = n; ls.set("sparktl", JSON.stringify(n)); applyTagLayout(); } } } catch(e){} })();
 const roleList = a => { const n = a.map(r => (TL_ROLES.find(x => x[0] === r) || [r, r])[1]); return n.length > 1 ? n.slice(0, -1).join(", ") + " and " + n[n.length - 1] : n[0] || ""; };
 function applyTagLayout(L){
   L = L || TL; const card = document.querySelector("#app > article.card"); if (!card || !card.querySelector(":scope > [data-sec]")) return;
@@ -1569,20 +1599,22 @@ let SHERPA = null;
 async function sherpaLoad(force){
   if (!getCode()) return null; if (SHERPA && !force && Date.now() - SHERPA._at < 120000) return SHERPA;
   const a = chatAuth(); if (!a) return null;
-  try { const r = await api({action:"sherpa", store:a.store, pin:a.pin, code:getCode()}); if (r.ok) { r._at = Date.now(); r.done = r.done || {}; SHERPA = r; chatFlag(r); } } catch(e){}
+  try { const r = await api({action:"sherpa", store:a.store, pin:a.pin, code:getCode()}); if (r.ok) { r._at = Date.now(); r.done = r.done || {}; chatFlag(r); if (tourMode()) r.done = tmDone(); SHERPA = r; } } catch(e){}
   return SHERPA;
 }
-function sherpaMark(step){ const a = chatAuth(); if (!a) return; if (SHERPA) SHERPA.done[step] = SHERPA.done[step] || new Date().toISOString(); api({action:"sherpamark", store:a.store, pin:a.pin, code:getCode(), step}).catch(() => {}); }
+function sherpaMark(step){ if (tourMode()) { const d = tmDone(); d[step] = d[step] || new Date().toISOString(); sessionStorage.setItem("sparktmdone", JSON.stringify(d)); if (SHERPA) SHERPA.done[step] = d[step]; return; }
+  const a = chatAuth(); if (!a) return; if (SHERPA) SHERPA.done[step] = SHERPA.done[step] || new Date().toISOString(); api({action:"sherpamark", store:a.store, pin:a.pin, code:getCode(), step}).catch(() => {}); }
 const climbDone = S => CLIMB.filter(c => S && S.done[c[0]]).length;
 function climbCard(S){
   if (!S) return "";
+  if (feat("scene")) return sceneCard(S, !!FLAGS.scene);
   const n = climbDone(S), next = CLIMB.find(c => !S.done[c[0]]);
   return `<div class="climb" id="tlclimb"><div class="climbh">⛰ Your climb up Spark OPE Mountain <span>${n === CLIMB.length ? "Summit reached!" : "At " + CAMPS[n] + ", " + n + " of " + CLIMB.length + " done"}</span></div>
     <div class="climbbar"><i style="width:${Math.round(n / CLIMB.length * 100)}%"></i></div>
     <ol>${CLIMB.map(([k, t]) => `<li class="${S.done[k] ? "ok" : next && next[0] === k ? "nx" : ""}">${S.done[k] ? "✓" : "○"} ${esc(t)}${!S.done[k] && next && next[0] === k ? ` <button type="button" class="climbgo" data-show="${k}">Show me how</button>` : ""}</li>`).join("")}</ol>
-    <button type="button" class="ghost climbtour" data-tour="1">Take the tour</button></div>`;
+    <button type="button" class="ghost climbtour" data-tour="1">New Location Tour</button>${feat("isrtour") ? `<button type="button" class="ghost climbtour" data-hunt="1">New ISR Tour: scavenger hunt</button>` : ""}</div>`;
 }
-function wireClimb(root){ root.querySelectorAll("[data-show]").forEach(b => b.onclick = () => sherpaShow(b.dataset.show)); root.querySelectorAll("[data-tour]").forEach(b => b.onclick = () => tourStart()); }
+function wireClimb(root){ root.querySelectorAll("[data-av]").forEach(b => b.onclick = () => avatarMaker()); root.querySelectorAll("[data-hunt]").forEach(b => b.onclick = () => huntStart()); root.querySelectorAll("[data-show]").forEach(b => b.onclick = () => sherpaShow(b.dataset.show)); root.querySelectorAll("[data-tour]").forEach(b => b.onclick = () => tourStart()); }
 function sherpaModal(title, body, btns){
   document.getElementById("shmodal")?.remove();
   const d = document.createElement("div"); d.id = "shmodal"; d.className = "shmodal";
@@ -1592,7 +1624,7 @@ function sherpaModal(title, body, btns){
 async function sherpaGreet(){
   if (document.getElementById("shmodal") || document.getElementById("coach")) return;
   const S = await sherpaLoad(); if (!S) return;
-  const now = new Date(), slot = now.toDateString() + (now.getHours() >= 12 ? " pm" : " am"), key = "sparkslot" + getCode();
+  const now = new Date(), slot = now.toDateString() + (now.getHours() >= 12 ? " pm" : " am"), key = "sparkslot" + getCode() + (tourMode() ? "tm" + (sessionStorage.getItem("sparktmsess") || (sessionStorage.setItem("sparktmsess", String(Date.now())), sessionStorage.getItem("sparktmsess"))) : "");
   if (!S.done.welcome) { sherpaMark("welcome"); ls.set(key, slot);
     return sherpaModal(`Welcome to Spark Digital Tags, ${S.first || "team"}!`, `Think of this app as your sherpa for the climb up Spark OPE Mountain. Take the 1 minute tour to see how a digital tag works for you and your customers. The tour is always here when you come back to any tag: just tap <b>Take the tour</b>.`, [["Take the tour", () => tourStart()], ["Later", null]]); }
   if (ls.get(key) === slot) return; ls.set(key, slot);
@@ -1629,7 +1661,7 @@ const TOUR = [
   [null, "Last stop: on your store page, find any unit by the last 4 of its serial number, or a photo of the serial plate. This tour is always here: tap Take the tour on any tag."]];
 function tourStart(){
   if (!document.getElementById("locsec") || document.getElementById("locsec").hidden || !document.getElementById("lupd")) { sessionStorage.setItem("sparktour", "1"); location.hash = sherpaUnit(); return; }
-  coach(TOUR, () => sherpaMark("tour"));
+  coach(tourFor(byId[decodeURIComponent(location.hash.slice(1))]), () => sherpaMark("tour"));
 }
 function coach(steps, done){
   const vis = el => el && el.offsetParent !== null && !el.closest(".tloff,[hidden]");
@@ -1638,9 +1670,9 @@ function coach(steps, done){
   const bar = document.createElement("div"); bar.id = "coach"; bar.className = "coachbar"; document.body.appendChild(bar);
   const end = fin => { document.querySelectorAll(".coachon").forEach(e => e.classList.remove("coachon")); bar.remove(); if (fin && done) done(); };
   const show = () => { document.querySelectorAll(".coachon").forEach(e => e.classList.remove("coachon"));
-    const [q, t] = S[i], el = q && document.querySelector(q); if (el) { el.classList.add("coachon"); el.scrollIntoView({behavior:"smooth", block:"center"}); }
-    bar.innerHTML = `<div class="coachn">${S.length > 1 ? `Step ${i + 1} of ${S.length}` : "Your sherpa"}</div><p>${esc(t)}</p><div class="coachb">${i ? `<button type="button" class="ghost" data-c="b">Back</button>` : ""}<button type="button" class="ghost" data-c="x">${S.length > 1 ? "End tour" : "Got it"}</button>${S.length > 1 ? `<button type="button" class="copy" data-c="n">${i === S.length - 1 ? "Finish" : "Next"}</button>` : ""}</div>`;
-    bar.querySelectorAll("[data-c]").forEach(b => b.onclick = () => { const c = b.dataset.c; if (c === "x") return end(S.length === 1); if (c === "b") i--; else if (i === S.length - 1) return end(true); else i++; show(); }); };
+    const [q, t, act] = S[i], el = q && document.querySelector(q); if (el) { el.classList.add("coachon"); el.scrollIntoView({behavior:"smooth", block:"center"}); }
+    bar.innerHTML = `<div class="coachn">${S.length > 1 ? `Step ${i + 1} of ${S.length}` : "Your sherpa"}</div><p>${esc(t)}</p><div class="coachb">${i ? `<button type="button" class="ghost" data-c="b">Back</button>` : ""}${act ? `<button type="button" class="copy" data-c="a">${esc(act.btn)}</button>` : ""}<button type="button" class="ghost" data-c="x">${S.length > 1 ? "End tour" : "Got it"}</button>${S.length > 1 ? `<button type="button" class="copy" data-c="n">${i === S.length - 1 ? "Finish" : "Next"}</button>` : ""}</div>`;
+    bar.querySelectorAll("[data-c]").forEach(b => b.onclick = () => { const c = b.dataset.c; if (c === "a") { act.fn(); if (i < S.length - 1) { i++; show(); } else end(true); return; } if (c === "x") return end(S.length === 1); if (c === "b") i--; else if (i === S.length - 1) return end(true); else i++; show(); }); };
   if (S.length) show(); else end(false);
 }
 /* After the team section on a tag shows: the climb card, the tour button, any pending tour or "show me how", then the greeting. */
@@ -1649,10 +1681,288 @@ async function sherpaTag(){
   const S = await sherpaLoad(); if (!S || !document.getElementById("locsec")) return;
   document.getElementById("tlclimb")?.remove(); box.insertAdjacentHTML("beforeend", climbCard(S)); wireClimb(box);
   const t = sessionStorage.getItem("sparktour"), sh = sessionStorage.getItem("sparkshow");
-  if (t) { sessionStorage.removeItem("sparktour"); setTimeout(() => coach(TOUR, () => sherpaMark("tour")), 600); return; }
+  if (t) { sessionStorage.removeItem("sparktour"); setTimeout(() => coach(tourFor(byId[decodeURIComponent(location.hash.slice(1))]), () => sherpaMark("tour")), 600); return; }
   if (sh && sh !== "find") { sessionStorage.removeItem("sparkshow"); setTimeout(() => sherpaShow(sh), 600); return; }
   sherpaGreet();
 }
+/* ======================= Spark Lab (Brandon Nov 14 2026) =======================
+   Tests that are not live yet. Brandon turns each one on or off from #lab. While a test is offline it shows only on Brandon's
+   phones (admin codes), and tag features show only on their example tag. */
+let FLAGS = (() => { try { return JSON.parse(ls.get("sparkflags") || "{}") || {}; } catch(e){ return {}; } })();
+const LAB_EX = {flames:["farmersbranch-109225-fce43e"], mow:["farmersbranch-109225-fce43e"], stone3:["farmersbranch-109122-4ef97e","farmersbranch-109225-fce43e"]};
+function feat(k, u){ if (FLAGS[k] === true) return true; if (!isAdm()) return false; const ex = LAB_EX[k]; return ex ? !!(u && ex.includes(u.id)) : true; }
+const tourMode = () => isAdm() && ls.get("sparktourmode") === "1";
+function setFlags(f){ if (!f) return; const a = JSON.stringify(FLAGS); FLAGS = f; ls.set("sparkflags", JSON.stringify(f)); if (a !== JSON.stringify(f)) { const u = byId[decodeURIComponent(location.hash.slice(1))]; if (u) labTag(u); } }
+
+/* ---- Scenes: four OPE takes on the climb. The person's avatar is the main character. ---- */
+const SCENES = {
+  lawn:     {title:"Your First Cut", sub:"Mow five clean stripes into the lawn", stones:"Mow Lines", step:"Stripe", done:"Lawn striped. Looks like a ballpark!"},
+  mountain: {title:"The Summit Run", sub:"Drive your mower up Spark Mountain", stones:"Switchbacks", step:"Switchback", done:"Summit reached!"},
+  trail:    {title:"Clear the Trail", sub:"Cut through five fallen logs", stones:"Trail Cuts", step:"Log", done:"Trail cleared!"},
+  engine:   {title:"Fire It Up", sub:"Fire all five spark plugs and bring it to full throttle", stones:"Spark Plugs", step:"Plug", done:"Full throttle!"}};
+const sceneV = () => SCENES[FLAGS.sceneV] ? FLAGS.sceneV : "lawn";
+const avUrl = (S) => S && S.avatar ? "https://lh3.googleusercontent.com/d/" + encodeURIComponent(S.avatar) + "=w256" : "";
+function avHead(cx, cy, r, url, first, id){
+  const cid = "avc" + (id || Math.random().toString(36).slice(2, 7));
+  return `<defs><clipPath id="${cid}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath></defs><circle cx="${cx}" cy="${cy}" r="${r + 2.5}" fill="#F5B400"/>` +
+    (url ? `<image href="${url}" x="${cx - r}" y="${cy - r}" width="${r * 2}" height="${r * 2}" clip-path="url(#${cid})" preserveAspectRatio="xMidYMid slice"/>`
+         : `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#1F2A5A"/><text x="${cx}" y="${cy + r * 0.38}" text-anchor="middle" font-size="${r * 1.05}" font-weight="800" fill="#fff" font-family="Arial,sans-serif">${esc((first || "?")[0].toUpperCase())}</text>`);
+}
+function mowerSvg(x, y, s, url, first, id){   // zero turn mower with the avatar in the seat, facing right
+  return `<g transform="translate(${x} ${y}) scale(${s})"><g class="mwbob">
+    <rect x="-34" y="-6" width="58" height="12" rx="5" fill="#3a3a3a"/><rect x="-30" y="-20" width="44" height="16" rx="6" fill="#C8102E"/>
+    <rect x="-24" y="-30" width="16" height="12" rx="3" fill="#1d1d1f"/><rect x="2" y="-26" width="4" height="12" rx="2" fill="#555"/><rect x="2" y="-27" width="12" height="3" rx="1.5" fill="#555"/>
+    <circle cx="-22" cy="8" r="11" fill="#1d1d1f"/><circle cx="-22" cy="8" r="4" fill="#888"/><circle cx="20" cy="11" r="6" fill="#1d1d1f"/><circle cx="20" cy="11" r="2" fill="#888"/>
+    <rect x="-8" y="2" width="30" height="7" rx="3" fill="#F5B400"/>${avHead(-16, -42, 12, url, first, id)}</g></g>`;
+}
+function sceneSvg(v, n, S, id){
+  const url = avUrl(S), first = S && S.first, N = 5, k = Math.min(n, N);
+  const sky = `<rect width="360" height="200" fill="#CFE8F7"/><circle cx="318" cy="34" r="16" fill="#F5B400" opacity=".9"/>`;
+  if (v === "lawn") {
+    let g = ""; for (let i = 0; i < N; i++) { const y = 70 + i * 26, cut = i < k;
+      g += `<rect x="20" y="${y}" width="320" height="26" fill="${cut ? (i % 2 ? "#7CC24B" : "#93D162") : "#3E7D1E"}"/>`;
+      if (!cut) for (let b = 22; b < 340; b += 9) g += `<path d="M${b} ${y + 26} l3 -${12 + (b * 7 % 6)} l3 ${12 + (b * 7 % 6)}z" fill="${b % 2 ? "#2F6B14" : "#4A8F27"}"/>`; }
+    const row = Math.min(k, N - 1), mx = k >= N ? 300 : 40 + ((Date.now() / 60) % 1) * 0, my = 70 + row * 26 + 14;
+    return `<svg viewBox="0 0 360 200" class="scene" role="img" aria-label="Mower cutting stripe ${k + 1} of 5">${sky}<rect x="0" y="62" width="360" height="138" fill="#2F6B14"/>${g}
+      <g class="mwdrive">${mowerSvg(k >= N ? 300 : 200, my, 0.8, url, first, id)}</g></svg>`;
+  }
+  if (v === "mountain") {
+    const P = [[40,180],[300,150],[90,120],[260,90],[150,60],[200,30]], t = k / N, seg = Math.min(N - 1, Math.floor(t * N)), f = t * N - seg;
+    const a = P[Math.min(seg, 5)], b = P[Math.min(seg + 1, 5)], mx = k >= N ? 200 : a[0] + (b[0] - a[0]) * f, my = k >= N ? 30 : a[1] + (b[1] - a[1]) * f;
+    return `<svg viewBox="0 0 360 200" class="scene" role="img" aria-label="Mower climbing Spark Mountain, ${k} of 5">${sky}
+      <path d="M0 200 L200 18 L360 200Z" fill="#6E7F5B"/><path d="M200 18 L232 48 L214 44 L200 56 L186 44 L168 48Z" fill="#fff"/>
+      <polyline points="${P.map(p => p.join(",")).join(" ")}" fill="none" stroke="#C9B48A" stroke-width="9" stroke-linejoin="round"/>
+      <polyline points="${P.slice(0, seg + 1).map(p => p.join(",")).join(" ")} ${mx},${my}" fill="none" stroke="#F5B400" stroke-width="4" stroke-dasharray="6 5"/>
+      <line x1="200" y1="30" x2="200" y2="2" stroke="#1d1d1f" stroke-width="2"/><path d="M200 2 L222 9 L200 16Z" fill="#C8102E"/>
+      ${mowerSvg(mx, my - 4, 0.62, url, first, id)}</svg>`;
+  }
+  if (v === "trail") {
+    let g = ""; for (let i = 0; i < N; i++) { const x = 70 + i * 60, cut = i < k;
+      g += cut ? `<g><rect x="${x - 26}" y="150" width="20" height="14" rx="4" fill="#8B5A2B"/><rect x="${x + 6}" y="150" width="20" height="14" rx="4" fill="#8B5A2B"/><circle cx="${x - 6}" cy="157" r="5" fill="#E8C99A"/><circle cx="${x + 6}" cy="157" r="5" fill="#E8C99A"/></g>`
+               : `<rect x="${x - 24}" y="148" width="48" height="16" rx="7" fill="#7A4A1F"/><circle cx="${x + 24}" cy="156" r="8" fill="#E8C99A" stroke="#7A4A1F" stroke-width="2"/>`; }
+    const px = k >= N ? 340 : 70 + k * 60 - 44;
+    return `<svg viewBox="0 0 360 200" class="scene" role="img" aria-label="Clearing log ${k + 1} of 5">${sky}
+      <path d="M0 110 Q60 70 120 100 T240 95 T360 100 V200 H0Z" fill="#3E7D1E"/><path d="M0 165 Q180 150 360 165 V200 H0Z" fill="#C9B48A"/>
+      ${[20, 110, 200, 290].map(x => `<path d="M${x} 120 l16 -46 l16 46z" fill="#25561A"/>`).join("")}${g}
+      <g transform="translate(${px} 150)"><rect x="-8" y="-10" width="16" height="26" rx="5" fill="#C8102E"/><rect x="6" y="0" width="22" height="7" rx="2" fill="#F37021"/><rect x="26" y="1" width="20" height="5" rx="2" fill="#bbb"/>${avHead(0, -24, 12, url, first, id)}</g></svg>`;
+  }
+  let plugs = ""; for (let i = 0; i < N; i++) { const x = 52 + i * 64, on = i < k;
+    plugs += `<g transform="translate(${x} 150)"><rect x="-7" y="-26" width="14" height="22" rx="3" fill="#eee" stroke="#999"/><rect x="-10" y="-4" width="20" height="10" rx="2" fill="#777"/><rect x="-3" y="6" width="6" height="12" fill="#999"/>
+      ${on ? `<path class="sparkf" d="M0 22 l-7 10 l6 -2 l-3 12 l10 -14 l-6 2 l4 -8z" fill="#F5B400"/>` : ""}</g>`; }
+  const ang = -120 + (k / N) * 240;
+  return `<svg viewBox="0 0 360 200" class="scene" role="img" aria-label="${k} of 5 spark plugs firing">${sky.replace("#CFE8F7", "#1F2A5A")}
+    <path d="M110 120 A70 70 0 1 1 250 120" fill="none" stroke="#333" stroke-width="16"/><path d="M110 120 A70 70 0 1 1 250 120" fill="none" stroke="url(#gg${id})" stroke-width="16" stroke-dasharray="${(k / N) * 330} 400"/>
+    <defs><linearGradient id="gg${id}"><stop offset="0" stop-color="#1a7f37"/><stop offset=".6" stop-color="#F5B400"/><stop offset="1" stop-color="#C8102E"/></linearGradient></defs>
+    <line x1="180" y1="120" x2="${180 + 58 * Math.cos((ang - 90) * Math.PI / 180)}" y2="${120 + 58 * Math.sin((ang - 90) * Math.PI / 180)}" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="180" cy="120" r="7" fill="#fff"/>
+    ${avHead(180, 82, 18, url, first, id)}${plugs}</svg>`;
+}
+function sceneCard(S, real){
+  const v = sceneV(), sc = SCENES[v], n = climbDone(S), next = CLIMB.find(c => !S.done[c[0]]);
+  return `<div class="climb scenec" id="tlclimb"><div class="climbh">${esc(sc.title)} <span>${n >= CLIMB.length ? esc(sc.done) : esc(sc.sub) + ": " + n + " of " + CLIMB.length + " done"}</span></div>
+    ${sceneSvg(v, n, S, "c")}
+    ${feat("avatar") && !S.avatar ? `<button type="button" class="climbgo" data-av="1" style="margin:6px 0">Make my avatar</button>` : feat("avatar") ? `<button type="button" class="ghost" data-av="1" style="width:100%;margin:6px 0">Change my avatar</button>` : ""}
+    <ol>${CLIMB.map(([k, t], i) => `<li class="${S.done[k] ? "ok" : next && next[0] === k ? "nx" : ""}">${S.done[k] ? "✓" : "○"} <b>${esc(sc.step)} ${i + 1}:</b> ${esc(t)}${!S.done[k] && next && next[0] === k ? ` <button type="button" class="climbgo" data-show="${k}">Show me how</button>` : ""}</li>`).join("")}</ol>
+    <button type="button" class="ghost climbtour" data-tour="1">New Location Tour</button>${feat("isrtour") ? `<button type="button" class="ghost climbtour" data-hunt="1">New ISR Tour: scavenger hunt</button>` : ""}
+    ${!real && isAdm() ? `<p class="fine" style="margin:8px 0 0;color:#8a6d00">Testing. Only you see this scene until you make it live in the Lab.</p>` : ""}</div>`;
+}
+
+/* ---- Avatar maker: profile pic, five looks, cycle until they love it ---- */
+const AV_STYLES = ["Classic", "Comic", "Spark Pop", "Sketch", "8 Bit", "Neon"];
+function avRender(src, style){
+  const N = 256, c = document.createElement("canvas"); c.width = c.height = N; const x = c.getContext("2d");
+  const s = Math.min(src.width, src.height), sx = (src.width - s) / 2, sy = Math.max(0, (src.height - s) * 0.3);
+  if (style === "8 Bit") { const t = document.createElement("canvas"); t.width = t.height = 36; const tx = t.getContext("2d"); tx.drawImage(src, sx, sy, s, s, 0, 0, 36, 36); x.imageSmoothingEnabled = false; x.drawImage(t, 0, 0, N, N); }
+  else x.drawImage(src, sx, sy, s, s, 0, 0, N, N);
+  const d = x.getImageData(0, 0, N, N), p = d.data, L = new Float32Array(N * N);
+  for (let i = 0; i < N * N; i++) L[i] = (0.299 * p[i * 4] + 0.587 * p[i * 4 + 1] + 0.114 * p[i * 4 + 2]) / 255;
+  const E = new Float32Array(N * N);
+  for (let yy = 1; yy < N - 1; yy++) for (let xx = 1; xx < N - 1; xx++) { const i = yy * N + xx;
+    const gx = -L[i - N - 1] - 2 * L[i - 1] - L[i + N - 1] + L[i - N + 1] + 2 * L[i + 1] + L[i + N + 1], gy = -L[i - N - 1] - 2 * L[i - N] - L[i - N + 1] + L[i + N - 1] + 2 * L[i + N] + L[i + N + 1]; E[i] = Math.min(1, Math.hypot(gx, gy)); }
+  const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  for (let i = 0; i < N * N; i++) { let r = p[i * 4], g = p[i * 4 + 1], b = p[i * 4 + 2]; const l = L[i], e = E[i];
+    if (style === "Classic") { r = Math.min(255, r * 1.06 + 6); g = Math.min(255, g * 1.03 + 3); }
+    else if (style === "Comic") { const q = v => Math.round(v / 255 * 4) / 4 * 255, m = (r + g + b) / 3; r = q(m + (r - m) * 1.5); g = q(m + (g - m) * 1.5); b = q(m + (b - m) * 1.5); if (e > 0.32) { r = g = b = 25; } }
+    else if (style === "Spark Pop") { const c2 = hex(l < 0.28 ? "#1F2A5A" : l < 0.48 ? "#C8102E" : l < 0.7 ? "#F5B400" : "#FFF6DD"); [r, g, b] = c2; if (e > 0.45) [r, g, b] = [20, 20, 30]; }
+    else if (style === "Sketch") { const v = Math.max(0, Math.min(255, 255 - e * 330)), base = 200 + l * 55; const o = Math.min(v, base); r = o; g = o * 0.98; b = o * 0.92; }
+    else if (style === "8 Bit") { const q = v => Math.round(v / 255 * 3) / 3 * 255; r = q(r); g = q(g); b = q(b); }
+    else if (style === "Neon") { const t = i / (N * N); r = 20 + e * 245 * (1 - t) + e * 40 * t; g = 24 + e * 220; b = 70 + e * 185 * t + l * 30; }
+    p[i * 4] = Math.max(0, Math.min(255, r)); p[i * 4 + 1] = Math.max(0, Math.min(255, g)); p[i * 4 + 2] = Math.max(0, Math.min(255, b)); }
+  x.putImageData(d, 0, 0); return c;
+}
+function avatarMaker(after){
+  document.getElementById("avmodal")?.remove();
+  const d = document.createElement("div"); d.id = "avmodal"; d.className = "shmodal";
+  d.innerHTML = `<div class="shbox"><h2>Make your avatar</h2><p>Take a selfie, then flip through the looks until you love it. Your avatar stars in your progress scene.</p>
+    <div id="avstage" class="avstage"><div class="avph">📷</div></div><div id="avname" class="avname"></div>
+    <div class="avbtns" id="avcyc" hidden><button type="button" class="ghost" id="avprev" aria-label="Previous look">‹ Look</button><button type="button" class="ghost" id="avnext" aria-label="Next look">Look ›</button></div>
+    <div class="shbtns"><label class="copy" style="display:block;cursor:pointer">Take a selfie<input type="file" accept="image/*" capture="user" id="avcam" hidden></label>
+      <label class="ghost" style="display:block;cursor:pointer;padding:10px;border-radius:10px">Upload a photo<input type="file" accept="image/*" id="avup" hidden></label>
+      <button type="button" class="copy" id="avsave" hidden>Use this avatar</button><button type="button" class="ghost" id="avx">Not now</button></div><p class="fine" id="avmsg"></p></div>`;
+  document.body.appendChild(d);
+  let img = null, si = 0, cur = null;
+  const show = () => { cur = avRender(img, AV_STYLES[si]); const st = document.getElementById("avstage"); st.innerHTML = ""; cur.className = "avimg"; st.appendChild(cur);
+    document.getElementById("avname").textContent = AV_STYLES[si] + " (" + (si + 1) + " of " + AV_STYLES.length + ")"; document.getElementById("avcyc").hidden = false; document.getElementById("avsave").hidden = false; };
+  const load = async f => { try { img = await createImageBitmap(f); si = 1; show(); } catch(e){ document.getElementById("avmsg").textContent = "That photo could not be read. Try another."; } };
+  ["avcam", "avup"].forEach(id => document.getElementById(id).onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) load(f); });
+  document.getElementById("avprev").onclick = () => { si = (si + AV_STYLES.length - 1) % AV_STYLES.length; show(); };
+  document.getElementById("avnext").onclick = () => { si = (si + 1) % AV_STYLES.length; show(); };
+  document.getElementById("avx").onclick = () => d.remove();
+  document.getElementById("avsave").onclick = async () => { const m = document.getElementById("avmsg"); m.textContent = "Saving your avatar..."; const a = chatAuth(); if (!a) return;
+    try { const r = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"avatar", store:a.store, pin:a.pin, code:getCode(), style:AV_STYLES[si], img:cur.toDataURL("image/jpeg", 0.86).split(",")[1]}).toString()}).then(x => x.json());
+      if (r.ok) { if (SHERPA) SHERPA.avatar = r.id; d.remove(); refreshClimb(); if (after) after(); } else m.textContent = "Could not save. Try again."; }
+    catch(e){ m.textContent = "Could not connect. Try again."; } };
+}
+function refreshClimb(){ const c = document.getElementById("tlclimb"); if (!c || !SHERPA) return; const host = c.parentElement; c.outerHTML = climbCard(SHERPA); wireClimb(host); }
+
+/* ---- Mow to reveal: grass covers each stone; touch the mower and swipe right to cut ---- */
+function mowStones(box, u, S){
+  const sc = SCENES[sceneV()], url = avUrl(SHERPA), first = SHERPA && SHERPA.first;
+  box.innerHTML = `<h2>${esc(sc.stones)}</h2><div class="locmeta">Touch the mower and swipe right to cut the grass. Walk the tag top to bottom.${!FLAGS.mow && isAdm() ? " <b>Testing: only you see this, on this example tag.</b>" : ""}</div>
+    <ol class="stones mowl">${S.map(([k, say, why], i) => `<li class="mowrow"><div class="mowc"><b>${esc(k)}</b><span>${esc(say)}</span><small>${esc(why)}</small></div>
+      <div class="grass" aria-hidden="true"></div><button type="button" class="mower" aria-label="Swipe right to mow and reveal stone ${i + 1}"><svg viewBox="-50 -60 90 80" width="56" height="50">${mowerSvg(0, 0, 0.9, url, first, "m" + i)}</svg></button></li>`).join("")}</ol>`;
+  box.querySelectorAll(".mowrow").forEach(li => {
+    const g = li.querySelector(".grass"), m = li.querySelector(".mower"); let x = 0, x0 = 0, p0 = 0, on = false;
+    const set = v => { const w = li.clientWidth; x = Math.max(x, Math.min(w, v)); g.style.clipPath = `inset(0 0 0 ${x}px)`; m.style.left = Math.min(x, w - 54) + "px";
+      if (x >= w - 30) { li.classList.add("cut"); m.remove(); g.remove(); } };
+    m.onpointerdown = e => { on = true; x0 = x; p0 = e.clientX; try { m.setPointerCapture(e.pointerId); } catch(err){} e.preventDefault(); };
+    m.onpointermove = e => { if (on && e.clientX > p0) set(x0 + (e.clientX - p0)); };
+    m.onpointerup = m.onpointercancel = () => { on = false; };
+    m.onkeydown = e => { if (e.key === "ArrowRight") { e.preventDefault(); set(x + li.clientWidth / 6); } };
+  });
+}
+
+/* ---- Fire Sale flames (example tag while testing) ---- */
+function labTag(u){
+  const pr = document.querySelector('#app [data-sec="price"]');
+  document.querySelectorAll(".flames").forEach(e => e.remove()); document.querySelectorAll(".pill.fire").forEach(e => e.classList.remove("blaze"));
+  if (u.fire && pr && feat("flames", u)) { pr.insertAdjacentHTML("afterbegin", `<div class="flames" aria-hidden="true">${Array.from({length:16}, (_, i) => `<i style="left:${i * 6.4 - 2}%;animation-delay:${(i * 137 % 900) / 1000}s;height:${30 + (i * 53 % 26)}px"></i>`).join("")}</div>${!FLAGS.flames && isAdm() ? `<div class="fine labnote">Testing: flames show only for you, on this example tag.</div>` : ""}`);
+    document.querySelectorAll(".pill.fire").forEach(e => e.classList.add("blaze")); }
+  huntCheck("open", u);
+  labPills();
+}
+
+/* ---- Tag specific talking points for the New Location Tour ---- */
+function tourFor(u){
+  if (!u || !feat("talk")) return TOUR;
+  const days = FIRE_AGE[u.id], twins = DATA.units.filter(x => x.fire && TX_STORES.includes(x.store) && x.id !== u.id && snorm(x.model) === snorm(u.model)).length;
+  const apr0 = Number(u.apr) === 0, lend = lendersFor(u).length, f1 = (u.feats || [])[0], f2 = (u.feats || [])[1];
+  const pay = u.maphide ? "This price is too low to show online. Walk them to the paper tag, or give the price in person."
+    : u.lease ? `Under $1,500: "Take it home today. Lease to own, not a loan."`
+    : u.pay ? `Lead with the payment: ${u.pay} a month for ${u.term} months${apr0 ? " at 0% APR" : ""}. Point to the tag. Never quote it from memory.${apr0 ? "" : " Don't say the rate out loud; it's printed on the tag."}`
+    : `Lead with the price: ${u.now}. Then point to the ways to pay.`;
+  return [
+    ['[data-sec=title]', `${u.brand} ${u.name}.${u.fire ? ` Fire Sale, on the floor ${days ? days + " days" : "a while"}. That makes it a Money Maker: sell it first.` : ""}`],
+    ['[data-sec=price]', pay + (u.rebate ? " Mention the rebate on the tag." : "")],
+    ['[data-sec=apply]', `${lend} ways to pay right on the tag. Good credit, fair credit or still building, everyone has a door.`],
+    ...(f1 ? [['[data-sec=specs]', `The one thing to show them: ${f1}.${f2 ? " Then: " + f2 + "." : ""}`]] : []),
+    ['[data-sec=warranty]', `${u.warranty} warranty. Say it out loud. It closes deals.`],
+    ['#lupd', "Set location tells the whole team where this unit sits right now."],
+    ['#lprint', "Print this tag gives you the paper tag with the real in store price."],
+    ['#lhang', "Place the QR hangers on your showroom map, and draw your showroom with your finger."],
+    ...(twins ? [['#lmodel', `${twins} more of this model ${twins === 1 ? "is" : "are"} on Fire Sale around Texas. Tap here to see them.`]] : []),
+    ['#sharesec', "Post this unit. The caption is written for you and never shows a price, payment or rate."],
+    ...(feat("avatar") && !(SHERPA && SHERPA.avatar) ? [[null, "Now let's put you in the picture. Take a profile pic and pick your avatar. It stars in your progress scene.", {btn:"Make my avatar", fn:() => avatarMaker()}]] : []),
+    ['#tlclimb', feat("scene") ? `${SCENES[sceneV()].title}: your progress. Finish all five and you're done.` : "Your climb. Finish these five motions and you reach the summit."],
+    [null, "Last stop: on your store page, find any unit by the last 4 of its serial, or a photo of the serial plate. This tour is always here: tap New Location Tour on any tag."]];
+}
+
+/* ---- New ISR Tour: a scavenger hunt on real tags at their store ---- */
+function huntBuild(st){
+  const mine = DATA.units.filter(x => x.store === st), fire = mine.filter(x => x.fire).sort(byAge), pick = a => a[Math.floor(Math.random() * a.length)];
+  const top = (TOP3[st] || []).map(i => byId[i]).filter(Boolean)[0] || fire[0] || mine[0];
+  const sn = pick(mine.filter(x => x.serial && x.id !== top.id)) || mine[0];
+  const twinPool = fire.filter(x => DATA.units.some(y => y.fire && y.store !== st && TX_STORES.includes(y.store) && snorm(y.model) === snorm(x.model)));
+  const tw = pick(twinPool) || null, walk = pick(mine.filter(x => x.id !== top.id && x.id !== sn.id)) || top, pr = pick(fire.filter(x => !x.maphide && x.id !== walk.id)) || top;
+  const C = [
+    {t:"open", id:top.id, clue:`Money Maker #1: open your store's oldest Fire Sale unit.`, hint:"It's first in Money Makers on your store page."},
+    {t:"open", id:sn.id, clue:`Serial sleuth: find the unit whose serial ends in ${sn4(sn)}.`, hint:"Type the 4 characters in Find any unit on your store page, or snap the serial plate."},
+    ...(tw ? [{t:"twin", model:snorm(tw.model), st, clue:`Twin hunt: this store has a ${brAb(tw.brand)} ${tw.model} on Fire Sale. Open its twin at another Texas store.`, hint:"Open the one here, then tap the Model button in the team section."}] : []),
+    {t:"loc", id:walk.id, clue:`Floor walk: go find the ${brAb(walk.brand)} ${walk.model}${walk.serial ? " (SN ends " + sn4(walk) + ")" : ""} on your lot and set where it sits.`, hint:"Open its tag, tap Set location, pick the spot and Save."},
+    {t:"print", id:pr.id, clue:`Paper trail: print the tag for the ${brAb(pr.brand)} ${pr.model}${pr.serial ? " (SN ends " + sn4(pr) + ")" : ""}.`, hint:"Open its tag and tap Print this tag."}];
+  return {st, C, i:0, done:[], at:Date.now()};
+}
+const huntGet = () => { try { return JSON.parse(ls.get("sparkhunt" + getCode()) || "null"); } catch(e){ return null; } };
+const huntPut = h => h ? ls.set("sparkhunt" + getCode(), JSON.stringify(h)) : ls.del("sparkhunt" + getCode());
+function huntStart(){
+  const cur = byId[decodeURIComponent(location.hash.slice(1))], st = cur ? cur.store : (STORES.find(x => getPin(x)) || "Keller");
+  const h = huntBuild(st); huntPut(h);
+  sherpaModal("New ISR Tour: scavenger hunt", `Five clues, all on real tags at ${esc(st)}. Solve each one and the next clue appears. Use your store page, Find any unit, and the tags themselves.`, [["Start the hunt", () => huntBar()], ["Later", () => huntPut(null)]]);
+}
+function huntBar(msg){
+  document.getElementById("huntbar")?.remove(); const h = huntGet(); if (!h) return;
+  const b = document.createElement("div"); b.id = "huntbar"; b.className = "coachbar huntbar";
+  if (h.i >= h.C.length) { b.innerHTML = `<div class="coachn">New ISR Tour</div><p>🏆 All ${h.C.length} clues solved. You know your way around the digital tags!</p><div class="coachb"><button type="button" class="copy" data-h="end">Finish</button></div>`; }
+  else { const c = h.C[h.i]; b.innerHTML = `<div class="coachn">Clue ${h.i + 1} of ${h.C.length}${msg ? " · " + esc(msg) : ""}</div><p>${esc(c.clue)}</p><p class="hunthint" hidden>${esc(c.hint)}</p>
+    <div class="coachb"><button type="button" class="ghost" data-h="hint">Hint</button><button type="button" class="ghost" data-h="skip">Skip</button><button type="button" class="ghost" data-h="x">Exit</button></div>`; }
+  document.body.appendChild(b);
+  b.querySelectorAll("[data-h]").forEach(x => x.onclick = () => { const a = x.dataset.h;
+    if (a === "hint") b.querySelector(".hunthint").hidden = false;
+    if (a === "skip") { h.i++; huntPut(h); huntBar("skipped"); }
+    if (a === "x") { b.remove(); huntPut(null); }
+    if (a === "end") { b.remove(); huntPut(null); sherpaMark("isrtour"); } });
+}
+function huntCheck(t, u){
+  const h = huntGet(); if (!h || h.i >= h.C.length || !u) { if (h) huntBar(); return; }
+  const c = h.C[h.i]; let ok = false;
+  if (c.t === "open" && t === "open" && u.id === c.id) ok = true;
+  if (c.t === "twin" && t === "open" && u.store !== c.st && u.fire && snorm(u.model) === c.model) ok = true;
+  if ((c.t === "loc" || c.t === "print") && t === c.t && u.id === c.id) ok = true;
+  if (ok) { h.i++; h.done.push(Date.now()); huntPut(h); huntBar("solved!"); } else huntBar();
+}
+function sparkDo(t, u){
+  if (t !== "open") huntCheck(t, u);
+  const map = {find:"find", loc:"loc", print:"print", post:"post", hanger:"hanger"};
+  if (tourMode() && map[t]) { const d = tmDone(); d[map[t]] = new Date().toISOString(); sessionStorage.setItem("sparktmdone", JSON.stringify(d)); if (SHERPA) SHERPA.done = Object.assign({}, d); refreshClimb(); }
+}
+const tmDone = () => { try { return JSON.parse(sessionStorage.getItem("sparktmdone") || "{}"); } catch(e){ return {}; } };
+
+/* ---- Tour mode pill (Brandon's devices) and Lab links ---- */
+function labPills(){
+  document.getElementById("tmpill")?.remove(); document.getElementById("labfab")?.remove();
+  if (!isAdm()) return;
+  const lf = document.createElement("a"); lf.id = "labfab"; lf.className = "labfab"; lf.href = "#lab"; lf.textContent = "Lab"; document.body.appendChild(lf);
+  if (!tourMode()) return;
+  const p = document.createElement("button"); p.id = "tmpill"; p.type = "button"; p.className = "tmpill"; p.textContent = "Tour mode"; document.body.appendChild(p);
+  p.onclick = () => sherpaModal("Tour mode", "You're seeing the digital tags the way a brand new team member does. Practice steps here don't count toward your real progress.",
+    [["New Location Tour", () => tourStart()], ...(feat("isrtour") ? [["New ISR Tour (scavenger hunt)", () => huntStart()]] : []), ...(feat("avatar") ? [["Make my avatar", () => avatarMaker()]] : []),
+     ["Start over as brand new", () => { sessionStorage.removeItem("sparktmdone"); sessionStorage.removeItem("sparktmwelcome"); SHERPA = null; location.reload(); }],
+     ["Turn off tour mode", () => { ls.del("sparktourmode"); sessionStorage.removeItem("sparktmdone"); SHERPA = null; location.reload(); }], ["Close", null]]);
+}
+
+/* ---- The Lab page ---- */
+const LAB_TESTS = [
+  ["flames", "Fire Sale flames", "Animated flames across the price box and a glowing Fire Sale pill on Fire Sale tags.", "#farmersbranch-109225-fce43e"],
+  ["mow", "Mow to reveal the Stepping Stones", "Grass covers each stone. Touch the mower and swipe right to cut it and read the line. The section takes the scene's name.", "#farmersbranch-109225-fce43e"],
+  ["stone3", "Stone 3 (Bill) wording", "Never say the APR unless it's 0%. Under $1,500: \"$49 down plus tax\" with the lease to own line. Examples: a $459 lease unit and an 11.99% unit.", "#farmersbranch-109122-4ef97e"],
+  ["scene", "Progress scene", "Replaces Your climb up Spark OPE Mountain with the scene you pick below. Their avatar is the main character.", ""],
+  ["avatar", "Profile pic avatar", "A tour step to take a selfie and flip through 6 looks (Classic, Comic, Spark Pop, Sketch, 8 Bit, Neon).", ""],
+  ["talk", "Tag specific New Location Tour", "The tour's talking points come from the tag they're on: Fire Sale days, payment, top feature, warranty, Texas twins.", ""],
+  ["isrtour", "New ISR Tour (scavenger hunt)", "Five clues on real tags at their store: oldest Money Maker, serial sleuth, twin hunt, floor walk, paper trail.", ""]];
+async function labPage(){
+  document.title = "Spark Lab";
+  if (!isAdm()) { app.innerHTML = `<article class="card"><div class="sect"><h2>Spark Lab</h2><p>Sign in with an admin code first.</p></div></article>`; return; }
+  try { const r = await api({action:"taglayout"}); if (r.ok) setFlags(r.flags || {}); } catch(e){}
+  const S = (await sherpaLoad()) || {done:{}, first:"You"}, demo = Object.assign({}, S, {done:{find:1, loc:1}});
+  app.innerHTML = `<article class="card"><div class="sect labpage"><h2>Spark Lab</h2><p class="fine" style="margin-top:0">Everything here is a test. Offline tests show only on your phones (tag tests only on their example tag). Make one live and every team member gets it.</p>
+    <div class="labrow"><div><b>Tour mode on this phone</b><small>See the tags as a brand new team member. Practice doesn't count toward your real progress.</small></div><button type="button" class="${tourMode() ? "copy" : "ghost"}" id="labtm">${tourMode() ? "On" : "Off"}</button></div>
+    <h2 style="margin-top:18px">Tests not live yet</h2>
+    ${LAB_TESTS.map(([k, n, d, ex]) => `<div class="labrow"><div><b>${esc(k === "scene" ? n + ": " + SCENES[sceneV()].title : k === "mow" ? n + " (" + SCENES[sceneV()].stones + ")" : n)}</b> <span class="labst ${FLAGS[k] ? "live" : ""}">${FLAGS[k] ? "Live" : "Offline"}</span><small>${esc(d)}</small>${ex ? `<a href="${ex}">Try it on the example tag ›</a>` : k === "isrtour" ? `<a href="#" data-hunt="1">Start the hunt ›</a>` : k === "avatar" ? `<a href="#" data-av="1">Make my avatar ›</a>` : ""}</div>
+      <button type="button" class="${FLAGS[k] ? "ghost" : "copy"}" data-flag="${k}" data-val="${FLAGS[k] ? 0 : 1}">${FLAGS[k] ? "Take offline" : "Make live"}</button></div>`).join("")}
+    <h2 style="margin-top:18px">Pick the progress scene</h2><p class="fine" style="margin-top:0">Your avatar is the star. Shown here at 2 of 5 done.</p>
+    <div class="labscenes">${Object.entries(SCENES).map(([v, sc]) => `<button type="button" class="labscene ${sceneV() === v ? "on" : ""}" data-scene="${v}">${sceneSvg(v, 2, demo, "l" + v)}<b>${esc(sc.title)}</b><small>${esc(sc.sub)}. Stepping Stones become ${esc(sc.stones)}.</small>${sceneV() === v ? "<em>Selected</em>" : ""}</button>`).join("")}</div>
+    <div class="lmsg" id="labmsg"></div></div></article>`;
+  const msg = document.getElementById("labmsg"), a = chatAuth();
+  const set = async (key, val) => { msg.textContent = "Saving..."; try { const r = await api({action:"setflag", store:a.store, pin:a.pin, code:getCode(), key, val}); if (r.ok) { setFlags(r.flags); labPage(); } else msg.textContent = "Could not save."; } catch(e){ msg.textContent = "Could not connect."; } };
+  app.querySelectorAll("[data-flag]").forEach(b => b.onclick = () => set(b.dataset.flag, b.dataset.val));
+  app.querySelectorAll("[data-scene]").forEach(b => b.onclick = () => set("sceneV", b.dataset.scene));
+  app.querySelectorAll("[data-hunt]").forEach(b => b.onclick = e => { e.preventDefault(); huntStart(); });
+  app.querySelectorAll("[data-av]").forEach(b => b.onclick = e => { e.preventDefault(); avatarMaker(); });
+  document.getElementById("labtm").onclick = () => { if (tourMode()) { ls.del("sparktourmode"); sessionStorage.removeItem("sparktmdone"); } else { ls.set("sparktourmode", "1"); sessionStorage.removeItem("sparktmwelcome"); sessionStorage.removeItem("sparktmdone"); } SHERPA = null; labPage(); labPills(); };
+  labPills();
+}
+
+window.addEventListener("hashchange", () => setTimeout(() => { labPills(); if (huntGet() && !document.getElementById("huntbar")) huntBar(); }, 350));
+setTimeout(() => { labPills(); if (huntGet() && !document.getElementById("huntbar")) huntBar(); }, 900);
 /* Store home page (Nov 14 2026): sparkdigitaltags.github.io/#store/keller . Team signs in once here with the store PIN and the
    last 4 of their cell, then opens any unit. No prices on this page. */
 const STORES = [...new Set(DATA.units.map(u => u.store))];
@@ -1767,8 +2077,8 @@ window.addEventListener("appinstalled", () => { const st = /^#admin$/i.test(loca
    every Spark location, filtered by DBA brand, state, location and manufacturer. All access code only. No prices shown here. */
 const SPARK_LOCS = [
   ["LSM Outdoor Power","TX",["Burleson","Colleyville","Denton","Farmers Branch","Keller","Lewisville","Renfro"]],
-  ["ATS Outdoors","TX",["Tyler","Weatherford","Springtown"]],
-  ["Landscape Supply","TX",["Waco","Gatesville"]],
+  ["ATS Outdoors","TX",["Tyler","Weatherford","Springtown","Gatesville"]],
+  ["Landscape Supply","TX",["Waco"]],
   ["Mowers Inc","FL",["Sarasota","Bradenton","Naples","Belleview","Tampa","Lakeland"]],
   ["Outdoor Equipment Co","GA",["Augusta"]],
   ["Taylor","GA",["Waynesboro"]],
@@ -1802,7 +2112,7 @@ function adminHome(){
       ${live ? `<div class="admnums"><span><b>${mine.length}</b> units</span><span><b>${mine.filter(u => u.fire).length}</b> Fire Sale</span></div><a class="admbtn" href="#store/${slug(st)}">Open store page</a>` : `<div class="admmut" style="margin-top:8px">Not on digital tags yet</div>`}</div>`; }).join("");
   const list = units.slice(0, 150).map(u => `<li><a href="#${esc(u.id)}">${u.fire ? `<span class="admfire">Fire Sale</span> ` : ""}${esc(u.m + " " + u.name)}</a><small>${esc(u.store)}, unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}</small></li>`).join("");
   app.innerHTML = `${ADMIN_CSS}<div class="adm"><div class="admh"><img src="/m/icon-192.png" alt=""><div><b>Spark Admin</b><small>${all.length} units across ${STORES.length} live locations</small></div></div>
-    <div class="admlinks"><a href="/dash/" target="_blank" rel="noopener">Activity dashboard and LSM rollout ›</a> &nbsp; <a href="#inventory">Inventory ›</a>${chatOn() ? ` &nbsp; <a href="#chat">Team chat ›</a>` : ""}</div>
+    <div class="admlinks"><a href="/dash/" target="_blank" rel="noopener">Activity dashboard and LSM rollout ›</a> &nbsp; <a href="#inventory">Inventory ›</a>${isAdm() ? ` &nbsp; <a href="#lab">Lab ›</a>` : ""}${chatOn() ? ` &nbsp; <a href="#chat">Team chat ›</a>` : ""}</div>
     <input id="admq" type="search" placeholder="Search brand, model, unit or serial" value="${esc(ADM.q)}">
     <div class="admf">${opts("dba", Object.values(LOC_INFO).map(i => i.dba), "All brands (DBA)")}${opts("state", Object.values(LOC_INFO).map(i => i.state), "All states")}
       ${opts("loc", Object.keys(LOC_INFO).filter(st => (!ADM.dba || LOC_INFO[st].dba === ADM.dba) && (!ADM.state || LOC_INFO[st].state === ADM.state)), "All locations")}
@@ -1832,6 +2142,7 @@ const ADMIN_CSS = `<style>.adm{max-width:1000px;margin:0 auto;padding:14px;font:
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
   ["tledit","tlpanel","coach","shmodal"].forEach(id => document.getElementById(id)?.remove());
+  if (/^lab$/i.test(h)) { setManifest(""); window.scrollTo(0, 0); return labPage(); }
   { const ch = /^chat(?:\/(.+))?$/i.exec(h); if (ch) { setManifest(""); window.scrollTo(0, 0); return ch[1] ? chatRoom(ch[1]) : chatHome(); } }
   { const iv = /^inventory(?:\/(.+))?$/i.exec(h); if (iv) { setManifest(""); window.scrollTo(0, 0); return inventory(iv[1] ? STORES.find(x => slug(x) === slug(iv[1])) : ""); } }
   if (/^admin$/i.test(h)) { const mf = document.getElementById("mf"); if (mf) mf.setAttribute("href", "/m/admin.webmanifest"); const t = document.getElementById("amt"); if (t) t.setAttribute("content", "Spark Admin"); window.scrollTo(0, 0); return adminHome(); }
