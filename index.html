@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
+<link rel="manifest" id="mf" href="/m/spark.webmanifest">
+<link rel="apple-touch-icon" href="/m/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/m/icon-192.png">
+<meta name="theme-color" content="#121212">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" id="amt" content="Spark Tags">
 <title>Spark Digital Tag</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -112,6 +119,7 @@ li::marker{color:var(--gold-deep)}
 .labrow .req{font-size:12px;color:var(--muted);min-width:64px;text-align:center}
 .labrow .del{padding:8px 10px;font-size:13px}
 #haddc{font:inherit;font-size:15px;padding:8px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.fxed{display:grid;gap:6px;margin:10px 0}.fxed input{font:inherit;font-size:16px;padding:9px 10px;border-radius:8px;border:2px solid var(--line)}.fxb{display:flex;flex-wrap:wrap;gap:6px}.fxb button{padding:8px 10px;font-size:14px}
 .hsug{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.hsug button{padding:8px 10px;font-size:14px}
 .top3 .spl{display:block;font-size:13px;color:var(--muted);margin-top:2px}.top3 .spl b{color:var(--ink)}
 .prqmap{font-size:14px;color:var(--muted)}.prqmap.low{color:#b42318;font-weight:700}
@@ -577,37 +585,88 @@ const SHOW_GENERIC = { vb: [860, 620], bg: `<rect width="860" height="620" fill=
  <rect x="140" y="430" width="200" height="56" fill="#E6DCCB"/>${_T(240, 464, "ACCESSORIES", {s:17})}
  ${_T(430, 140, "Best guess layout. Add showroom photos so we can draw yours.", {s:15, c:"#8a817c"})}` };
 const HANG_SUGGEST = ["Front Door", "Sales Counter", "Parts Counter", "Handheld Wall", "Mower Display"];
-function showroomOf(store){ return SHOWROOMS[store] || SHOW_GENERIC; }
-function hangSvg(store, H, sel){
-  const s = showroomOf(store), [VW, VH] = s.vb, Z = VW / 860;
-  const pins = H.map(([k, n, x, y]) => { const X = x * VW / 100, Y = y * VH / 100, on = k === sel, fs = (on ? 28 : 24) * Z, w = Math.max(60 * Z, n.length * fs * 0.56 + 44 * Z), h = fs * 1.9;
-    return `<g class="zp" data-z="${esc(k)}"><rect x="${X - w / 2}" y="${Y - h / 2}" width="${w}" height="${h}" rx="${6 * Z}" fill="${on ? "#C8102E" : "#1F2A5A"}" stroke="#fff" stroke-width="${3 * Z}"/>
-      <rect x="${X - w / 2 + 8 * Z}" y="${Y - 7 * Z}" width="${14 * Z}" height="${14 * Z}" fill="#fff"/><rect x="${X - w / 2 + 11 * Z}" y="${Y - 4 * Z}" width="${8 * Z}" height="${8 * Z}" fill="${on ? "#C8102E" : "#1F2A5A"}"/>
-      <text x="${X + 10 * Z}" y="${Y + fs * 0.36}" text-anchor="middle" ${_F} font-size="${fs}" fill="#fff">${esc(n)}</text></g>`; }).join("");
+/* Showroom drawing (Nov 14 2026). The fixtures (counters, doors, displays) are a list the team can edit. Edits to fixtures go to the
+   store's branch manager and Brandon for approval (action "setlayout"); until approved everyone keeps seeing the current drawing.
+   QR hangers (PBH) are placed and sized right away with no approval. Hanger rows are [code, name, x%, y%, size]. */
+const LAYOUT_BASE = [
+  {k:"win1", t:"window", n:"WINDOWS", x:30, y:593, w:330, h:12, s:15},
+  {k:"win2", t:"window", n:"WINDOWS", x:500, y:593, w:330, h:12, s:15},
+  {k:"door", t:"door", n:"FRONT DOOR", x:360, y:588, w:140, h:22, s:20},
+  {k:"hand", t:"box", n:"HANDHELD WALL", x:32, y:70, w:64, h:430, f:"#D9CBB4", s:20, r:-90},
+  {k:"parts", t:"box", n:"PARTS COUNTER", x:300, y:32, w:300, h:64, f:"#BFAE92", s:20},
+  {k:"shop", t:"door", n:"TO SHOP", x:700, y:16, w:110, h:16, s:16},
+  {k:"sales", t:"box", n:"SALES COUNTER", x:620, y:410, w:190, h:72, f:"#BFAE92", s:19},
+  {k:"mower", t:"pads", n:"MOWER DISPLAY", x:190, y:170, w:420, h:170, f:"#DCE5D0", s:19},
+  {k:"acc", t:"box", n:"ACCESSORIES", x:140, y:430, w:200, h:56, f:"#E6DCCB", s:17}];
+const ROOMS = {}, LAYOUT_PENDING = {};
+const VW0 = 860, VH0 = 620;
+function roomOf(store){ return ROOMS[store] || LAYOUT_BASE; }
+function fxSvg(items, sel){
+  return items.map(it => {
+    const {x, y, w, h} = it, s = it.s || 19, n = esc(it.n || ""), cx = x + w / 2, cy = y + h / 2;
+    let g = "";
+    if (it.t === "window") g = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#9CC9E6"/>` + _T(cx, cy > VH0 / 2 ? y - 13 : y + h + 22, n, {s, c:"#6b8aa0"});
+    else if (it.t === "door") g = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#F4EFE6"/>` + _T(cx, cy > VH0 / 2 ? y - 16 : y + h + 28, n, {s});
+    else if (it.t === "pads") { const gap = w * 0.0714, pw = (w - 2 * gap) / 3; for (let i = 0; i < 3; i++) g += `<rect x="${x + i * (pw + gap)}" y="${y}" width="${pw}" height="${h}" rx="14" fill="${it.f || "#DCE5D0"}"/>`; g += _T(cx, y + h + 30, n, {s}); }
+    else if (it.t === "text") g = _T(cx, cy + s * 0.35, n, {s});
+    else g = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${it.f || "#E6DCCB"}"/>` + (it.r ? _T(cx + s * 0.35, cy, n, {s, r:it.r}) : _T(cx, cy + s * 0.38, n, {s}));
+    if (it.k === sel) g += `<rect x="${x - 6}" y="${y - 6}" width="${w + 12}" height="${h + 12}" fill="none" stroke="#C8102E" stroke-width="5" stroke-dasharray="14 8"/>`;
+    return `<g class="fx" data-f="${esc(it.k)}">${g}</g>`; }).join("");
+}
+function roomBg(store, items, sel){
+  return `<rect width="${VW0}" height="${VH0}" fill="#F4EFE6"/><rect x="22" y="22" width="816" height="576" fill="none" stroke="#2c2725" stroke-width="10"/>` +
+    fxSvg(items || roomOf(store), sel) + (ROOMS[store] || items ? "" : _T(430, 140, "Best guess layout. Add showroom photos so we can draw yours.", {s:15, c:"#8a817c"}));
+}
+function showroomOf(store){ return SHOWROOMS[store] || {vb:[VW0, VH0], bg: roomBg(store)}; }
+function hangSvg(store, H, sel, items, fsel){
+  const s = SHOWROOMS[store] && !items ? SHOWROOMS[store] : {vb:[VW0, VH0], bg: roomBg(store, items, fsel)}, [VW, VH] = s.vb, Z = VW / 860;
+  const pins = H.map(([k, n, x, y, sz]) => { const X = x * VW / 100, Y = y * VH / 100, on = k === sel, m = Math.min(2, Math.max(0.6, Number(sz) || 1)), fs = (on ? 28 : 24) * Z * m, w = Math.max(60 * Z * m, n.length * fs * 0.56 + 44 * Z * m), h = fs * 1.9, q = Z * m;
+    return `<g class="zp" data-z="${esc(k)}"${items ? ' opacity=".45"' : ""}><rect x="${X - w / 2}" y="${Y - h / 2}" width="${w}" height="${h}" rx="${6 * q}" fill="${on ? "#C8102E" : "#1F2A5A"}" stroke="#fff" stroke-width="${3 * Z}"/>
+      <rect x="${X - w / 2 + 8 * q}" y="${Y - 7 * q}" width="${14 * q}" height="${14 * q}" fill="#fff"/><rect x="${X - w / 2 + 11 * q}" y="${Y - 4 * q}" width="${8 * q}" height="${8 * q}" fill="${on ? "#C8102E" : "#1F2A5A"}"/>
+      <text x="${X + 10 * q}" y="${Y + fs * 0.36}" text-anchor="middle" ${_F} font-size="${fs}" fill="#fff">${esc(n)}</text></g>`; }).join("");
   return `<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${esc(store)} showroom with ${H.length} QR code hangers">${s.bg}${pins}</svg>`;
 }
 async function hangEdit(u, r){
   const box = document.getElementById("locsec");
   box.innerHTML = `<h2>QR code hanger locations</h2><div class="locmeta">Loading...</div>`;
-  let H = [], sel = "";
-  try { const g = await api({action:"hangers", store:u.store}); if (g.ok && Array.isArray(g.hangers)) H = g.hangers; } catch(e){}
+  let H = [], sel = "", mode = "hang", L = null, fsel = "";
+  try { const g = await api({action:"hangers", store:u.store}); if (g.ok && Array.isArray(g.hangers)) H = g.hangers;
+    if (g.ok && Array.isArray(g.layout) && g.layout.length) ROOMS[u.store] = g.layout; LAYOUT_PENDING[u.store] = !!(g && g.pending); } catch(e){}
   const pb = i => "PB" + String(i).padStart(2, "0"), free = () => { const o = []; for (let i = 1; i <= 20; i++) if (!H.some(a => a[0] === pb(i))) o.push(pb(i)); return o; };
   const add = (n, c) => { n = n.trim().replace(/\s+/g, " ").slice(0, 30); if (!n) return "";
     if (H.length >= 40) return "That's the most hangers one showroom can hold.";
     if (H.some(a => a[1].toLowerCase() === n.toLowerCase())) return "There's already a hanger with that name.";
-    c = c || free()[0]; if (!c) return "All 20 hanger numbers are used."; H.push([c, n, 50, 55]); sel = c; return c + " " + n + " added in the middle. Tap the spot where it hangs."; };
+    c = c || free()[0]; if (!c) return "All 20 hanger numbers are used."; H.push([c, n, 50, 55, 1]); sel = c; return c + " " + n + " added in the middle. Tap the spot where it hangs."; };
+  const fx = () => L.find(a => a.k === fsel);
+  const roomPanel = () => {
+    const it = fsel && fx();
+    return `<div class="locmeta"><b>Edit the showroom drawing.</b> Tap a counter, door or display to pick it, then tap a new spot to move it. Use the buttons to resize, rename or delete it. Your changes go to your branch manager and Brandon. The drawing changes for everyone once one of them approves.</div>
+      ${LAYOUT_PENDING[u.store] ? `<div class="lmsg">A drawing change for ${esc(u.store)} is waiting for approval. Submitting again replaces it.</div>` : ""}
+      <div class="locmap mapedit" id="hmap">${hangSvg(u.store, H, "", L, fsel)}</div>
+      ${it ? `<div class="fxed"><label for="fxn">Name</label><input id="fxn" maxlength="24" value="${esc(it.n)}">
+        <div class="fxb"><button class="ghost" data-z="w+">Wider</button><button class="ghost" data-z="w-">Narrower</button><button class="ghost" data-z="h+">Taller</button><button class="ghost" data-z="h-">Shorter</button>
+        <button class="ghost" data-z="s+">Bigger name</button><button class="ghost" data-z="s-">Smaller name</button><button class="ghost" data-z="rot">Turn name</button><button class="ghost del" data-z="del">Delete</button></div></div>`
+        : `<div class="locmeta">Tap something on the drawing to edit it.</div>`}
+      <form id="fxadd" class="addf"><input id="fxaddn" maxlength="24" placeholder="Add a display, like Zero Turn Row" aria-label="New display name"><button class="copy" type="submit">Add</button></form>
+      <div class="lrow"><button class="copy" id="fxsub">Submit for approval</button><button class="ghost" id="fxback">Back to hangers</button></div>
+      <button class="ghost" id="fxreset" style="width:100%;margin-top:8px">Start over from the current drawing</button>
+      <div class="lmsg" id="hmsg"></div>`;
+  };
   const draw = (msg) => {
+    if (mode === "room") { box.innerHTML = `<h2>Showroom drawing</h2>` + roomPanel(); wireRoom(msg); return; }
     const left = HANG_SUGGEST.filter(n => !H.some(a => a[1].toLowerCase() === n.toLowerCase()));
     box.innerHTML = `<h2>QR code hanger locations</h2>
-      <div class="locmeta">Pick the hanger number printed in its top right corner (PB01 to PB10) and name the spot, like Front Door. Tap the hanger in the list, then tap the spot on the showroom where it hangs. Tap Save when you're done.</div>
+      <div class="locmeta">Pick the hanger number printed in its top right corner (PB01 to PB10) and name the spot, like Front Door. Tap the hanger in the list, then tap the spot on the showroom where it hangs. Use Bigger and Smaller to size its label. Tap Save when you're done.</div>
+      ${LAYOUT_PENDING[u.store] ? `<div class="locmeta">A showroom drawing change is waiting for approval.</div>` : ""}
       <div class="locmap mapedit" id="hmap">${hangSvg(u.store, H, sel)}</div>
-      <div class="lablist">${H.length ? H.map(([k, n]) => `<div class="labrow${k === sel ? " on" : ""}"><button class="lab" data-s="${esc(k)}"><b>${esc(k)}</b> ${esc(n)}</button><button class="ghost del" data-d="${esc(k)}">Remove</button></div>`).join("") : `<div class="locmeta">No hangers on this showroom yet.</div>`}</div>
+      <div class="lablist">${H.length ? H.map(([k, n]) => `<div class="labrow${k === sel ? " on" : ""}"><button class="lab" data-s="${esc(k)}"><b>${esc(k)}</b> ${esc(n)}</button><button class="ghost del" data-d="${esc(k)}">Remove</button></div>${k === sel ? `<div class="fxb"><button class="ghost" data-g="1">Bigger label</button><button class="ghost" data-g="-1">Smaller label</button></div>` : ""}`).join("") : `<div class="locmeta">No hangers on this showroom yet.</div>`}</div>
       ${left.length ? `<div class="locmeta" style="margin-top:4px">Quick add:</div><div class="hsug">${left.map(n => `<button class="ghost" data-a="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : ""}
       <form id="haddf" class="addf"><select id="haddc" aria-label="Hanger number">${free().map(c => `<option>${c}</option>`).join("")}</select><input id="haddn" maxlength="30" placeholder="Spot name, like Battery Endcap" aria-label="New hanger name"><button class="copy" type="submit">Add</button></form>
       <div class="lrow"><button class="copy" id="hsave">Save hangers</button><button class="ghost" id="hcancel">Back</button></div>
       <div class="lmsg" id="hmsg">${msg ? esc(msg) : ""}</div>
+      <button class="ghost" id="hroom" style="width:100%;margin-top:8px">Edit the showroom drawing (needs approval)</button>
       <div class="hphoto"><h3>Showroom photos</h3>
-        <p class="fine" style="margin:0 0 6px">${SHOWROOMS[u.store] ? "This showroom was drawn from your team's photos. Add new photos if the layout changes." : "This drawing is our best guess. Take 3 to 6 photos of your showroom from the front door and each corner so we can draw your real layout. No customers or faces, please."}</p>
+        <p class="fine" style="margin:0 0 6px">${ROOMS[u.store] ? "Add new photos if the layout changes." : "This drawing is our best guess. Fix it with Edit the showroom drawing, or take 3 to 6 photos of your showroom from the front door and each corner so we can draw your real layout. No customers or faces, please."}</p>
         <label class="copy copyall galadd">Add showroom photos<input type="file" accept="image/*" capture="environment" multiple hidden id="hfile"></label>
         <div class="lmsg" id="hpmsg"></div></div>`;
     const svg = box.querySelector("#hmap svg");
@@ -620,10 +679,12 @@ async function hangEdit(u, r){
       draw(a[1] + " moved. Tap Save hangers when you're done.");
     };
     box.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { sel = b.dataset.s; draw(); document.getElementById("hmap").scrollIntoView({block:"center", behavior:"smooth"}); });
+    box.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { const a = H.find(x => x[0] === sel); if (!a) return; const v = Math.round(Math.min(2, Math.max(0.6, (Number(a[4]) || 1) + 0.15 * Number(b.dataset.g))) * 100) / 100; a[4] = v; draw(a[1] + (Number(b.dataset.g) > 0 ? " is bigger." : " is smaller.") + " Tap Save hangers when you're done."); });
     box.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { H = H.filter(a => a[0] !== b.dataset.d); if (sel === b.dataset.d) sel = ""; draw("Removed. Tap Save hangers to keep the change."); });
     box.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { draw(add(b.dataset.a)); document.getElementById("hmap").scrollIntoView({block:"center", behavior:"smooth"}); });
     document.getElementById("haddf").onsubmit = e => { e.preventDefault(); draw(add(document.getElementById("haddn").value, document.getElementById("haddc").value)); };
     document.getElementById("hcancel").onclick = () => locShow(u, r);
+    document.getElementById("hroom").onclick = () => { mode = "room"; L = JSON.parse(JSON.stringify(roomOf(u.store))); fsel = ""; draw(); };
     document.getElementById("hsave").onclick = async () => {
       const m = document.getElementById("hmsg"); m.textContent = "Saving...";
       try { const s = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"sethangers", store:u.store, pin:getPin(u.store) || "", code:getCode(), hangers:JSON.stringify(H)}).toString()}).then(x => x.json());
@@ -649,6 +710,42 @@ async function hangEdit(u, r){
       e.target.value = "";
     };
   };
+  const wireRoom = (msg) => {
+    if (msg) document.getElementById("hmsg").textContent = msg;
+    const svg = box.querySelector("#hmap svg");
+    svg.onclick = e => {
+      const g = e.target.closest(".fx"); if (g && g.dataset.f !== fsel) { fsel = g.dataset.f; return draw(); }
+      if (!fsel) return draw("Tap a counter, door or display first.");
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse()), it = fx(); if (!it) return;
+      it.x = Math.round(Math.min(VW0 - it.w, Math.max(0, p.x - it.w / 2))); it.y = Math.round(Math.min(VH0 - it.h, Math.max(0, p.y - it.h / 2)));
+      draw(it.n + " moved.");
+    };
+    const n = document.getElementById("fxn"); if (n) n.oninput = () => { const it = fx(); if (it) { it.n = n.value.toUpperCase().slice(0, 24); svg.outerHTML; document.getElementById("hmap").innerHTML = hangSvg(u.store, H, "", L, fsel); wireRoomSvg(); } };
+    box.querySelectorAll(".fxb [data-z]").forEach(b => b.onclick = () => { const it = fx(); if (!it) return; const z = b.dataset.z, c = [it.x + it.w / 2, it.y + it.h / 2];
+      if (z === "del") { L = L.filter(a => a.k !== fsel); const nm = it.n; fsel = ""; return draw(nm + " deleted."); }
+      if (z === "rot") it.r = it.r ? 0 : -90;
+      if (z === "s+" || z === "s-") it.s = Math.min(40, Math.max(10, Math.round((it.s || 19) * (z === "s+" ? 1.15 : 0.87))));
+      if (z[0] === "w" || z[0] === "h") { const d = z[0], k = z[1] === "+" ? 1.15 : 0.87, max = d === "w" ? VW0 : VH0; it[d] = Math.round(Math.min(max, Math.max(10, it[d] * k)));
+        it.x = Math.round(Math.min(VW0 - it.w, Math.max(0, c[0] - it.w / 2))); it.y = Math.round(Math.min(VH0 - it.h, Math.max(0, c[1] - it.h / 2))); }
+      draw(); });
+    document.getElementById("fxadd").onsubmit = e => { e.preventDefault(); const v = document.getElementById("fxaddn").value.trim().toUpperCase().slice(0, 24); if (!v) return;
+      if (L.length >= 40) return draw("That's the most a drawing can hold.");
+      const k = "fx" + Date.now().toString(36); L.push({k, t:"box", n:v, x:360, y:280, w:140, h:60, f:"#E6DCCB", s:17}); fsel = k; draw(v + " added in the middle. Tap where it goes."); };
+    document.getElementById("fxback").onclick = () => { mode = "hang"; draw(); };
+    document.getElementById("fxreset").onclick = () => { L = JSON.parse(JSON.stringify(roomOf(u.store))); fsel = ""; draw("Back to the current drawing."); };
+    document.getElementById("fxsub").onclick = async () => {
+      const m = document.getElementById("hmsg"); m.textContent = "Sending for approval...";
+      try { const s = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"setlayout", store:u.store, pin:getPin(u.store) || "", code:getCode(), layout:JSON.stringify(L)}).toString()}).then(x => x.json());
+        if (s.ok) { LAYOUT_PENDING[u.store] = true; mode = "hang"; draw("Sent to " + (s.to || "your branch manager and Brandon") + " for approval. The drawing changes once it is approved."); }
+        else if (ERRS[s.error] && s.error !== "nostore") { signOut(u.store); locSignin(u, ERRS[s.error]); }
+        else m.textContent = "Could not send. Check each name is filled in and try again.";
+      } catch(e){ m.textContent = "Could not connect. Check your signal and try again."; }
+    };
+  };
+  const wireRoomSvg = () => { const svg = box.querySelector("#hmap svg"); svg.onclick = e => {
+      const g = e.target.closest(".fx"); if (g && g.dataset.f !== fsel) { fsel = g.dataset.f; return draw(); }
+      if (!fsel) return; const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse()), it = fx(); if (!it) return;
+      it.x = Math.round(Math.min(VW0 - it.w, Math.max(0, p.x - it.w / 2))); it.y = Math.round(Math.min(VH0 - it.h, Math.max(0, p.y - it.h / 2))); draw(it.n + " moved."); }; };
   draw();
 }
 
@@ -1150,8 +1247,16 @@ async function serialScan(file, st){
     res.hidden = false;
   } catch(err){ msg.textContent = "The camera reader could not start. Check your signal and try again, or type the last 4 of the serial above."; }
 }
+/* Home screen app (Nov 14 2026): each store page installs as its own app with the logo shown on the digital tags. */
+function setManifest(st){
+  const sl = st ? slug(st) : "spark", mf = document.getElementById("mf"), href = "/m/" + sl + ".webmanifest";
+  if (mf && mf.getAttribute("href") !== href) mf.setAttribute("href", href);
+  const t = document.getElementById("amt"); if (t) t.setAttribute("content", st ? (st.length <= 7 ? st + " Tags" : st) : "Spark Tags");
+}
+window.addEventListener("appinstalled", () => { const st = (/^#store\/(.+)$/i.exec(location.hash) || [])[1] || ""; track("install", {store: st, d: "home screen"}); });
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
+  { const sm0 = /^store\/(.+)$/i.exec(h), st0 = sm0 ? STORES.find(x => slug(x) === slug(sm0[1])) : (byId[h] && getCode() && (isAll() || getPin(byId[h].store)) ? byId[h].store : ""); setManifest(st0); }
   const sm = /^store\/(.+)$/i.exec(h);
   if (sm) { const st = STORES.find(x => slug(x) === slug(sm[1])); if (st) return storeHome(st); }
   if (byId[h]) tag(byId[h]); else lookup();
