@@ -1098,12 +1098,57 @@ function storeHome(st){
   box.innerHTML = `<p class="lmsg">You are signed in. Open any unit below, or scan the Spark code on any tag.</p>
     ${top.length ? `<div class="top3"><div class="t3h">Money Makers</div><div class="t3s">Oldest Fire Sale units first. Post one and the next oldest moves up.</div><ol>${top.map(li).join("")}</ol></div>` : ""}
     <h2>Find a unit</h2><input id="sq" type="search" placeholder="Brand, model, unit number or last 4 of SN" aria-label="Find a unit" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;font-size:16px">
+    <label class="copy copyall" style="display:block;text-align:center;margin-top:8px;cursor:pointer">Scan serial number<input type="file" accept="image/*" capture="environment" id="sscan" hidden></label>
+    <div class="lmsg" id="sscanmsg"></div><ol id="sscanres" class="slist" hidden></ol>
     <ol id="slist" class="slist">${(fire.length ? fire : units).map(li).join("")}</ol>
     <p class="fine" id="snote">${fire.length ? "Showing Fire Sale units. Type to search every unit in the store." : ""}</p>
     <button class="copy" id="sout">Sign out</button>`;
   const q = document.getElementById("sq"), L = document.getElementById("slist");
   q.oninput = () => { const t = q.value.trim().toLowerCase(); const hit = !t ? (fire.length ? fire : units) : units.filter(u => [u.brand, u.name, u.model, u.unit, u.serial].join(" ").toLowerCase().includes(t)); L.innerHTML = hit.slice(0, 60).map(li).join("") || "<li>No match in this store.</li>"; document.getElementById("snote").textContent = t ? hit.length + " found" : (fire.length ? "Showing Fire Sale units. Type to search every unit in the store." : ""); };
   document.getElementById("sout").onclick = () => { signOut(st); storeHome(st); };
+  document.getElementById("sscan").onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) serialScan(f, st); };
+}
+/* Scan serial number (Nov 14 2026). Team takes a photo of the serial plate. The phone reads the barcode if there is one,
+   then reads the printed text, and we match it to a unit's serial (or model). Everything runs on the phone; the photo is
+   never uploaded. The reader files live in scan/ and load only when someone taps the button. */
+const loadJs = src => new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const t = document.createElement("script"); t.src = src; t.onload = ok; t.onerror = no; document.head.appendChild(t); });
+const snorm = x => String(x || "").toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1").replace(/S/g, "5").replace(/B/g, "8").replace(/Z/g, "2");
+let OCRW = null;
+async function shrink(file){
+  const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = URL.createObjectURL(file); });
+  const k = Math.min(1, 1800 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+  c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+function serialMatch(text, st){
+  const toks = new Set(); String(text).toUpperCase().split(/\n/).forEach(line => { (line.match(/[A-Z0-9][A-Z0-9 .\/-]{2,}[A-Z0-9]/g) || []).forEach(t => { toks.add(snorm(t)); t.split(/[ .\/-]+/).forEach(x => toks.add(snorm(x))); }); });
+  const T = [...toks].filter(t => t.length >= 4);
+  const hit = (val, min) => { const v = snorm(val); return v.length >= min && T.some(t => t.includes(v) || (t.length >= 6 && v.includes(t))); };
+  let m = DATA.units.filter(u => hit(u.serial, 5)), how = "serial";
+  if (!m.length) { m = DATA.units.filter(u => hit(u.model, 6)); how = "model"; }
+  m.sort((a, b) => (b.store === st) - (a.store === st));
+  return {m, how, T};
+}
+async function serialScan(file, st){
+  const msg = document.getElementById("sscanmsg"), res = document.getElementById("sscanres");
+  res.hidden = true; msg.textContent = "Reading the serial plate... the first scan on a phone takes a little longer.";
+  let text = "";
+  try { const c = await shrink(file);
+    try { await loadJs("scan/zxing.min.js"); const r = await new ZXing.BrowserMultiFormatReader().decodeFromImageUrl(c.toDataURL("image/jpeg", .92)); text += (r && r.getText ? r.getText() : "") + "\n"; } catch(_){}
+    let found = text && serialMatch(text, st);
+    if (!found || !found.m.length) {
+      await loadJs("scan/tesseract.min.js");
+      if (!OCRW) OCRW = await Tesseract.createWorker("eng", 1, {workerPath:"scan/worker.min.js", corePath:"scan/core", langPath:"scan", gzip:true});
+      const r = await OCRW.recognize(c); text += r.data.text; found = serialMatch(text, st);
+    }
+    track("serialscan", {store:st, pin:getPin(st)||"", code:getCode(), d: found.m.length ? found.how : "none"});
+    if (!found.m.length) { msg.textContent = "No unit matched that photo. Get close, fill the screen with the serial plate and try again, or type the last 4 of the serial above."; return; }
+    const mine = found.m.filter(u => u.store === st);
+    if (found.how === "serial" && mine.length === 1) { msg.textContent = "Found it. Opening the digital tag..."; location.hash = mine[0].id; return; }
+    msg.textContent = (found.how === "serial" ? "Serial match" : "No serial match. These units have the same model") + ":";
+    res.innerHTML = found.m.slice(0, 20).map(u => `<li><a href="#${esc(u.id)}">${esc(u.brand + " " + u.name)}</a><small> Unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}${u.store !== st ? ", at " + esc(u.store) : ""}</small></li>`).join("");
+    res.hidden = false;
+  } catch(err){ msg.textContent = "The camera reader could not start. Check your signal and try again, or type the last 4 of the serial above."; }
 }
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
