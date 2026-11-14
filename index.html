@@ -1414,14 +1414,14 @@ async function chatRoom(room){
   if (!chatOn()) return chatHome();
   let last = 0, sending = false; const a = chatAuth(), seen = new Set();
   app.innerHTML = `<article class="card"><div class="sect" style="padding-bottom:8px"><p style="margin:0 0 6px"><a href="#chat">‹ All rooms</a></p><h2 style="margin:0 0 8px">${esc(room)}</h2>
-    <div id="cmsgs" style="height:55vh;overflow-y:auto;background:#f4f4f2;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px"><p class="fine">Loading...</p></div>
+    <div id="cmsgs" style="height:55vh;overflow-y:auto;background:#f4f4f2;color:#1d1d1f;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px"><p class="fine">Loading...</p></div>
     <form id="cform" style="display:grid;grid-template-columns:auto 1fr auto;gap:6px;margin-top:8px;align-items:end">
       <label class="ghost" style="cursor:pointer;padding:10px 12px;border:1px solid #ccc;border-radius:10px;background:#fff;color:#1d1d1f" aria-label="Add a photo">📷<input type="file" accept="image/*" id="cpic" hidden></label>
       <textarea id="ctext" rows="1" maxlength="1000" placeholder="Message ${esc(room)}" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccc;border-radius:10px;font-size:16px;resize:none;background:#fff;color:#1d1d1f"></textarea>
       <button class="copy" type="submit" style="margin:0">Send</button></form>
     <div id="cprev" class="fine"></div><div class="lmsg" id="cmsg"></div></div></article>`;
   const box = document.getElementById("cmsgs"), M = document.getElementById("cmsg"); let pic = "";
-  const bubble = m => `<div style="background:#fff;border-radius:12px;padding:8px 10px;max-width:88%;box-shadow:0 1px 2px rgba(0,0,0,.06)"><div style="font-size:12px;color:#666"><b style="color:#1d1d1f">${esc(m.by)}</b> ${esc(new Date(m.t).toLocaleString("en-US", {month:"numeric", day:"numeric", hour:"numeric", minute:"2-digit"}))}</div>
+  const bubble = m => `<div style="background:#fff;color:#1d1d1f;border-radius:12px;padding:8px 10px;max-width:88%;box-shadow:0 1px 2px rgba(0,0,0,.06)"><div style="font-size:12px;color:#666"><b style="color:#1d1d1f">${esc(m.by)}</b> ${esc(new Date(m.t).toLocaleString("en-US", {month:"numeric", day:"numeric", hour:"numeric", minute:"2-digit"}))}</div>
     ${m.text ? `<div style="white-space:pre-wrap;word-wrap:break-word;margin-top:2px">${esc(m.text)}</div>` : ""}${m.photo ? `<a href="https://lh3.googleusercontent.com/d/${encodeURIComponent(m.photo)}=w1600" target="_blank" rel="noopener"><img src="https://lh3.googleusercontent.com/d/${encodeURIComponent(m.photo)}=w600" alt="Photo" loading="lazy" style="display:block;max-width:100%;border-radius:8px;margin-top:6px"></a>` : ""}</div>`;
   const add = (msgs, first) => { const atEnd = box.scrollHeight - box.scrollTop - box.clientHeight < 60; if (first) box.innerHTML = msgs.length ? "" : `<p class="fine" id="cempty">No messages yet. Say hello.</p>`;
     msgs.forEach(m => { if (seen.has(m.id)) return; seen.add(m.id); const e = document.getElementById("cempty"); if (e) e.remove(); box.insertAdjacentHTML("beforeend", bubble(m)); last = Math.max(last, m.id); });
