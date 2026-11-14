@@ -186,6 +186,7 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .pvnote{margin:6px 0 0}
 .rebate{margin-top:8px;padding:8px 10px;border-radius:8px;background:#fff4d6;color:#5a3b00;font-size:14px;font-weight:600;border:1px solid #f0c64a}
 .pvw{margin:12px 0}.pvh{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555;margin-bottom:6px}.pvcard{border:1px solid #ddd;border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}.pvwho{display:flex;align-items:center;gap:8px;padding:10px 12px}.pvav{width:32px;height:32px;border-radius:50%;background:#C8102E;color:#fff;display:grid;place-items:center;font-weight:800}.pvtext{white-space:pre-wrap;padding:0 12px 10px;font-size:14px;line-height:1.4}.pvimg{display:block;width:100%;max-height:360px;object-fit:contain;background:#f4f4f4}.pvnone{padding:18px 12px;background:#fff8e1;color:#7a5b00;font-size:13px}.caplab{display:block;font-size:12px;font-weight:700;color:#555;margin:6px 0 4px}
+.slist{padding-left:20px;margin:8px 0}.slist li{margin:6px 0}.slist small{color:var(--muted)}
 </style>
 
 </head>
@@ -1065,8 +1066,49 @@ function lookup(){
   app.innerHTML = `<article class="card"><div class="sect"><h2>Scan a tag to see a unit</h2><p>Use your phone camera to scan the Spark code on the back of any Spark price tag. That unit's digital tag opens here.</p></div></article>`;
 }
 
+/* Store home page (Nov 14 2026): sparkdigitaltags.github.io/#store/keller . Team signs in once here with the store PIN and the
+   last 4 of their cell, then opens any unit. No prices on this page. */
+const STORES = [...new Set(DATA.units.map(u => u.store))];
+const slug = st => st.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+function storeHome(st){
+  document.title = "Spark Digital Tags | " + st;
+  const units = DATA.units.filter(u => u.store === st);
+  const dba = (units[0] && units[0].dba) || "LSM Outdoor Power";
+  const signed = !!(getCode() && (isAll() || getPin(st)));
+  const li = u => `<li><a href="#${esc(u.id)}">${esc(u.brand + " " + u.name)}</a><small> Unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}</small></li>`;
+  const top = (TOP3[st] || []).filter(i => byId[i]).slice(0, 3).map(i => byId[i]);
+  const fire = units.filter(u => u.fire);
+  app.innerHTML = `<article class="card"><div class="sect">
+    <h2>Welcome to Spark Digital Tags</h2>
+    <p><b>${esc(dba)} ${esc(st)}</b> team page. Add this page to your phone's home screen so it is one tap away.</p>
+    <div id="shome"></div></div></article>`;
+  const box = document.getElementById("shome");
+  if (!signed) {
+    box.innerHTML = `<form id="sform"><div style="display:grid;gap:8px"><input id="spin" type="text" inputmode="numeric" autocomplete="off" placeholder="${esc(st)} store PIN" aria-label="Store PIN"><input id="scode" type="text" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Your code: last 4 of your cell" aria-label="Your code, the last 4 digits of your cell"><button class="copy copyall" type="submit">Team sign in</button></div></form><div class="lmsg" id="smsg"></div>`;
+    document.getElementById("sform").onsubmit = async e => { e.preventDefault();
+      const pin = document.getElementById("spin").value.trim(), code = document.getElementById("scode").value.trim(), m = document.getElementById("smsg");
+      if (!/^\d{4}$/.test(code)) { m.textContent = "Enter the store PIN and the last 4 of your cell."; return; }
+      m.textContent = "Checking...";
+      try { const r = await api({action:"check", store:st, pin, code});
+        if (r.ok) { keepKey(r); MEM._code = code; ls.set("sparkcode", code); if (r.all) { MEM._all = true; ls.set("sparkall", "1"); } else { MEM[st] = pin; ls.set(pinKey(st), pin); (r.stores||[]).forEach(x => { MEM[x] = pin; ls.set(pinKey(x), pin); }); } track("signin", {store:st, pin, code, d:"storehome"}); storeHome(st); }
+        else m.textContent = ERRS[r.error] || "That did not work. Try again.";
+      } catch(err){ m.textContent = "Could not connect. Check your signal and try again."; } };
+    return;
+  }
+  box.innerHTML = `<p class="lmsg">You are signed in. Open any unit below, or scan the Spark code on any tag.</p>
+    ${top.length ? `<div class="top3"><div class="t3h">Money Makers</div><div class="t3s">Oldest Fire Sale units first. Post one and the next oldest moves up.</div><ol>${top.map(li).join("")}</ol></div>` : ""}
+    <h2>Find a unit</h2><input id="sq" type="search" placeholder="Brand, model, unit number or last 4 of SN" aria-label="Find a unit" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;font-size:16px">
+    <ol id="slist" class="slist">${(fire.length ? fire : units).map(li).join("")}</ol>
+    <p class="fine" id="snote">${fire.length ? "Showing Fire Sale units. Type to search every unit in the store." : ""}</p>
+    <button class="copy" id="sout">Sign out</button>`;
+  const q = document.getElementById("sq"), L = document.getElementById("slist");
+  q.oninput = () => { const t = q.value.trim().toLowerCase(); const hit = !t ? (fire.length ? fire : units) : units.filter(u => [u.brand, u.name, u.model, u.unit, u.serial].join(" ").toLowerCase().includes(t)); L.innerHTML = hit.slice(0, 60).map(li).join("") || "<li>No match in this store.</li>"; document.getElementById("snote").textContent = t ? hit.length + " found" : (fire.length ? "Showing Fire Sale units. Type to search every unit in the store." : ""); };
+  document.getElementById("sout").onclick = () => { signOut(st); storeHome(st); };
+}
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
+  const sm = /^store\/(.+)$/i.exec(h);
+  if (sm) { const st = STORES.find(x => slug(x) === slug(sm[1])); if (st) return storeHome(st); }
   if (byId[h]) tag(byId[h]); else lookup();
 }
 window.addEventListener("hashchange", route);
