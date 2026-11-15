@@ -2431,7 +2431,7 @@ function ipTrainHtml(){
     <p class="fine"><b>Quiz preview</b> (one question per lender once all amounts are in):</p>
     ${known.map(([n, a]) => `<div class="labrow"><div><b>What is the initial payment for ${esc(n)}?</b><small>Answer: ${esc(a)}.</small></div></div>`).join("")}
     <p class="fine"><b>Early purchase options</b></p><div class="labrow"><div>${EPO.map(([n, d]) => `<div style="margin:3px 0"><b>${esc(n)}</b>: ${esc(d)}</div>`).join("")}</div></div>
-    ${EPO.map(([n, , w]) => `<div class="labrow"><div><b>How long is ${esc(n)}'s lowest cost early purchase window?</b><small>A) 30 days &nbsp; B) ${["90 days", "100 days", "120 days"].map(x => x).join(" &nbsp; C) ").replace(w, w + " ✓")}. Answer: ${esc(w)}.</small></div></div>`).join("")}
+    ${EPO.map(([n, , w]) => `<div class="labrow"><div><b>How long is ${esc(n)}'s lowest cost early purchase window?</b><small>${["30 days", "90 days", "100 days", "120 days"].map((x, i) => "ABCD"[i] + ") " + x).join(" &nbsp; ")}. Answer: ${esc(w)}.</small></div></div>`).join("")}
     <p class="fine">Memory trick: "Acima 90, Snap 100, Koalafi 120." The window grows by about 10 to 20 days as you go down the list.</p>`;
 }
 
