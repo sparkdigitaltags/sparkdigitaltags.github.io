@@ -362,7 +362,7 @@ body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#12121
 .rdytoast b{display:block;color:#F5B400;font-size:16px}.rdytoast span{font-size:14px}
 .tq .tqh{font:800 13px var(--display,system-ui);letter-spacing:.06em;text-transform:uppercase;margin:10px 0 2px;color:#F5B400}.tq .tqok{margin:8px 0}.tq .tqr{flex:1;font-size:12px;color:#C8102E;text-align:right;padding:0 6px}
 .bfil{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.bfil select{flex:1;min-width:120px;padding:8px;border-radius:10px;border:1px solid #ccc;font-size:14px;background:#fff;color:#121212}
-.blk{padding-left:20px;margin:0}.blk li{margin:0 0 12px}.blk a{color:#fff}.blkd{background:#C8102E;color:#fff;border-radius:6px;padding:0 6px;font-weight:800}.blkh{color:#F5B400;font-weight:700}
+.blk{padding-left:20px;margin:0}.blk li{margin:0 0 12px}.blk a{color:#121212}.blkd{background:#C8102E;color:#fff;border-radius:6px;padding:0 6px;font-weight:800}.blkh{color:#C8102E;font-weight:700}
 .blkgm{border-top:1px solid #333;padding-top:10px;margin-top:6px}.blkgm b{display:block}.blkgm .admbtn{margin:4px 4px 0 0}
 .blkst{border:2px solid #C8102E}
 .allbtn{display:block;width:100%;margin:8px 0;padding:12px;border-radius:12px;border:2px solid #121212;background:#fff;color:#121212;font:800 15px var(--display,system-ui);letter-spacing:.04em;cursor:pointer}
@@ -2085,7 +2085,7 @@ function lsmLook(u){
 }
 window.addEventListener("hashchange", () => { if (!byId[decodeURIComponent(location.hash.slice(1))]) lsmLook(null); });
 function labTag(u){
-  lsmLook(u); try { discTag(u); } catch(e){ console.error(e); } try { saveBig(u); } catch(e){ console.error(e); } try { allLendBtn(u); printGlow(u); } catch(e){ console.error(e); }
+  lsmLook(u); try { discTag(u); } catch(e){ console.error(e); } try { saveBig(u); } catch(e){ console.error(e); } try { allLendBtn(u); printGlow(u); setTimeout(() => printGlow(u), 2000); } catch(e){ console.error(e); }
   const pr = document.querySelector('#app [data-sec="price"]');
   document.querySelectorAll(".flames,.labnote").forEach(e => e.remove()); document.querySelectorAll(".pill.fire").forEach(e => e.classList.remove("blaze"));
   document.querySelectorAll(".firewords").forEach(e => e.remove());
@@ -2282,8 +2282,10 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 setTimeout(treqWatch, 4000);
 /* The Print this tag button breathes when this unit has a new or changed tag to print. After printing: "It's on the unit". */
 async function printGlow(u){
-  const b = document.getElementById("lprint"); if (!b || !getCode() || !(feat("tagtrack") || feat("tagreq"))) return;
+  if (!getCode() || !(feat("tagtrack") || feat("tagreq"))) return;
   const tags = await tagStat(u.store), r = tags.find(t => t.unit === String(u.unit));
+  if (decodeURIComponent(location.hash.slice(1)) !== u.id) return;
+  const b = document.getElementById("lprint"); if (!b) return;
   document.getElementById("tsnote")?.remove(); b.classList.remove("breathe");
   if (!r || r.st === "done") return;
   const n = document.createElement("div"); n.id = "tsnote"; n.className = "tsnote";
@@ -2316,7 +2318,7 @@ function blockerList(F){
   Object.values(by).forEach(L => { if (L.length < 2) return; L.sort(byAge); const o = L[0], a1 = FIRE_AGE[o.id] || 0, nx = L.find(x => x.store !== o.store) || L[1], a2 = FIRE_AGE[nx.id] || 0;
     const held = L.filter(x => x.store !== o.store); if (!held.length) return;
     const gap = a1 - a2; if (!(gap >= 60 || (a2 && a1 >= 1.5 * a2))) return;
-    if (F.br && o.brand !== F.br) return; if (F.ty && (F.ty === "com") !== isCom(o)) return;
+    if (F.br && o.brand.toLowerCase() !== F.br.toLowerCase()) return; if (F.ty && (F.ty === "com") !== isCom(o)) return;
     if (F.loc && o.store !== F.loc && !held.some(x => x.store === F.loc)) return;
     out.push({o, a1, a2, nx, held, stores:[...new Set(held.map(x => x.store))], score: gap * held.length}); });
   return out.sort((a, b) => b.score - a.score);
@@ -2325,7 +2327,7 @@ const BF = {loc:"", br:"", ty:""};
 function bfSelects(F, onCh, locLabel){
   const fire = DATA.units.filter(u => u.fire && TX_STORES.includes(u.store));
   const sel = (k, opts, lab) => `<select data-bf="${k}" aria-label="${lab}"><option value="">${lab}</option>${opts.map(([v, t]) => `<option value="${esc(v)}" ${F[k] === v ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
-  return `<div class="bfil">${sel("loc", TX_STORES.filter(s => STORES.includes(s)).map(s => [s, s]), locLabel || "All locations")}${sel("br", [...new Set(fire.map(u => u.brand))].sort().map(b => [b, b]), "All brands")}${sel("ty", [["com", "Commercial"], ["res", "Residential"]], "Commercial and residential")}</div>`;
+  return `<div class="bfil">${sel("loc", TX_STORES.filter(s => STORES.includes(s)).map(s => [s, s]), locLabel || "All locations")}${sel("br", [...new Map(fire.map(u => [u.brand.toLowerCase(), u.brand])).values()].sort((a, b) => a.localeCompare(b)).map(b => [b, b]), "All brands")}${sel("ty", [["com", "Commercial"], ["res", "Residential"]], "Commercial and residential")}</div>`;
 }
 function bfWire(box, F, re){ box.querySelectorAll("[data-bf]").forEach(s => s.onchange = () => { F[s.dataset.bf] = s.value; re(); }); }
 function blockersAdmin(){
@@ -2356,7 +2358,7 @@ function blockersStore(st){
 function bountyFeed(st0){
   const box = document.getElementById("bfeed"); if (!box) return;
   const F = box._F || (box._F = {loc:st0, br:"", ty:""}), st = F.loc || st0;
-  const f = mmFeed(st).filter(u => (!F.br || u.brand === F.br) && (!F.ty || (F.ty === "com") === isCom(u)));
+  const f = mmFeed(st).filter(u => (!F.br || u.brand.toLowerCase() === F.br.toLowerCase()) && (!F.ty || (F.ty === "com") === isCom(u)));
   box.innerHTML = `${bfSelects(F, null, "Location")}<ul class="ulist">${f.map(urowLoc).join("") || `<li class="none">None for this filter.</li>`}</ul><p class="ucount">${f.length} unit${f.length === 1 ? "" : "s"}${f.length > 5 ? ", scroll for more" : ""}</p>`;
   bfWire(box, F, () => bountyFeed(st0));
 }
