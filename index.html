@@ -273,6 +273,28 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .mwshadow{position:absolute;left:12%;right:12%;bottom:2px;height:8px;border-radius:50%;background:rgba(0,0,0,.35);filter:blur(2px)}
 .mwav{position:absolute;left:34%;top:-12px;width:26px;height:26px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2.5px #F5B400,0 2px 4px rgba(0,0,0,.4);background:#1F2A5A;color:#fff;font-weight:800;font-size:14px;display:grid;place-items:center}
 .mwav img{width:100%;height:100%;object-fit:cover}
+
+body.lsm{--bg:#E9E9E6;--card:#FFFFFF;--ink:#121212;--muted:#5C5B55;--line:#DAD8CF;--band:#121212;--band-ink:#FFFFFF;--chip:#F2F2F0;--fire:#C8102E;color-scheme:light}
+body.lsm .brandbar{background:#121212;border-bottom:4px solid #C8102E}
+body.lsm .brandbar img{background:#fff;border-radius:6px;padding:3px 6px;height:52px}
+body.lsm .brandbar .lbl{color:#fff;display:flex;flex:1;justify-content:space-between;align-items:center;gap:10px;font-size:15px}
+body.lsm .lsmst{font-weight:800;letter-spacing:.06em}.lsmbr{font-family:"Arial Black",Archivo,sans-serif;font-size:20px;letter-spacing:.02em}
+body.lsm h1{font-family:"Arial Black",Archivo,Arial,sans-serif;font-weight:900;font-size:24px;letter-spacing:-.01em;color:#121212}
+body.lsm .brand{color:#5C5B55}
+body.lsm .price{background:linear-gradient(180deg,#B4141F,#9A0F18);border-top:0;border-radius:0}
+body.lsm .price .mol{color:#fff;font-weight:800;font-size:15px}
+body.lsm .moa{color:#F5B400;font-style:italic;font-weight:900;font-size:66px;text-shadow:2px 2px 0 #121212,-1px -1px 0 #121212,1px -1px 0 #121212,-1px 1px 0 #121212}
+body.lsm .moa small{color:#fff;font-style:italic;text-shadow:none}
+body.lsm .moterms{color:#FFE7E7;font-weight:600}
+body.lsm .price .nowsm{background:#121212;margin:8px -16px -16px;padding:12px 16px;border-top:0}
+body.lsm .price .nowsm .was{color:#E8E6E0;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px}
+body.lsm .price .now{color:#fff}
+body.lsm .price .was s{color:#FFD9D9}
+body.lsm .pill.fire{background:#C8102E;color:#fff}
+body.lsm .lists h2,body.lsm .apply h2{color:#121212;font-family:"Arial Black",Archivo,sans-serif;font-size:14px;letter-spacing:.04em}
+body.lsm .lists ul{padding-left:18px}body.lsm .lists li::marker{color:#C8102E;font-size:1.1em}
+body.lsm .lend.terrace,body.lsm .lend.koalafi,body.lsm .lend.dcf{background:#1F2A5A;border-color:#1F2A5A}
+body.lsm .lend .tier{color:#F5B400}
 .ulist{list-style:none;padding:0;margin:8px 0;max-height:236px;overflow-y:auto;border:1px solid #ddd;border-radius:12px;background:#fff;-webkit-overflow-scrolling:touch}.ulist.tall{max-height:472px}
 .ulist li{border-bottom:1px solid #eee;background:#fff !important;margin:0 !important;padding:0 !important}.ulist a,.ulist a:visited{color:#1d1d1f !important;background:#fff !important;text-decoration:none !important}.ulist .ub,.ulist .um{color:#1d1d1f !important}.ulist li:last-child{border-bottom:0}.ulist a{display:flex;align-items:center;gap:8px;min-height:46px;padding:4px 12px;color:#1d1d1f;text-decoration:none;font-size:15px}
 .ulist .ub{font-weight:800;min-width:54px}.ulist .um{flex:1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ulist .ud{color:#C8102E;font-weight:700;font-size:13px;white-space:nowrap}.ulist .us{color:#555;font-size:13px;white-space:nowrap}
@@ -1065,6 +1087,45 @@ const BRAND_FACT = {
   "GRAVELY":"Gravely is built in Brillion, Wisconsin.",
   "EGO":"EGO is battery powered: no gas, no oil, no pull cord."
 };
+/* ======================= The 3 Stones (Brandon Nov 14 2026, Lab test "stones3") =======================
+   Seven stones cut to the three that move a customer: Bargain (how this unit stacks up against the step down and step up),
+   Bank (which way to pay fits them), Buy (the honest reason to act today and the ask). Every line is built from real tags. */
+const UTYPES = [[/zero.?turn|\bztr\b|z.?turn|stand.?on|stander/i, "mower"], [/tractor|rider|riding/i, "rider"], [/walk.?behind|self.?propelled|push|lawn ?mower|\bmower\b/i, "walk"],
+  [/chain.?saw|\bsaw\b|\bms ?\d/i, "saw"], [/blower|\bbr ?\d|\bbg ?\d/i, "blower"], [/trimmer|edger|\bfs ?\d|\bkm ?\d/i, "trimmer"], [/hedge/i, "hedge"], [/utv|gator|mule|side.?by/i, "utv"]];
+const utype = u => { const t = (u.name || "") + " " + (u.model || ""); for (const [re, k] of UTYPES) if (re.test(t)) return k; return "other"; };
+const money = v => Number(String(v || "").replace(/[^0-9.]/g, "")) || 0;
+const fmt$ = n => "$" + Math.round(n).toLocaleString("en-US");
+function stoneNeighbors(u){
+  const ty = utype(u), p = money(u.now);
+  const ok = x => x.id !== u.id && !x.maphide && money(x.now) > 0 && utype(x) === ty && snorm(x.model) !== snorm(u.model);
+  let pool = DATA.units.filter(x => ok(x) && x.store === u.store);
+  if (pool.length < 2) pool = pool.concat(DATA.units.filter(x => ok(x) && x.store !== u.store && TX_STORES.includes(x.store) && TX_STORES.includes(u.store)));
+  const dn = pool.filter(x => money(x.now) < p).sort((a, b) => money(b.now) - money(a.now))[0], up = pool.filter(x => money(x.now) > p).sort((a, b) => money(a.now) - money(b.now))[0];
+  return {dn, up};
+}
+function stones3For(u){
+  const f = u.feats || [], L = lendersFor(u), apr0 = Number(u.apr) === 0, small = !!u.lease, days = FIRE_AGE[u.id];
+  const nm = x => brAb(x.brand) + " " + x.model, here = x => x.store === u.store ? "" : " at " + x.store;
+  // Bargain: contrast with the step down and the step up
+  let bargain, bw = "People buy the difference. Show the step down, show the step up, then land on this one.";
+  if (u.maphide) { bargain = `This one's priced too low to show online. Walk them to the paper tag and say: "That's the best price we can show you in person."`; bw = "Below MAP stays off screens and posts. Say it in person only."; }
+  else { const {dn, up} = stoneNeighbors(u), p = money(u.now), bits = [];
+    if (dn) bits.push(`For ${fmt$(p - money(dn.now))} more than the ${nm(dn)}${here(dn)}${f[0] ? ", you get " + f[0].replace(/\.$/, "").toLowerCase() : ""}.`);
+    if (up) bits.push(`The ${nm(up)}${here(up)} is ${fmt$(money(up.now) - p)} more.${u.fire ? " This one's the value play." : " Ask what they really need."}`);
+    if (u.fire && u.save) bits.push(`Fire Sale saves ${u.save} today.`);
+    bargain = bits.length ? bits.join(" ") : `${f[0] ? "Show them " + f[0].replace(/\.$/, "").toLowerCase() + ". " : ""}${u.fire && u.save ? "Fire Sale saves " + u.save + " today." : "Point to the price on the tag."}`; }
+  // Bank: the payment first (rate only if 0%), then match the lender to the customer
+  const pay = u.maphide ? "" : small ? (feat("stone3", u) ? `"$49 down plus tax takes it home today. It's lease to own, not a loan, and you own it once all scheduled payments are made." ` : `"Take it home today. Lease to own, not a loan." `)
+    : u.pay ? `Lead with ${u.pay} a month for ${u.term} months${apr0 ? " at 0% APR" : ""}. ` : "";
+  const lend = L.map(l => l.k === "sheffield" ? "Good credit: Sheffield. Prequalify in 2 minutes with no hit to their credit." : l.k === "terrace" ? "Fair credit: Terrace gives more ways to pay." : l.k === "koalafi" ? "Credit still building: lease to own, no credit needed to apply." : l.k === "dcf" ? "Buying for a business: Direct Credit Funding, our commercial lender." : (l.tier + ": " + l.title + ".")).join(" ");
+  const bank = `${pay}${lend} Ask: "Which of these sounds most like you?"`;
+  const bkw = (small ? "Any time you say a lease payment, also say lease to own and that they own it after all payments. " : apr0 ? "0% APR is the only rate we say out loud. " : u.pay ? "Don't say the APR out loud. It's printed on the tag. " : "") + "Prequalify first. It never touches their credit.";
+  // Buy: the honest reason to act today, then the ask
+  const twins = u.fire ? DATA.units.filter(x => x.fire && x.id !== u.id && TX_STORES.includes(x.store) && snorm(x.model) === snorm(u.model)).length : 0;
+  const why = u.fire ? `Fire Sale${days ? ", on our floor " + days + " days" : ""}. ${twins ? "Only " + (twins + 1) + " like it left on Fire Sale in Texas." : "This is the only one like it on Fire Sale in Texas."} ` : (u.warranty ? `It's covered by the ${/warranty/i.test(u.warranty) ? u.warranty : u.warranty + " warranty"}. ` : "");
+  const ask = small ? `"Want to take it home today?"` : L.some(l => l.k === "dcf") ? `"Want me to start the business application while we load it?"` : `"Want me to hold it while you prequalify? It takes 2 minutes and doesn't touch your credit."`;
+  return [["Bargain", bargain, bw], ["Bank", bank, bkw], ["Buy", why + ask, "Always ask. A hold is a yes you can follow up on. Tap Hold this unit on the tag together."]];
+}
 function stonesFor(u){
   const B = u.brand.toUpperCase(), com = /commercial/i.test((u.warranty || "") + " " + (u.specs || []).join(" "));
   const f = u.feats || [], name = u.brand + " " + u.name.replace(/\s+/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).replace(/\b(Ii|Iii|Iv)\b/g, x => x.toUpperCase());
@@ -1084,10 +1145,11 @@ function stonesFor(u){
 }
 function stonesInit(u){
   const box = document.getElementById("stonesec"); if (!box) return;
-  const S = stonesFor(u);
+  const three = feat("stones3", u), S = three ? stones3For(u) : stonesFor(u);
   if (feat("mow", u)) { mowStones(box, u, S); box.hidden = false; return; }
-  box.innerHTML = `<h2>Stepping Stones</h2><div class="locmeta">Brand, Build, Bill, Bargain, Brag, Bank, Buy. Walk the tag top to bottom.</div>
-    <ol class="stones">${S.map(([k, say, why]) => `<li><b>${k}</b><span>${esc(say)}</span><small>${esc(why)}</small></li>`).join("")}</ol>`;
+  box.innerHTML = three ? `<h2>Stepping Stones</h2><div class="locmeta"><b>Bargain, Bank, Buy.</b> Three stones: how it stacks up, how they'll pay, why today.${!FLAGS.stones3 ? " <b>Testing: only you see the 3 stones.</b>" : ""}</div>`
+    : `<h2>Stepping Stones</h2><div class="locmeta">Brand, Build, Bill, Bargain, Brag, Bank, Buy. Walk the tag top to bottom.</div>`;
+  box.innerHTML += `<ol class="stones">${S.map(([k, say, why]) => `<li><b>${k}</b><span>${esc(say)}</span><small>${esc(why)}</small></li>`).join("")}</ol>`;
   box.hidden = false;
 }
 function lendUrl(u, l){ const g = GOMAP[u.store], c = LK[l.k];
@@ -1920,7 +1982,17 @@ function mowStones(box, u, S){
 }
 
 /* ---- Fire Sale flames (example tag while testing) ---- */
+const isLSM = u => /^LSM/i.test(u.dba || "LSM Outdoor Power");
+function lsmLook(u){
+  const on = !!(u && isLSM(u) && feat("lsmlook"));
+  document.body.classList.toggle("lsm", on);
+  const lg = document.getElementById("logo"), lb = document.querySelector(".brandbar .lbl");
+  if (on) { lg.src = "/m/lsm_logo.jpg"; lg.alt = "LSM Outdoor Power"; if (lb) lb.innerHTML = `<span class="lsmst">${esc(u.store)}</span><span class="lsmbr">${esc(u.brand)}</span>`; }
+  else if (lg.alt !== "Spark Dealer Group") { lg.src = DATA.logo; lg.alt = "Spark Dealer Group"; if (lb) lb.innerHTML = "Digital<br>Price Tag"; }
+}
+window.addEventListener("hashchange", () => { if (!byId[decodeURIComponent(location.hash.slice(1))]) lsmLook(null); });
 function labTag(u){
+  lsmLook(u);
   const pr = document.querySelector('#app [data-sec="price"]');
   document.querySelectorAll(".flames,.labnote").forEach(e => e.remove()); document.querySelectorAll(".pill.fire").forEach(e => e.classList.remove("blaze"));
   document.querySelectorAll(".firewords").forEach(e => e.remove());
@@ -2023,6 +2095,8 @@ function labPills(){
 
 /* ---- The Lab page ---- */
 const LAB_TESTS = [
+  ["lsmlook", "LSM look on LSM tags", "LSM digital tags look like the printed LSM tag: LSM logo in a black header with the store and brand, white tag face, red payment box with the big yellow payment, black price bar, red bullets, navy lender cards.", "#farmersbranch-109225-fce43e"],
+  ["stones3", "The 3 Stones", "Stepping Stones cut from 7 to 3: Bargain (step down and step up contrast from real tags), Bank (payment, then match the lender to the customer), Buy (the honest reason to act today and the ask).", "#farmersbranch-109225-fce43e"],
   ["training", "Team training", "First sign in welcome, the New Location Tour, the Your first 5 checklist with a progress bar, the morning and afternoon prompts, and the glowing showroom drawing buttons.", ""],
   ["flames", "Fire Sale! in flames", "The words Fire Sale! burn across the unit photo on Fire Sale tags.", "#farmersbranch-109225-fce43e"],
   ["mow", "Mow to reveal the Stepping Stones", "Grass covers each stone. Touch the mower and swipe right to cut it and read the line. The section takes the scene's name.", "#farmersbranch-109225-fce43e"],
