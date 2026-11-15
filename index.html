@@ -1801,7 +1801,7 @@ function tlEditor(){
 const CLIMB = [
   ["find", "Find a unit by the last 4 of its serial", "On your store page, type the last 4 of the serial number in Find any unit, or take a photo of the serial plate."],
   ["loc", "Set where a unit sits", "On any tag, tap Set location, pick the spot, and tap Save."],
-  ["print", "Print a tag from your phone", "Connect your phone to the store Wi Fi. Open any tag, tap Print this tag, then tap Share and Print and pick the store printer. Hang it on the unit."],
+  ["print", "Print a tag from your phone", "Phone, print, place. Connect your phone to the store Wi Fi. Open any tag, tap Print this tag, then tap Share and Print and pick the store printer. Hang it on the unit."],
   ["post", "Post a Bounty", "On a Bounty's tag, open Post this unit and pick where to post. The caption is written for you."],
   ["hanger", "Place a QR hanger on the showroom map", "On any tag, tap Update QR Code Hanger Locations, pick a hanger, tap where it hangs, and Save."]];
 const CAMPS = ["Base Camp", "Camp 1", "Camp 2", "Camp 3", "Camp 4", "the Summit"];
@@ -2387,14 +2387,21 @@ const tqHide = (st, t) => { const x = DATA.units.find(y => y.store === st && Str
 
 /* Lender adoption (Brandon Nov 15 2026). Acima year to date from the Acima Retailer Production Report, pulled Nov 15 2026. */
 const ADOPT = {asof:"Nov 15, 2026", acima:{"Waco":[9,8,1,1169.96],"Keller":[9,7,2,2635.82],"Farmers Branch":[5,1,0,0],"Bradenton":[4,4,4,7242.36],"Belleview":[2,2,1,986.79],"Augusta":[2,2,1,286.75],"Lakeland":[1,1,1,1267.73],"Springtown":[1,1,0,0],"Weatherford":[1,0,0,0]},
-  stores:["Burleson","Colleyville","Denton","Farmers Branch","Keller","Lewisville","Renfro","Tyler","Gatesville","Springtown","Weatherford","Waco","Bradenton","Lakeland","Naples","Sarasota","Tampa","Belleview","Augusta","Waynesboro"]};
+  stores:["Burleson","Colleyville","Denton","Farmers Branch","Keller","Lewisville","Renfro","Tyler","Gatesville","Springtown","Weatherford","Waco","Bradenton","Lakeland","Naples","Sarasota","Tampa","Belleview","Augusta","Waynesboro","LOTP Louisville","LOTP Shelbyville"]};
+const MY_RESP = [
+  "Decide how we teach Acima's initial payment. Acima has no set amount: prepaid rent is set on each lease, more than $0 and under 40% of the price.",
+  "Find out which states Snap collects sales tax in and which states we collect it. Snap lists \"collecting sales tax in states where Snap is responsible\" as a merchant prohibited activity.",
+  "Ask Snap (April San Miguel, 940 432 8921) to confirm outdoor power equipment is an approved Snap category. Snap's guide lists appliances, furniture, mattresses, jewelry, electronics, and wheels and tires.",
+  "Confirm which Acima link is LOTP Louisville and which is LOTP Shelbyville (both show as Louisville Outdoor Turf Products).",
+  "Get Snap and Acima approval for how we show them on the digital tags. Snap requires approval of merchant made marketing."];
 function adoptCard(){
   const box = document.getElementById("adopt"); if (!box) return;
   const A = ADOPT.acima, none = ADOPT.stores.filter(s => !A[s] || !A[s][0]), tot = Object.values(A).reduce((t, a) => [t[0] + a[0], t[1] + a[1], t[2] + a[2], t[3] + a[3]], [0, 0, 0, 0]);
   box.innerHTML = `<h2>Lender adoption <small>Acima, year to date</small></h2><div class="admcard"><p class="admmut" style="margin-top:0">From the Acima Retailer Production Report, ${esc(ADOPT.asof)}. ${tot[0]} applications, ${tot[1]} approved, ${tot[2]} funded, ${fmt$(tot[3])} funded.</p>
     <table class="roletab" style="min-width:0;width:100%;color:#121212"><thead><tr><th>Store</th><th>Apps</th><th>Approved</th><th>Funded</th><th>$ Funded</th></tr></thead><tbody>${ADOPT.stores.map(s => { const a = A[s] || [0, 0, 0, 0]; return `<tr style="${a[0] ? "" : "background:#FDE3E7"}"><td>${esc(s)}</td><td>${a[0]}</td><td>${a[1]}</td><td>${a[2]}</td><td>${a[3] ? fmt$(a[3]) : ""}</td></tr>`; }).join("")}</tbody></table>
     <p style="margin:8px 0 0;color:#C8102E"><b>${none.length} stores with no Acima applications this year:</b> ${esc(none.join(", "))}. Prioritize these for training.</p>
-    <p class="admmut">Next: Snap, Koalafi, Terrace and Sheffield by store, once those reports are connected.</p></div>`;
+    <p class="admmut">Next: Snap, Koalafi, Terrace and Sheffield by store, once those reports are connected.</p>
+    <div class="tdg" style="margin-top:12px;color:#C8102E;font-weight:800">My responsibilities</div><ol style="margin:4px 0 0;padding-left:20px;color:#121212">${MY_RESP.map(t => `<li style="margin:4px 0">${esc(t)}</li>`).join("")}</ol></div>`;
 }
 /* Admin to do list (Brandon Nov 15 2026): things to ask Justin and what's still needed to make tests live. Checks save on this phone. */
 const TODO = [
@@ -2412,13 +2419,20 @@ function adminTodo(){
 }
 /* Initial payment training for team members (Lab preview, not live until every amount is in). */
 const IP_LENDERS = [["Koalafi", "$49 plus sales tax"], ["Snap", "$39 processing fee at signing in Texas, Florida, Georgia and Kentucky"], ["Acima", "No set amount. Prepaid rent is set on each lease, more than $0 and under 40% of the price"]];
+/* Early purchase options (Koalafi: Randy Stacy terms Aug 9 2026. Snap: Snap's Your Guide to Lease to Own. Acima: acimacredit.com). The customer must contact the lender to use them; nobody is enrolled automatically. */
+const EPO = [["Koalafi", "120 day early purchase option", "120 days"],
+  ["Snap", "100 Day Option: pay the cash price plus sales tax, the processing fee and any cost of lease within 100 days of delivery. After that, the Early Buyout Option: pay the remaining payments at a discount.", "100 days"],
+  ["Acima", "90 day early purchase option: the Acima Cash Price plus a small purchase fee (usually $25, varies by state). After 90 days, buy out early at a discount.", "90 days"]];
 function ipTrainHtml(){
   const known = IP_LENDERS.filter(l => l[1]);
   return `<h2 style="margin-top:18px" id="iptrain">Initial payment training (team) <span class="labst">Not live</span></h2>
     <p class="fine" style="margin-top:0">For team members only. Snap and Acima are from their merchant portals (Nov 15 2026). Still to confirm: whether Snap's $39 has sales tax added. See the To do list on Spark Admin.</p>
     <div class="labrow"><div>${IP_LENDERS.map(([n, a]) => `<div><b>${esc(n)}</b>: ${a ? esc(a) : "<i>waiting on Brandon</i>"}</div>`).join("")}</div></div>
     <p class="fine"><b>Quiz preview</b> (one question per lender once all amounts are in):</p>
-    ${known.map(([n, a]) => `<div class="labrow"><div><b>What is the initial payment for ${esc(n)}?</b><small>A) $0 &nbsp; B) ${esc(a)} &nbsp; C) $99 &nbsp; D) $149. Answer: B.</small></div></div>`).join("")}`;
+    ${known.map(([n, a]) => `<div class="labrow"><div><b>What is the initial payment for ${esc(n)}?</b><small>Answer: ${esc(a)}.</small></div></div>`).join("")}
+    <p class="fine"><b>Early purchase options</b></p><div class="labrow"><div>${EPO.map(([n, d]) => `<div style="margin:3px 0"><b>${esc(n)}</b>: ${esc(d)}</div>`).join("")}</div></div>
+    ${EPO.map(([n, , w]) => `<div class="labrow"><div><b>How long is ${esc(n)}'s lowest cost early purchase window?</b><small>A) 30 days &nbsp; B) ${["90 days", "100 days", "120 days"].map(x => x).join(" &nbsp; C) ").replace(w, w + " ✓")}. Answer: ${esc(w)}.</small></div></div>`).join("")}
+    <p class="fine">Memory trick: "Acima 90, Snap 100, Koalafi 120." The window grows by about 10 to 20 days as you go down the list.</p>`;
 }
 
 /* ==== Nov 15 2026 batch 3 (Brandon) ==== */
@@ -2592,13 +2606,13 @@ const LBRAND = {sheffield:{c:"#0E553F", b:"#0E553F", n:"Sheffield Financial"}, t
   dcf:{c:"#2B3A4F", b:"#A80F2F", n:"Direct Credit Funding"}, snap:{c:"#0D2A4F", b:"#2FA84F", n:"Snap Finance"}, acima:{c:"#1E2A36", b:"#1FB8A6", n:"Acima"}};
 /* Extra lease to own links by store (from the store QR codes Brandon gave). */
 const XLEND = {
-  Lewisville:[{k:"snap", title:"Lease to own", sub:"Snap Finance. No credit needed to apply.", url:"https://bk.snapfinance.com/origination?paramId=3w%2FEWVFzVGfi1E%2BWcXyAQsljS1AwpiW%2FHm0nrA5gPGuDn3nxyFYujmWkSyyb89qsgmHX%2BrCyyVDXhMrTA%2FKxEz7nBBAhljmUQ3yem7XAML8%3D"}],
-  Burleson:[{k:"snap", title:"Lease to own", sub:"Snap Finance. No credit needed to apply.", url:"https://bk.snapfinance.com/origination?paramId=3w%2FEWVFzVGfi1E%2BWcXyAQsljS1AwpiW%2FHm0nrA5gPGuB7vCUC8jbR2WkSyyb89qsgmHX%2BrCyyVDXhMrTA%2FKxEz7nBBAhljmUQ3yem7XAML8%3D"}],
-  Colleyville:[{k:"acima", title:"Lease to own", sub:"Acima. No credit needed to apply.", url:"https://apply.acima.com/?app_id=lo&location_guid=loca-2ac58342-299a-4fa9-a30a-8c5010492a4a&utm_campaign=dyn-acima-pop-mp-dashboard&utm_medium=merchant&utm_source=qr"}],
-  Keller:[{k:"acima", title:"Lease to own", sub:"Acima. No credit needed to apply.", url:"https://apply.acima.com/?location_guid=loca-c2845603-5c94-47d6-90dd-6dbcf5df23a5&app_id=lo&utm_source=qr&utm_medium=merchant&utm_campaign=dyn-acima-vbs&utm_content=ins-qr-en-0825"}]};
+  Lewisville:[{k:"snap", title:"Lease to own", sub:"Lease to own financing from Snap. Not all applicants are approved.", url:"https://bk.snapfinance.com/origination?paramId=3w%2FEWVFzVGfi1E%2BWcXyAQsljS1AwpiW%2FHm0nrA5gPGuDn3nxyFYujmWkSyyb89qsgmHX%2BrCyyVDXhMrTA%2FKxEz7nBBAhljmUQ3yem7XAML8%3D"}],
+  Burleson:[{k:"snap", title:"Lease to own", sub:"Lease to own financing from Snap. Not all applicants are approved.", url:"https://bk.snapfinance.com/origination?paramId=3w%2FEWVFzVGfi1E%2BWcXyAQsljS1AwpiW%2FHm0nrA5gPGuB7vCUC8jbR2WkSyyb89qsgmHX%2BrCyyVDXhMrTA%2FKxEz7nBBAhljmUQ3yem7XAML8%3D"}],
+  Colleyville:[{k:"acima", title:"Lease to own", sub:"Lease to own from Acima. Not all applicants are approved.", url:"https://apply.acima.com/?app_id=lo&location_guid=loca-2ac58342-299a-4fa9-a30a-8c5010492a4a&utm_campaign=dyn-acima-pop-mp-dashboard&utm_medium=merchant&utm_source=qr"}],
+  Keller:[{k:"acima", title:"Lease to own", sub:"Lease to own from Acima. Not all applicants are approved.", url:"https://apply.acima.com/?location_guid=loca-c2845603-5c94-47d6-90dd-6dbcf5df23a5&app_id=lo&utm_source=qr&utm_medium=merchant&utm_campaign=dyn-acima-vbs&utm_content=ins-qr-en-0825"}]};
 /* Acima lease to own links for every store (from the Acima merchant portal, Application Links, Nov 15 2026). */
 const ACIMA_LOC = {"Keller": "c2845603-5c94-47d6-90dd-6dbcf5df23a5", "Denton": "709a574c-e609-4da6-b098-100498c9e399", "Farmers Branch": "cab74a31-18f4-43d3-9008-008cd1797178", "Colleyville": "2ac58342-299a-4fa9-a30a-8c5010492a4a", "Lewisville": "bf8a4698-12c2-4fbd-94ab-9fda3cf4c8e5", "Burleson": "4769aaa1-5e8a-4bd3-afe2-3a50bae4855c", "Renfro": "efad5a55-cbbe-4a66-b061-8e2fa21bff36", "Tyler": "300dd063-96a1-4e8a-abda-c87b1374c65e", "Gatesville": "abc6e518-6e50-4ef4-80c4-3b3d676c6492", "Springtown": "cf201a72-e2a5-4020-a67d-5658c3f34b9f", "Weatherford": "2b9083ae-ad4a-47fe-96bd-fc64d2666072", "Waco": "5574227f-e7fd-453e-bd5a-90467a7cda17", "Sarasota": "4ddda7a8-6ec9-4535-97a4-2be50dbc0f47", "Bradenton": "9adfeeb6-2adf-4a3d-849b-6ab810aa4b63", "Naples": "186c9777-7bbb-47f7-99f7-a2405cba85ac", "Tampa": "ab5dfd18-cf4d-4fe2-a0da-244a5e861198", "Lakeland": "5faa197b-f83d-40dd-8c2d-d401189325c1", "Belleview": "eca5c92e-9d33-4da0-b008-a6e709efb539", "Augusta": "c8bf1de5-0522-4d2f-83c3-230b65c05e5a", "Waynesboro": "3ba2a428-f328-4a59-919e-7b33b12201fa"};
-Object.entries(ACIMA_LOC).forEach(([st, g]) => { const L = XLEND[st] = XLEND[st] || []; if (!L.some(l => l.k === "acima")) L.push({k:"acima", title:"Lease to own", sub:"Acima. No credit needed to apply.", url:"https://apply.acima.com/?app_id=lo&location_guid=loca-" + g + "&utm_medium=merchant&utm_source=qr"}); });
+Object.entries(ACIMA_LOC).forEach(([st, g]) => { const L = XLEND[st] = XLEND[st] || []; if (!L.some(l => l.k === "acima")) L.push({k:"acima", title:"Lease to own", sub:"Lease to own from Acima. Not all applicants are approved.", url:"https://apply.acima.com/?app_id=lo&location_guid=loca-" + g + "&utm_medium=merchant&utm_source=qr"}); });
 const LGROUP = [["Good Credit", ["sheffield"]], ["Fair Credit", ["terrace"]], ["All Credit", ["koalafi", "acima", "snap"]], ["Commercial Lending", ["dcf"]]];
 function qrSvg(text, color){
   try { const q = qrcode(0, "M"); q.addData(text); q.make(); const n = q.getModuleCount(); let d = "";
