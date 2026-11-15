@@ -388,6 +388,17 @@ body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#12121
 .tq .tqch{color:#ff5a6e}.tqchl li a{border-left:5px solid #C8102E}
 .verpill{display:inline-block;background:#121212;color:#F5B400;border-radius:999px;padding:3px 10px;font-weight:800;font-size:12px}
 .roletab{border-collapse:collapse;font-size:12px;min-width:640px}.roletab th,.roletab td{border:1px solid #444;padding:5px 6px;text-align:center}.roletab td:first-child{text-align:left;min-width:180px}.roletab th{background:#121212;color:#F5B400}
+.sparks{vertical-align:-3px;margin-right:4px}
+.oldb .sparks{height:13px;vertical-align:-2px;margin-right:3px}
+.btbar{position:fixed;right:10px;top:10px;z-index:950;background:#121212;color:#F5B400;border-radius:999px;padding:6px 12px;font:800 12px var(--display,system-ui);text-decoration:none}
+.zbox.zoomed{touch-action:none}.zbox{touch-action:pan-x pan-y}
+.tqbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}.tqbar select{flex:1;min-width:110px;padding:8px;border-radius:10px;font-size:14px}
+.tqbar .copy,.tqbar .ghost{flex:1;min-width:140px}
+.tq .ulist li{display:flex;align-items:center}.tq .ulist li input{width:22px;height:22px;margin:0 8px 0 4px;flex:0 0 auto}.tq .ulist li a{flex:1}
+.today .tdrow{display:block;border:2px solid #333;border-radius:14px;padding:12px 14px;margin:8px 0;color:inherit;text-decoration:none}.today .tdrow b{display:block;font-size:17px}.today .tdrow span{opacity:.85;font-size:14px}.today .tdrow.hot{border-color:#C8102E;box-shadow:0 0 0 2px rgba(200,16,46,.35)}
+.ldbtn{display:block;width:100%;margin:8px 0 10px;padding:14px;border:0;border-radius:14px;background:#F5B400;color:#121212;font:800 17px var(--display,system-ui);letter-spacing:.03em;cursor:pointer;box-shadow:0 6px 18px rgba(245,180,0,.35)}
+.ldstep{font:800 12px var(--display,system-ui);letter-spacing:.1em;text-transform:uppercase;color:#888}.ldgo{display:block;text-align:center;padding:14px;font-size:17px;margin:10px 0}.ldnext{display:block;width:100%;background:none;border:2px solid #121212;border-radius:12px;padding:12px;font-weight:800;color:#121212;cursor:pointer}
+.todo .tdg{font:800 12px var(--display,system-ui);letter-spacing:.08em;text-transform:uppercase;color:#C8102E;margin:10px 0 4px}.todo .tdi{display:flex;gap:8px;align-items:flex-start;padding:5px 0;color:#121212}.todo .tdi input{width:20px;height:20px;flex:0 0 auto}.todo .tdi.done{opacity:.5;text-decoration:line-through}
 </style>
 
 </head>
@@ -1597,7 +1608,7 @@ const sn4 = u => String(u.serial || "").replace(/[^A-Za-z0-9]/g, "").slice(-4).t
 const snN = u => String(u.serial || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 function urow0(u, st){
   const d = FIRE_AGE[u.id];
-  return `<li><a href="#${esc(u.id)}"><span class="ub">${esc(brAb(u.brand))}</span><span class="um">${esc(u.model || u.name)}</span>${typeof isOldestTX === "function" && feat("mm2") && isOldestTX(u) ? `<span class="oldb">👑 Oldest in TX</span>` : ""}${d ? `<span class="ud">${d} days</span>` : ""}${u.serial ? `<span class="us">SN ${esc(sn4(u))}</span>` : ""}${st !== undefined && u.store !== st ? `<span class="ux">${esc(u.store)}</span>` : ""}</a></li>`;
+  return `<li><a href="#${esc(u.id)}"><span class="ub">${esc(brAb(u.brand))}</span><span class="um">${esc(u.model || u.name)}</span>${typeof isOldestTX === "function" && feat("mm2") && isOldestTX(u) ? `<span class="oldb">${sparkS(13)}Oldest in TX</span>` : ""}${d ? `<span class="ud">${d} days</span>` : ""}${u.serial ? `<span class="us">SN ${esc(sn4(u))}</span>` : ""}${st !== undefined && u.store !== st ? `<span class="ux">${esc(u.store)}</span>` : ""}</a></li>`;
 }
 /* Source of truth for "is it still here and how old" (Brandon Nov 15 2026): the Brand Aging and Unit Sales report.
    d: id -> [days in stock, received, used]. Fire Sale units not on the report probably sold and are left out of Bounties. */
@@ -1894,7 +1905,7 @@ const ADMIN_ONLY = ["flames", "mow", "scene"];   // Brandon Nov 14 2026: nobody 
    even for Brandon. The scenes are scrapped (Brandon Nov 14 2026); the training uses a simple checklist. Lab preview on this phone only. */
 const PARKED = ["scene", "mow", "avatar"];
 const parkPreview = () => isAdm() && ls.get("sparkparkprev") === "1";
-function feat(k, u){ if (PARKED.includes(k) && !parkPreview()) return false; if (ADMIN_ONLY.includes(k) && !isAdm()) return false; if (FLAGS[k] === true) return true; if (!isAdm()) return false; const ex = LAB_EX[k]; return ex ? !!(u && ex.includes(u.id)) : true; }
+function feat(k, u){ if (PARKED.includes(k) && !parkPreview()) return false; if (FLAGS[k] !== true && typeof isBT === "function" && isBT()) return BT_FEATS.includes(k); if (ADMIN_ONLY.includes(k) && !isAdm()) return false; if (FLAGS[k] === true) return true; if (!isAdm()) return false; const ex = LAB_EX[k]; return ex ? !!(u && ex.includes(u.id)) : true; }
 const tourMode = () => isAdm() && ls.get("sparktourmode") === "1";
 function setFlags(f){ if (!f) return; const a = JSON.stringify(FLAGS); FLAGS = f; ls.set("sparkflags", JSON.stringify(f)); try { topFind(); } catch(e){} if (a !== JSON.stringify(f)) { const u = byId[decodeURIComponent(location.hash.slice(1))]; if (u) labTag(u); } }
 
@@ -2103,7 +2114,7 @@ function lsmLook(u){
 }
 window.addEventListener("hashchange", () => { if (!byId[decodeURIComponent(location.hash.slice(1))]) lsmLook(null); });
 function labTag(u){
-  lsmLook(u); try { discTag(u); } catch(e){ console.error(e); } try { saveBig(u); } catch(e){ console.error(e); } try { allLendBtn(u); oldBanner(u); printGlow(u); setTimeout(() => printGlow(u), 2000); } catch(e){ console.error(e); }
+  lsmLook(u); try { discTag(u); } catch(e){ console.error(e); } try { saveBig(u); } catch(e){ console.error(e); } try { ladderBtn(u); btBar(); allLendBtn(u); oldBanner(u); printGlow(u); setTimeout(() => printGlow(u), 2000); } catch(e){ console.error(e); }
   const pr = document.querySelector('#app [data-sec="price"]');
   document.querySelectorAll(".flames,.labnote").forEach(e => e.remove()); document.querySelectorAll(".pill.fire").forEach(e => e.classList.remove("blaze"));
   document.querySelectorAll(".firewords").forEach(e => e.remove());
@@ -2212,6 +2223,10 @@ const LAB_TESTS = [
   ["quiz", "How will you use this equipment? (customers)", "A glowing invite slides up on mower tags and opens the discovery questions in an overlay. Yard size is in acres the way mower makers size decks, and customers can keep must haves (type, brand, minimum deck): home or business, then that path's questions, then the top 3 units at that store with a side by side comparison and a prequalify button.", "#farmersbranch-109225-fce43e"],
   ["topsearch", "Search at the top of every page", "Signed in team members get a unit search bar under the logo on every DT page: last 4 of serial, model or brand.", "#store/colleyville"],
   ["savebig", "Bigger You save", "On tags with a savings, the You save amount is at least 30% bigger than the Fire Sale price. The monthly payment stays the biggest number.", "#farmersbranch-109225-fce43e"],
+  ["today", "Today screen (team)", "One screen with what each team member should do today, in order: print and swap tags, Move First!, Bounties, Side Quests, call backs.", "#today"],
+  ["ladder", "See my payment options (customers)", "One big button. Customers go down the credit ladder one step at a time: check your rate (Sheffield, $1,500 and up), more ways to pay (Terrace), lease to own, and business financing for commercial units.", "#farmersbranch-109225-fce43e@apply"],
+  ["mapzoom", "Pinch to zoom on maps", "Two fingers to zoom in and out on any location map, double tap to zoom, 1x to reset. Ctrl and scroll on a computer.", "#colleyville-84440-cf0232@lmap"],
+  ["iptrain", "Initial payment training (team)", "Teaches the initial payment for each lease to own lender and quizzes the team. Never printed, never offered first. Not ready: waiting on amounts.", "#lab@iptrain"],
   ["tagtrack", "Tags to print and reprint", "Each store page lists the paper tags to print (new or changed) and the ones printed but not yet on the unit. Print this tag breathes when a unit has a new tag. After printing, the team taps It's on the unit.", "#store/colleyville"],
   ["blockers", "Bounty Blockers", "Admin shows the top 5 models where one very old unit keeps other stores from claiming bounties, with location, brand and commercial or residential filters, and a Copy for GM text. Each store page shows its own blockers in a Sell These First box.", "#admin"],
   ["lenders", "All Lenders", "A See all lenders button opens every lender we have a code or link for, grouped Good Credit, Fair Credit, All Credit and Commercial Lending, each QR code in that lender's colors.", "#farmersbranch-109225-fce43e"],
@@ -2235,7 +2250,7 @@ async function labPage(){
       ${ADMIN_ONLY.includes(k) ? `<span class="labst">Only you</span>` : `<button type="button" class="${FLAGS[k] ? "ghost" : "copy"}" data-flag="${k}" data-val="${FLAGS[k] ? 0 : 1}">${FLAGS[k] ? "Take offline" : "Make live"}</button>`}</div>`).join("")}
     <h2 style="margin-top:18px">Saved for later</h2><p class="fine" style="margin-top:0">Switched off everywhere, including your phones. The tags use regular Stepping Stones. Preview brings them back on this phone only.</p>
     <div class="labrow"><div><b>Preview saved items on this phone</b><small>${LAB_TESTS.filter(([k]) => PARKED.includes(k)).map(([, n]) => esc(n)).join(", ")}.</small></div><button type="button" class="${parkPreview() ? "copy" : "ghost"}" id="labpark">${parkPreview() ? "On" : "Off"}</button></div>
-    ${rolesHtml()}${versionsHtml()}
+    ${ipTrainHtml()}${rolesHtml()}${versionsHtml()}
     <div class="lmsg" id="labmsg"></div></div></article>`;
   const msg = document.getElementById("labmsg"), a = chatAuth();
   const set = async (key, val) => { msg.textContent = "Saving..."; try { const r = await api({action:"setflag", store:a.store, pin:a.pin, code:getCode(), key, val}); if (r.ok) { setFlags(r.flags); labPage(); } else msg.textContent = "Could not save."; } catch(e){ msg.textContent = "Could not connect."; } };
@@ -2266,23 +2281,138 @@ function oldestTX(){ const best = {}; DATA.units.forEach(u => { if (!u.fire || !
 const mkey = u => snorm(u.model) + (isUsed(u) ? "|used" : "");
 function mmFeed(st){ const best = oldestTX(); return DATA.units.filter(u => u.fire && u.store === st && best[mkey(u)] && best[mkey(u)].id === u.id).sort(byAge); }
 const urowLoc = u => { const me = myStore(); return urow0(u, u.store).replace("</a></li>", (isOldestTX(u) && (!me || me === u.store) ? HERE : `<span class="ux mmst">${esc(stAb(u.store))}</span>`) + "</a></li>"); };
-const ROLE_COLS = ["Customer", "Team member", "ISR", "BM", "GM", "Division Mgr", "Beta Tester*", "You (admin)"];
+const ROLE_COLS = ["Customer", "Team member", "ISR", "BM", "GM", "Division Mgr", "Beta Tester", "You (admin)"];
 const ROLE_ROWS = [
-  ["Price, monthly payment, Apply buttons", "YYYYYYYY"], ["Unit photo swipe: Too Much Power? / More Power! (Lab)", "YYYYYYYY"], ["How will you use this equipment? quiz (Lab)", "YYYYYYYY"], ["See all lenders (Lab)", "YYYYYYYY"],
+  ["Price, monthly payment, Apply buttons", "YYYYYYYY"], ["See my payment options ladder (Lab)", "YYYYYYYY"], ["Today screen (Lab)", "-YYYYY-Y"], ["Unit photo swipe: Too Much Power? / More Power! (Lab)", "YYYYYYYY"], ["How will you use this equipment? quiz (Lab)", "YYYYYYYY"], ["See all lenders (Lab)", "YYYYYYYY"],
   ["Store map: where the unit is", "-YYYYY-Y"], ["Set location, QR hanger map", "-YYYYY-Y"], ["Team only price (MAP)", "-YYYYY-Y"], ["Print this tag, Request a printed tag", "-YYYYY-Y"],
   ["Tags to print and reprint (Lab)", "-YYYYY-Y"], ["Bounties with filters, It's HERE!, 👑 Oldest in TX (Lab)", "-YYYYY-Y"], ["Sell these first (blockers at their store) (Lab)", "-YYYYY-Y"],
   ["Side Quests checklist (Lab)", "-YY---YY"], ["Cheat Codes talk track", "-Y-YYY-Y"], ["Search at the top of every page (Lab)", "-YYYYY-Y"],
   ["Spark Admin (all stores)", "-----Y-Y"], ["Bounty Blockers admin list, Copy for GM (Lab)", "-------Y"], ["Lab, layout editor, flags, versions", "-------Y"], ["Team chat", "-------Y"]];
-function rolesHtml(){ return `<h2 style="margin-top:18px" id="roles">Who sees what</h2><p class="fine" style="margin-top:0">✓ sees it. Lab items show only on your phones until you make them live. *Beta Tester is not created yet. It's shown as planned: customer view only, no MAP or team prices.</p>
+function rolesHtml(){ return `<h2 style="margin-top:18px" id="roles">Who sees what</h2><p class="fine" style="margin-top:0">✓ sees it. Lab items show only on your phones until you make them live. Beta Testers see only what a customer sees, plus the customer Lab tests (swipe, quiz, All Lenders, payment options, bigger You save). They sign in at #beta.</p>
   <div style="overflow-x:auto"><table class="roletab"><thead><tr><th></th>${ROLE_COLS.map(c => `<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${ROLE_ROWS.map(([n, m]) => `<tr><td>${esc(n)}</td>${[...m].map(c => `<td>${c === "Y" ? "✓" : ""}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
   <p class="fine">Preview a page as a customer: open any tag in a private window (not signed in). <a href="#farmersbranch-109225-fce43e">Example tag ›</a></p>`; }
 function versionsHtml(){ return `<h2 style="margin-top:18px" id="versions">Versions</h2><p class="fine" style="margin-top:0">You're on <span class="verpill">V${SPARK_VERSION.n} ${esc(SPARK_VERSION.name)}</span>. To undo a set of changes, tell Claude "go back to V8" (or any number).</p>
   ${SPARK_VERSIONS.map(([n, nm, d]) => `<div class="labrow"><div><b>V${n} ${esc(nm)}</b><small>${esc(d)}</small></div></div>`).join("")}`; }
 
+/* ==== Nov 15 2026 batch 4 (Brandon) ==== */
+const SPARK_S = "data:image/png;base64,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";
+const sparkS = (h) => `<img src="${SPARK_S}" alt="Spark" class="sparks" style="height:${h || 16}px">`;
+const HANDHELD = ["saw", "blower", "trimmer", "hedge"];
+const isHandheld = u => HANDHELD.includes(utype(u));
+/* Beta Testers: customer view only, plus the customer facing Lab tests. No team access, ever. */
+const BT_FEATS = ["compare", "quiz", "lenders", "savebig", "ladder"];
+const btGet = () => { try { return JSON.parse(ls.get("sparkbt") || "null"); } catch(e){ return null; } };
+const isBT = () => !!btGet() && !getCode();
+function betaPage(){
+  document.title = "Spark Beta Testers"; const b = btGet();
+  app.innerHTML = `<article class="card"><div class="sect"><h2>Beta Testers</h2>${b ? `<p>Signed in as <b>${esc(b.name)}</b> (${esc(b.bt)}). Open any digital tag and you'll see the new customer features before anyone else. You see exactly what a customer sees.</p><p><a class="copy" style="display:block;text-align:center" href="#farmersbranch-109225-fce43e">Open an example tag ›</a></p><button type="button" class="ghost" id="btout">Sign out</button>`
+    : `<p>Sign in with your PIN and your code.</p><input id="btpin" inputmode="numeric" placeholder="PIN" autocomplete="off" style="width:100%;padding:12px;margin:6px 0;font-size:16px"><input id="btcode" inputmode="numeric" placeholder="Code" autocomplete="off" style="width:100%;padding:12px;margin:6px 0;font-size:16px"><button type="button" class="copy" id="btin" style="width:100%">Sign in</button><div class="lmsg" id="btm"></div>`}</div></article>`;
+  const o = document.getElementById("btout"); if (o) o.onclick = () => { ls.set("sparkbt", ""); betaPage(); };
+  const i = document.getElementById("btin"); if (i) i.onclick = async () => { const m = document.getElementById("btm"); m.textContent = "Checking...";
+    try { const r = await api({action:"betain", store:"Colleyville", pin:document.getElementById("btpin").value.trim(), code:document.getElementById("btcode").value.trim()});
+      if (r.ok) { ls.set("sparkbt", JSON.stringify({bt:r.bt, name:r.name})); betaPage(); } else m.textContent = r.error === "locked" ? "Too many tries. Wait an hour." : "That PIN and code don't match."; } catch(e){ m.textContent = "Could not reach the server. Try again."; } };
+}
+function btBar(){ let b = document.getElementById("btbar"); const t = btGet(); if (!t || getCode()) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement("a"); b.id = "btbar"; b.className = "btbar"; b.href = "#beta"; document.body.appendChild(b); } b.textContent = "Beta Tester: " + t.name; }
+
+/* Pinch to zoom on the location maps, like photos on an iPhone (Lab test until it's right). */
+function pinchify(box, svg, onZ){
+  let z = 1, d0 = 0, z0 = 1, m0 = null, last = 0;
+  const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY), mid = t => [(t[0].clientX + t[1].clientX) / 2, (t[0].clientY + t[1].clientY) / 2];
+  const setZ = (nz, cx, cy) => { nz = Math.max(1, Math.min(5, nz)); const r = box.getBoundingClientRect(), px = cx - r.left, py = cy - r.top;
+    const ux = (box.scrollLeft + px) / z, uy = (box.scrollTop + py) / z; z = nz; svg.style.width = (z * 100) + "%"; svg.style.maxWidth = "none";
+    box.scrollLeft = ux * z - px; box.scrollTop = uy * z - py; box.classList.toggle("zoomed", z > 1.02); onZ && onZ(z); };
+  box.addEventListener("touchstart", e => { if (e.touches.length === 2) { d0 = dist(e.touches); z0 = z; m0 = mid(e.touches); e.preventDefault(); } else if (e.touches.length === 1) { const n = Date.now(); if (n - last < 300) { const t = e.touches[0]; setZ(z > 1.5 ? 1 : 2.5, t.clientX, t.clientY); e.preventDefault(); } last = n; } }, {passive:false});
+  box.addEventListener("touchmove", e => { if (e.touches.length === 2 && d0) { e.preventDefault(); const m = mid(e.touches); setZ(z0 * dist(e.touches) / d0, m[0], m[1]); if (m0) { box.scrollLeft -= m[0] - m0[0]; box.scrollTop -= m[1] - m0[1]; } m0 = m; } }, {passive:false});
+  box.addEventListener("touchend", e => { if (e.touches.length < 2) { d0 = 0; m0 = null; } });
+  box.addEventListener("wheel", e => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); setZ(z * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX, e.clientY); } }, {passive:false});
+  return { reset: () => { const r = box.getBoundingClientRect(); setZ(1, r.left, r.top); } };
+}
+
+/* Bulk print: merge the chosen tags into one PDF to print from a phone or computer. */
+async function bulkPrint(units, msg){
+  if (!units.length) return; msg.textContent = "Getting " + units.length + " tag" + (units.length === 1 ? "" : "s") + "...";
+  if (!window.PDFLib) await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  const out = await PDFLib.PDFDocument.create(); let ok = 0, miss = [];
+  for (const u of units) { msg.textContent = `Getting tag ${ok + miss.length + 1} of ${units.length}...`;
+    try { const r = await api({action:"tagpdf", store:u.store, unit:u.unit, pin:getPin(u.store) || "", code:getCode()});
+      if (r.ok && r.pdf) { const src = await PDFLib.PDFDocument.load(Uint8Array.from(atob(r.pdf), c => c.charCodeAt(0))); (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p)); ok++; } else miss.push(u); } catch(e){ miss.push(u); } }
+  if (!ok) { msg.textContent = "None of those tags were found."; return; }
+  const url = URL.createObjectURL(new Blob([await out.save()], {type:"application/pdf"})); window.open(url, "_blank");
+  msg.innerHTML = `Opened ${ok} tag${ok === 1 ? "" : "s"} in one PDF. Tap Share, then Print.${miss.length ? ` ${miss.length} not found: ${miss.map(u => esc(u.model)).join(", ")}.` : ""}`;
+  Object.keys(TS).forEach(k => delete TS[k]);
+}
+
+/* Team "Today" screen (Lab): everything a team member should do today, in one place. */
+async function todayPage(){
+  document.title = "Today"; if (!getCode()) { app.innerHTML = `<article class="card"><div class="sect"><h2>Today</h2><p>Sign in on any tag first.</p></div></article>`; return; }
+  const st = myStore() || (isAll() ? (sessionStorage.getItem("todayst") || "Colleyville") : "");
+  const tags = await tagStat(st, true), pa = tags.filter(t => (t.st === "print" || t.st === "reprint") && !tqHide(st, t)), ch = pa.filter(tsChanged);
+  const mm = feat("mm2") ? mmFeed(st) : [], mine = blockerList({}).filter(b => b.o.store === st), first = (chatAuth() || {}).name || "";
+  app.innerHTML = `<article class="card"><div class="sect today"><h2>Today at ${esc(st)}</h2>${isAll() ? `<select id="tdst" style="padding:8px;margin-bottom:8px">${TX_STORES.filter(s => STORES.includes(s)).map(s => `<option ${s === st ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>` : ""}
+    <p class="fine" style="margin-top:0">Do these in order. Tap any row to go there.${!FLAGS.today ? " <b>Testing: only you see this.</b>" : ""}</p>
+    <a class="tdrow ${ch.length ? "hot" : ""}" href="#store/${slug(st)}@tagq"><b>1. Print and swap tags</b><span>${ch.length} changed, ${pa.length - ch.length} new</span></a>
+    <a class="tdrow ${mine.length ? "hot" : ""}" href="#store/${slug(st)}@blkst"><b>2. Move First!</b><span>${mine.length ? mine.length + " old unit" + (mine.length === 1 ? "" : "s") + " blocking other stores" : "Nothing blocking"}</span></a>
+    <a class="tdrow" href="#store/${slug(st)}@bfeed"><b>3. ${esc(label("money"))}</b><span>${mm.length} unit${mm.length === 1 ? "" : "s"} at your store pay a SPIFF</span></a>
+    <a class="tdrow" href="#store/${slug(st)}"><b>4. ${esc(label("first5"))}</b><span>Finish your checklist</span></a>
+    <a class="tdrow" href="#store/${slug(st)}"><b>5. Call back leads and holds</b><span>Coming next: leads from the tags show here</span></a></div></article>`;
+  const s = document.getElementById("tdst"); if (s) s.onchange = () => { sessionStorage.setItem("todayst", s.value); todayPage(); };
+}
+
+/* One tap credit ladder (Lab, customers): one button, then one step at a time down the ladder. */
+function ladder(u){
+  document.getElementById("ldov")?.remove();
+  const L = DATA.lenders[u.store] || [], have = {}; L.forEach(l => have[l.k] = l); (XLEND[u.store] || []).forEach(l => { if (!have[l.k]) have[l.k] = l; });
+  const p = money(u.now), small = !u.maphide && p > 0 && p < 1500, com = isCom(u);
+  const steps = [!small && have.sheffield && ["sheffield", "Check your rate", "No impact to your credit score. Takes about 2 minutes."], have.terrace && ["terrace", "Try more ways to pay", "Mower Finance by Terrace Finance looks at more than your score."],
+    (have.koalafi || have.acima || have.snap) && [have.koalafi ? "koalafi" : have.acima ? "acima" : "snap", "Lease to own", "No credit needed to apply. It's not a loan."], com && ["dcf", "Business financing", "Direct Credit Funding for businesses and fleets."]].filter(Boolean);
+  if (com && !have.dcf) have.dcf = DCF_L;
+  let i = 0; const ov = document.createElement("div"); ov.id = "ldov"; ov.className = "dqov";
+  const paint = () => { const [k, t, d] = steps[i], l = have[k], b = LBRAND[k] || {c:"#121212", b:"#121212"}, url = l.url || lendUrl(u, l);
+    ov.innerHTML = `<div class="dqsheet ldsheet" role="dialog" aria-modal="true" aria-label="Payment options"><button type="button" class="dqx" aria-label="Close">×</button>
+      <div class="ldstep">Step ${i + 1} of ${steps.length}</div><div class="dqh" style="color:#121212">${esc(t)}</div><p style="color:#444">${esc(d)}</p>
+      <a class="alapply ldgo" style="--lb:${b.b};--lc:${b.c}" href="${esc(url)}" target="_blank" rel="noopener">Start with ${esc((LBRAND[k] || {}).n || l.title)} ›</a>
+      ${i < steps.length - 1 ? `<button type="button" class="ldnext">Not approved? Try the next option ›</button>` : `<p class="fine" style="color:#444">Still need help? Tap Contact me on this tag and we'll find a way.</p>`}
+      ${!FLAGS.ladder && isAdm() ? `<p class="fine labnote2">Testing: only you see this.</p>` : ""}</div>`;
+    ov.querySelector(".dqx").onclick = () => { ov.classList.remove("in"); setTimeout(() => ov.remove(), 250); };
+    const n = ov.querySelector(".ldnext"); if (n) n.onclick = () => { i++; paint(); }; };
+  if (!steps.length) return; paint(); document.body.appendChild(ov); requestAnimationFrame(() => ov.classList.add("in"));
+}
+function ladderBtn(u){ const ap = document.querySelector('#app [data-sec="apply"]'); if (!ap) return; ap.querySelector(".ldbtn")?.remove(); if (!feat("ladder")) return;
+  const b = document.createElement("button"); b.type = "button"; b.className = "ldbtn"; b.textContent = "See my payment options ›"; b.onclick = () => ladder(u); ap.insertBefore(b, ap.firstChild.nextSibling); }
+
+/* Tags to print: hide handhelds unless they're Fire Sale (SPIFF) units. */
+const tqHide = (st, t) => { const x = DATA.units.find(y => y.store === st && String(y.unit) === t.unit); return !x || (isHandheld(x) && !x.fire); };
+
+/* Admin to do list (Brandon Nov 15 2026): things to ask Justin and what's still needed to make tests live. Checks save on this phone. */
+const TODO = [
+  ["Ask Justin", "Fire Sale list updates (newest list for all states)"], ["Ask Justin", "Sign the Snap dealer agreements"], ["Ask Justin", "Sheffield new dealer packages"],
+  ["Initial payment training", "Acima initial payment amount, and whether sales tax is included"], ["Initial payment training", "Snap initial payment amount, and whether sales tax is included"],
+  ["Initial payment training", "Terrace, WEF and Synchrony: initial payment or down payment, if any"], ["Initial payment training", "Confirm Koalafi is $49 plus tax"],
+  ["Lenders", "WEF QR code or link for each store"], ["Lenders", "Synchrony QR code or link for each store, and Spark's Synchrony program minimum"],
+  ["Lenders", "Snap and Acima codes for the stores that don't have them yet"], ["Lenders", "Lender launch checklist, and where to count deals by branch (Acima, Sheffield, Terrace, Koalafi, Snap reports)"]];
+function adminTodo(){
+  const box = document.getElementById("todo"); if (!box) return;
+  let done = {}; try { done = JSON.parse(ls.get("sparktodo") || "{}"); } catch(e){}
+  const groups = [...new Set(TODO.map(t => t[0]))];
+  box.innerHTML = `<h2>To do <small>${TODO.filter(t => !done[t[1]]).length} open</small></h2><div class="admcard todo">${groups.map(g => `<div class="tdg">${esc(g)}</div>${TODO.filter(t => t[0] === g).map(t => `<label class="tdi ${done[t[1]] ? "done" : ""}"><input type="checkbox" data-td="${esc(t[1])}" ${done[t[1]] ? "checked" : ""}> ${esc(t[1])}</label>`).join("")}`).join("")}</div>`;
+  box.querySelectorAll("[data-td]").forEach(c => c.onchange = () => { done[c.dataset.td] = c.checked; ls.set("sparktodo", JSON.stringify(done)); adminTodo(); });
+}
+/* Initial payment training for team members (Lab preview, not live until every amount is in). */
+const IP_LENDERS = [["Koalafi", "$49 plus sales tax"], ["Acima", ""], ["Snap", ""]];
+function ipTrainHtml(){
+  const known = IP_LENDERS.filter(l => l[1]);
+  return `<h2 style="margin-top:18px" id="iptrain">Initial payment training (team) <span class="labst">Not live</span></h2>
+    <p class="fine" style="margin-top:0">For team members only. Waiting on ${IP_LENDERS.filter(l => !l[1]).map(l => l[0]).join(" and ")}. See the To do list on Spark Admin.</p>
+    <div class="labrow"><div>${IP_LENDERS.map(([n, a]) => `<div><b>${esc(n)}</b>: ${a ? esc(a) : "<i>waiting on Brandon</i>"}</div>`).join("")}</div></div>
+    <p class="fine"><b>Quiz preview</b> (one question per lender once all amounts are in):</p>
+    ${known.map(([n, a]) => `<div class="labrow"><div><b>What is the initial payment for ${esc(n)}?</b><small>A) $0 &nbsp; B) ${esc(a)} &nbsp; C) $99 &nbsp; D) $149. Answer: B.</small></div></div>`).join("")}`;
+}
+
 /* ==== Nov 15 2026 batch 3 (Brandon) ==== */
 /* Version names: say "go back to V9" and Claude redeploys that version. */
-const SPARK_VERSION = {n:10, name:"Beta Ready", date:"Nov 15, 2026"};
-const SPARK_VERSIONS = [[10, "Beta Ready", "Back button, jump links, map zoom, changed vs new tags, aging report truth, final names"], [9, "Blockers", "Tags to print, ready alert, Bounty Blockers, All Lenders, quiz must haves"],
+const SPARK_VERSION = {n:11, name:"Today", date:"Nov 15, 2026"};
+const SPARK_VERSIONS = [[11, "Today", "Beta Testers, Today screen, payment options ladder, bulk print and filters, pinch zoom test, Spark S, Move First!, admin To do"], [10, "Beta Ready", "Back button, jump links, map zoom, changed vs new tags, aging report truth, final names"], [9, "Blockers", "Tags to print, ready alert, Bounty Blockers, All Lenders, quiz must haves"],
   [8, "Swipe", "It's HERE!, Too Much Power and More Power swipe, quiz overlay, top search"], [7, "Tag Requests", "Request a printed tag, Bounties oldest in TX, compare, discovery quiz"],
   [6, "No Flames", "Fire Sale flames removed, 3 Stones and LSM look tests"], [5, "Lab", "Spark Lab with live toggles"], [4, "Sherpa", "First sign in welcome, tour, daily prompts"],
   [3, "Chat", "Team chat and showroom drawing"], [2, "Finder", "All units on the DT and the unit finder"], [1, "Admin", "Spark Admin home and activity dashboard"]];
@@ -2302,18 +2432,15 @@ function jumpGo(){ const a = sessionStorage.getItem("jump"); if (!a) return; let
       el.scrollIntoView({behavior:"smooth", block:"center"}); setTimeout(() => el.scrollIntoView({behavior:"smooth", block:"center"}), 1200); el.classList.add("jumpflash"); setTimeout(() => el.classList.remove("jumpflash"), 2600); } else if (++n > 110) { clearInterval(t); sessionStorage.removeItem("jump"); } }, 150); }
 window.addEventListener("hashchange", () => { if (jumpFix()) route(); setTimeout(jumpGo, 60); });
 /* Zoom on every location diagram map: + and − buttons, drag to move. */
-function zoomify(){ document.querySelectorAll(".locmap:not([data-z])").forEach(m => { const svg = m.querySelector("svg"); if (!svg) return; m.dataset.z = "1";
-  const box = document.createElement("div"); box.className = "zbox"; svg.before(box); box.appendChild(svg); let z = 1;
-  const bar = document.createElement("div"); bar.className = "zbar"; bar.innerHTML = `<button type="button" data-z="-" aria-label="Zoom out">−</button><button type="button" data-z="0" aria-label="Reset zoom">1x</button><button type="button" data-z="+" aria-label="Zoom in">+</button>`;
-  m.appendChild(bar);
-  bar.onclick = e => { const k = e.target.dataset.z; if (!k) return; e.stopPropagation(); e.preventDefault(); const c = [box.scrollLeft + box.clientWidth / 2, box.scrollTop + box.clientHeight / 2].map(v => v / z);
-    z = k === "+" ? Math.min(4, z * 1.5) : k === "-" ? Math.max(1, z / 1.5) : 1; svg.style.width = (z * 100) + "%"; svg.style.maxWidth = "none"; bar.querySelector('[data-z="0"]').textContent = (Math.round(z * 10) / 10) + "x";
-    box.scrollLeft = c[0] * z - box.clientWidth / 2; box.scrollTop = c[1] * z - box.clientHeight / 2; }; }); }
+function zoomify(){ if (!feat("mapzoom")) return; document.querySelectorAll(".locmap:not([data-z])").forEach(m => { const svg = m.querySelector("svg"); if (!svg) return; m.dataset.z = "1";
+  const box = document.createElement("div"); box.className = "zbox"; svg.before(box); box.appendChild(svg);
+  const bar = document.createElement("div"); bar.className = "zbar"; bar.hidden = true; bar.innerHTML = `<button type="button" aria-label="Reset zoom">1x</button>`; m.appendChild(bar);
+  const pz = pinchify(box, svg, z => { bar.hidden = z <= 1.02; }); bar.onclick = e => { e.stopPropagation(); e.preventDefault(); pz.reset(); }; }); }
 new MutationObserver(() => { zoomify(); const b = document.getElementById("lprint"); if (b && !b.dataset.pg) { b.dataset.pg = "1"; const u = byId[decodeURIComponent(location.hash.slice(1))]; if (u) setTimeout(() => { printGlow(u); oldBanner(u); }, 50); } }).observe(document.body, {childList:true, subtree:true});
 /* Team only: big obvious banner when this unit is the oldest of its model in Texas (a Bounty). */
 function oldBanner(u){ document.getElementById("oldban")?.remove(); if (!getCode() || !feat("mm2") || !isOldestTX(u)) return;
   const ph = document.querySelector('#app [data-sec="photo"]'); if (!ph) return; const d = document.createElement("div"); d.id = "oldban"; d.className = "oldban";
-  d.innerHTML = `👑 <b>Oldest ${esc(u.model)} in Texas.</b> This one is a Bounty. ${FIRE_AGE[u.id] ? FIRE_AGE[u.id] + " days in stock." : ""}`; ph.before(d); }
+  d.innerHTML = `${sparkS(20)}<b>Oldest ${esc(u.model)} in Texas.</b> This one is a Bounty. ${FIRE_AGE[u.id] ? FIRE_AGE[u.id] + " days in stock." : ""}`; ph.before(d); }
 
 /* ==== Nov 15 2026 batch 2 (Brandon) ==== */
 /* Tag tracking: built, printed, placed. Each store sees which paper tags to print or reprint. */
@@ -2370,15 +2497,28 @@ async function printGlow(u){
 async function tagQ(st){
   const box = document.getElementById("tagq"); if (!box) return;
   if (!feat("tagtrack") || !getCode() || !(isAll() || getPin(st))) { box.innerHTML = ""; return; }
-  box.innerHTML = `<div class="top3 tq"><div class="t3h">Tags to print</div><div class="t3s">Loading...</div></div>`;
-  const tags = await tagStat(st, true), U = t => DATA.units.find(x => x.store === st && String(x.unit) === t.unit);
-  const pa = tags.filter(t => t.st === "print" || t.st === "reprint"), ch = pa.filter(tsChanged), pr = pa.filter(t => !tsChanged(t)), pl = tags.filter(t => t.st === "place"), dn = tags.filter(t => t.st === "done");
-  const row = t => { const x = U(t); return x ? `<li><a href="#${esc(x.id)}"><span class="ub">${esc(brAb(x.brand))}</span><span class="um">${esc(x.model || x.name)}</span><span class="tqr">${esc(t.st === "place" ? "Put it on the unit" : tsReason(t))}</span>${x.serial ? `<span class="us">SN ${esc(sn4(x))}</span>` : ""}</a></li>` : ""; };
-  box.innerHTML = `<div class="top3 tq"><div class="t3h">Tags to print</div><div class="t3s">Tap a unit, then Print this tag. When it's hanging on the unit, tap It's on the unit.${!FLAGS.tagtrack ? " <b>Testing: only you see this.</b>" : ""}</div>
+  if (!box.innerHTML) box.innerHTML = `<div class="top3 tq"><div class="t3h">Tags to print</div><div class="t3s">Loading...</div></div>`;
+  const all = (await tagStat(st, true)).filter(t => !tqHide(st, t)), U = t => DATA.units.find(x => x.store === st && String(x.unit) === t.unit);
+  const F = box._F || (box._F = {br:"", kind:"", cat:"", fire:""}), sel = box._S || (box._S = new Set());
+  const kind = t => t.st === "place" ? "place" : tsChanged(t) ? "changed" : "new";
+  const cat = x => isHandheld(x) ? "Handheld" : MOWTYPES.includes(utype(x)) ? "Mower" : utype(x) === "utv" ? "UTV" : "Other";
+  const rows = all.map(t => ({t, x:U(t)})).filter(r => r.x && r.t.st !== "done" && (!F.br || r.x.brand.toLowerCase() === F.br.toLowerCase()) && (!F.kind || kind(r.t) === F.kind) && (!F.cat || cat(r.x) === F.cat) && (!F.fire || (F.fire === "y") === !!r.x.fire));
+  const ch = rows.filter(r => kind(r.t) === "changed"), nw = rows.filter(r => kind(r.t) === "new"), pl = rows.filter(r => kind(r.t) === "place"), dn = all.filter(t => t.st === "done");
+  const brands = [...new Map(all.map(U).filter(Boolean).map(x => [x.brand.toLowerCase(), x.brand])).values()].sort();
+  const opt = (k, list, lab) => `<select data-tf="${k}" aria-label="${lab}"><option value="">${lab}</option>${list.map(([v, t]) => `<option value="${esc(v)}" ${F[k] === v ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
+  const row = ({t, x}) => `<li><input type="checkbox" data-u="${esc(t.unit)}" ${sel.has(t.unit) ? "checked" : ""} aria-label="Select ${esc(x.model)}"><a href="#${esc(x.id)}@lprint"><span class="ub">${esc(brAb(x.brand))}</span><span class="um">${esc(x.model || x.name)}</span>${x.fire ? `<span class="ux">Fire Sale</span>` : ""}<span class="tqr">${esc(t.st === "place" ? "Put it on the unit" : tsReason(t))}</span>${x.serial ? `<span class="us">SN ${esc(sn4(x))}</span>` : ""}</a></li>`;
+  const printable = [...ch, ...nw];
+  box.innerHTML = `<div class="top3 tq"><div class="t3h">Tags to print</div><div class="t3s">Tap a unit to print one, or check several and print them together. When it's hanging on the unit, tap It's on the unit.${!FLAGS.tagtrack ? " <b>Testing: only you see this.</b>" : ""}</div>
+    <div class="tqbar">${opt("br", brands.map(b => [b, b]), "All brands")}${opt("kind", [["changed", "Changed"], ["new", "New"], ["place", "Not on the unit yet"]], "All tags")}${opt("cat", [["Mower", "Mowers"], ["Handheld", "Handhelds"], ["UTV", "UTVs"], ["Other", "Other"]], "All types")}${opt("fire", [["y", "Fire Sale only"], ["n", "Not Fire Sale"]], "Fire Sale or not")}</div>
+    <div class="tqbar"><button type="button" class="ghost" data-tq="all">${printable.length && printable.every(r => sel.has(r.t.unit)) ? "Clear all" : "Select all " + printable.length}</button><button type="button" class="copy" data-tq="print" ${sel.size ? "" : "disabled"}>Print ${sel.size || ""} selected</button></div><div class="lmsg" id="tqm"></div>
     ${ch.length ? `<div class="tqh tqch">⚠ Changed tags: print and swap these first (${ch.length})</div><ul class="ulist tqchl">${ch.map(row).join("")}</ul>` : ""}
-    ${pr.length ? `<div class="tqh">New tags to print (${pr.length})</div><ul class="ulist">${pr.map(row).join("")}</ul>` : ""}${!ch.length && !pr.length ? `<p class="tqok">Nothing to print right now. 👍</p>` : ""}
+    ${nw.length ? `<div class="tqh">New tags to print (${nw.length})</div><ul class="ulist">${nw.map(row).join("")}</ul>` : ""}
     ${pl.length ? `<div class="tqh">Printed. Put them on the unit (${pl.length})</div><ul class="ulist">${pl.map(row).join("")}</ul>` : ""}
-    ${dn.length ? `<p class="ucount">${dn.length} placed this week</p>` : ""}</div>`;
+    ${!rows.length ? `<p class="tqok">Nothing to print for this filter. 👍</p>` : ""}${dn.length ? `<p class="ucount">${dn.length} placed this week</p>` : ""}</div>`;
+  box.querySelectorAll("[data-tf]").forEach(s => s.onchange = () => { F[s.dataset.tf] = s.value; tagQ(st); });
+  box.querySelectorAll("[data-u]").forEach(c => c.onchange = () => { c.checked ? sel.add(c.dataset.u) : sel.delete(c.dataset.u); tagQ(st); });
+  box.querySelector('[data-tq="all"]').onclick = () => { const on = printable.length && printable.every(r => sel.has(r.t.unit)); printable.forEach(r => on ? sel.delete(r.t.unit) : sel.add(r.t.unit)); tagQ(st); };
+  box.querySelector('[data-tq="print"]').onclick = async () => { const us = [...sel].map(u => DATA.units.find(x => x.store === st && String(x.unit) === u)).filter(Boolean); await bulkPrint(us, document.getElementById("tqm")); sel.clear(); setTimeout(() => tagQ(st), 1500); };
 }
 
 /* Bounty blockers: an exceptionally old unit that has to sell before other stores can claim bounties on that model. */
@@ -2405,7 +2545,7 @@ function blockersAdmin(){
   const box = document.getElementById("blk"); if (!box) return;
   if (!feat("blockers")) { box.innerHTML = ""; return; }
   const L = blockerList(BF).slice(0, 5);
-  const gm = st => { const mine = blockerList({}).filter(b => b.o.store === st); return mine.length ? `${st}: please sell these first. Each one is keeping other stores from claiming Bounties (in stock per the ${AGING.asof} aging report).\n` + mine.map(b => `- ${b.o.brand} ${b.o.model}, unit ${b.o.unit}, ${b.a1} days. Holding back ${b.held.length} unit${b.held.length === 1 ? "" : "s"} at ${b.stores.join(", ")}.`).join("\n") : ""; };
+  const gm = st => { const mine = blockerList({}).filter(b => b.o.store === st); return mine.length ? `${st}: Move First! Each one is keeping other stores from claiming Bounties (in stock per the ${AGING.asof} aging report).\n` + mine.map(b => `- ${b.o.brand} ${b.o.model}, unit ${b.o.unit}, ${b.a1} days. Holding back ${b.held.length} unit${b.held.length === 1 ? "" : "s"} at ${b.stores.join(", ")}.`).join("\n") : ""; };
   const blStores = [...new Set(blockerList({}).map(b => b.o.store))];
   box.innerHTML = `<h2>Bounty Blockers <small>${!FLAGS.blockers ? "Testing: only you see this" : ""}</small></h2>
     <div class="admcard">${bfSelects(BF)}
@@ -2413,7 +2553,7 @@ function blockersAdmin(){
     ${L.length ? `<ol class="blk">${L.map(b => `<li><a href="#${esc(b.o.id)}"><b>${esc(b.o.brand + " " + tc2(b.o.name))}</b></a>
       <div><span class="blkd">${b.a1} days</span> at <b>${esc(b.o.store)}</b>, unit ${esc(b.o.unit)}${b.o.serial ? ", SN " + esc(sn4(b.o)) : ""}${AGING.d[b.o.id] ? ", received " + esc(AGING.d[b.o.id][1]) : ""}. Next oldest: ${b.a2} days at ${esc(b.nx.store)}.</div>
       <div class="blkh">Holding back ${b.held.length} bount${b.held.length === 1 ? "y" : "ies"} at ${esc(b.stores.join(", "))}</div></li>`).join("")}</ol>` : `<p class="admmut">No blockers for this filter.</p>`}
-    <div class="blkgm"><b>Tell the GMs</b><span class="admmut">Each store's page shows its blockers in a Sell These First box. Copy a ready text for a GM:</span>
+    <div class="blkgm"><b>Tell the GMs</b><span class="admmut">Each store's page shows its blockers in a Move First! box. Copy a ready text for a GM:</span>
       <div>${blStores.map(st => `<button type="button" class="admbtn" data-gm="${esc(st)}">Copy for ${esc(st)}</button>`).join(" ")}</div><p class="admmut" id="blkm"></p></div></div>`;
   bfWire(box, BF, blockersAdmin);
   box.querySelectorAll("[data-gm]").forEach(b => b.onclick = async () => { const t = gm(b.dataset.gm); try { await navigator.clipboard.writeText(t); document.getElementById("blkm").textContent = "Copied the " + b.dataset.gm + " text. Paste it in a text or email."; } catch(e){ document.getElementById("blkm").textContent = t; } });
@@ -2422,7 +2562,7 @@ function blockersStore(st){
   const box = document.getElementById("blkst"); if (!box) return;
   if (!feat("blockers") || !getCode()) { box.innerHTML = ""; return; }
   const mine = blockerList({}).filter(b => b.o.store === st); if (!mine.length) { box.innerHTML = ""; return; }
-  box.innerHTML = `<div class="top3 blkst"><div class="t3h">Sell these first</div><div class="t3s">These units are so old they keep other stores from claiming ${esc(label("money"))} on the same model. Sell them and everyone gets paid.${!FLAGS.blockers ? " <b>Testing: only you see this.</b>" : ""}</div>
+  box.innerHTML = `<div class="top3 blkst"><div class="t3h">Move First!</div><div class="t3s">These units are so old they keep other stores from claiming ${esc(label("money"))} on the same model. Sell them and everyone gets paid.${!FLAGS.blockers ? " <b>Testing: only you see this.</b>" : ""}</div>
     <ul class="ulist">${mine.map(b => `<li><a href="#${esc(b.o.id)}"><span class="ub">${esc(brAb(b.o.brand))}</span><span class="um">${esc(b.o.model)}</span><span class="ud">${b.a1} days</span><span class="ux">Blocking ${b.stores.length} store${b.stores.length === 1 ? "" : "s"}</span></a></li>`).join("")}</ul></div>`;
 }
 /* Bounties feed with filters: location, manufacturer, commercial or residential. */
@@ -2837,7 +2977,7 @@ function adminHome(){
       ${live ? `<div class="admnums"><span><b>${mine.length}</b> units</span><span><b>${mine.filter(u => u.fire).length}</b> Fire Sale</span></div><a class="admbtn" href="#store/${slug(st)}">Open store page</a>` : `<div class="admmut" style="margin-top:8px">${["Mowers Inc","Taylor"].includes(i.dba) ? "Paused (team side frozen; lender QR codes still work)" : "Not on digital tags yet"}</div>`}</div>`; }).join("");
   const list = units.slice(0, 150).map(u => `<li><a href="#${esc(u.id)}">${u.fire ? `<span class="admfire">Fire Sale</span> ` : ""}${esc(u.m + " " + u.name)}</a><small>${esc(u.store)}, unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}</small></li>`).join("");
   app.innerHTML = `${ADMIN_CSS}<div class="adm"><div class="admh"><img src="/m/icon-192.png" alt=""><div><b>Spark Admin</b><small>${all.length} units across ${STORES.length} live locations</small></div></div>
-    <div class="admlinks"><a href="/dash/" target="_blank" rel="noopener">Activity dashboard and LSM rollout ›</a> &nbsp; <a href="#inventory">Inventory ›</a>${isAdm() ? ` &nbsp; <a href="#lab">Lab ›</a>` : ""}${chatOn() ? ` &nbsp; <a href="#chat">Team chat ›</a>` : ""}</div><div id="blk"></div>
+    <div class="admlinks"><a href="/dash/" target="_blank" rel="noopener">Activity dashboard and LSM rollout ›</a> &nbsp; <a href="#inventory">Inventory ›</a>${isAdm() ? ` &nbsp; <a href="#lab">Lab ›</a>` : ""}${chatOn() ? ` &nbsp; <a href="#chat">Team chat ›</a>` : ""}</div><div id="todo"></div><div id="blk"></div>
     <input id="admq" type="search" placeholder="Search brand, model, unit or serial" value="${esc(ADM.q)}">
     <div class="admf">${opts("dba", Object.values(LOC_INFO).map(i => i.dba), "All brands (DBA)")}${opts("state", Object.values(LOC_INFO).map(i => i.state), "All states")}
       ${opts("loc", Object.keys(LOC_INFO).filter(st => (!ADM.dba || LOC_INFO[st].dba === ADM.dba) && (!ADM.state || LOC_INFO[st].state === ADM.state)), "All locations")}
@@ -2868,9 +3008,11 @@ function route(){
   const h = decodeURIComponent(location.hash.slice(1));
   ["tledit","tlpanel","coach","shmodal"].forEach(id => document.getElementById(id)?.remove());
   if (/^lab$/i.test(h)) { setManifest(""); window.scrollTo(0, 0); return labPage(); }
+  if (/^beta$/i.test(h)) { window.scrollTo(0, 0); return betaPage(); }
+  if (/^today$/i.test(h)) { window.scrollTo(0, 0); return todayPage(); }
   { const ch = /^chat(?:\/(.+))?$/i.exec(h); if (ch) { setManifest(""); window.scrollTo(0, 0); return ch[1] ? chatRoom(ch[1]) : chatHome(); } }
   { const iv = /^inventory(?:\/(.+))?$/i.exec(h); if (iv) { setManifest(""); window.scrollTo(0, 0); return inventory(iv[1] ? STORES.find(x => slug(x) === slug(iv[1])) : ""); } }
-  if (/^admin$/i.test(h)) { const mf = document.getElementById("mf"); if (mf) mf.setAttribute("href", "/m/admin.webmanifest"); const t = document.getElementById("amt"); if (t) t.setAttribute("content", "Spark Admin"); window.scrollTo(0, 0); const ar = adminHome(); setTimeout(() => { try { blockersAdmin(); } catch(e){ console.error(e); } }, 30); return ar; }
+  if (/^admin$/i.test(h)) { const mf = document.getElementById("mf"); if (mf) mf.setAttribute("href", "/m/admin.webmanifest"); const t = document.getElementById("amt"); if (t) t.setAttribute("content", "Spark Admin"); window.scrollTo(0, 0); const ar = adminHome(); setTimeout(() => { try { adminTodo(); blockersAdmin(); } catch(e){ console.error(e); } }, 30); return ar; }
   { const sm0 = /^store\/(.+)$/i.exec(h), st0 = sm0 ? STORES.find(x => slug(x) === slug(sm0[1])) : (byId[h] && getCode() && (isAll() || getPin(byId[h].store)) ? byId[h].store : ""); setManifest(st0); }
   const sm = /^store\/(.+)$/i.exec(h);
   if (sm) { const st = STORES.find(x => slug(x) === slug(sm[1])); if (st) { const r = storeHome(st); setTimeout(() => { try { bountyFeed(st); blockersStore(st); tagQ(st); } catch(e){ console.error(e); } }, 30); return r; } }
@@ -2878,7 +3020,7 @@ function route(){
 }
 jumpFix();
 window.addEventListener("hashchange", route);
-route(); topFind(); backBtn(); jumpGo();
+route(); topFind(); backBtn(); jumpGo(); try { btBar(); } catch(e){}
 </script>
 
 </body>
