@@ -376,7 +376,7 @@ body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#12121
 .dqkeep{font-size:13px;margin:-4px 0 8px;opacity:.9}.dqkeep button{background:none;border:0;color:#F5B400;font-weight:800;cursor:pointer;padding:0 4px}
 .dqhint{font-size:13px;opacity:.85;margin:-2px 0 8px}
 .backbtn{position:fixed;left:10px;bottom:14px;z-index:950;border:0;border-radius:999px;padding:10px 14px;background:#fff;color:#121212;font:800 14px var(--display,system-ui);box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer}
-.dqfab:not(.adm):not(.mini){left:96px}
+.dqfab:not(.mini){left:96px!important}
 .jumpflash{animation:jumpf 2.6s ease-out 1;border-radius:12px}@keyframes jumpf{0%,40%{box-shadow:0 0 0 4px #F5B400,0 0 24px rgba(245,180,0,.8)}100%{box-shadow:0 0 0 0 rgba(245,180,0,0)}}
 .zbox{overflow:auto;-webkit-overflow-scrolling:touch;max-height:70vh;border-radius:10px}.zbox svg{display:block;width:100%}
 .locmap{position:relative}.zbar{position:absolute;right:8px;top:8px;display:flex;gap:4px;z-index:5}.zbar button{width:38px;height:38px;border-radius:10px;border:0;background:rgba(18,18,18,.85);color:#fff;font:800 18px system-ui;cursor:pointer}.zbar button[data-z="0"]{font-size:12px;width:44px}
@@ -2298,8 +2298,8 @@ function backBtn(){
 /* Jump links: #page@sectionid opens the page and scrolls to that exact section, with a flash. */
 function jumpFix(){ if (!location.hash.includes("@")) return false; const [h, a] = location.hash.split("@"); sessionStorage.setItem("jump", a); history.replaceState(null, "", h || "#"); return true; }
 function jumpGo(){ const a = sessionStorage.getItem("jump"); if (!a) return; let n = 0;
-  const t = setInterval(() => { const el = document.getElementById(a) || document.querySelector(`[data-sec="${a}"]`); if (el && el.offsetHeight) { clearInterval(t); sessionStorage.removeItem("jump");
-      el.scrollIntoView({behavior:"smooth", block:"center"}); el.classList.add("jumpflash"); setTimeout(() => el.classList.remove("jumpflash"), 2600); } else if (++n > 40) { clearInterval(t); sessionStorage.removeItem("jump"); } }, 150); }
+  const t = setInterval(() => { const el = document.getElementById(a) || document.querySelector(`[data-sec="${a}"]`); if (el && el.offsetHeight > 30 && n > 6) { clearInterval(t); sessionStorage.removeItem("jump");
+      el.scrollIntoView({behavior:"smooth", block:"center"}); setTimeout(() => el.scrollIntoView({behavior:"smooth", block:"center"}), 1200); el.classList.add("jumpflash"); setTimeout(() => el.classList.remove("jumpflash"), 2600); } else if (++n > 40) { clearInterval(t); sessionStorage.removeItem("jump"); } }, 150); }
 window.addEventListener("hashchange", () => { if (jumpFix()) route(); setTimeout(jumpGo, 60); });
 /* Zoom on every location diagram map: + and − buttons, drag to move. */
 function zoomify(){ document.querySelectorAll(".locmap:not([data-z])").forEach(m => { const svg = m.querySelector("svg"); if (!svg) return; m.dataset.z = "1";
@@ -2309,11 +2309,11 @@ function zoomify(){ document.querySelectorAll(".locmap:not([data-z])").forEach(m
   bar.onclick = e => { const k = e.target.dataset.z; if (!k) return; e.stopPropagation(); e.preventDefault(); const c = [box.scrollLeft + box.clientWidth / 2, box.scrollTop + box.clientHeight / 2].map(v => v / z);
     z = k === "+" ? Math.min(4, z * 1.5) : k === "-" ? Math.max(1, z / 1.5) : 1; svg.style.width = (z * 100) + "%"; svg.style.maxWidth = "none"; bar.querySelector('[data-z="0"]').textContent = (Math.round(z * 10) / 10) + "x";
     box.scrollLeft = c[0] * z - box.clientWidth / 2; box.scrollTop = c[1] * z - box.clientHeight / 2; }; }); }
-new MutationObserver(() => zoomify()).observe(document.body, {childList:true, subtree:true});
+new MutationObserver(() => { zoomify(); const b = document.getElementById("lprint"); if (b && !b.dataset.pg) { b.dataset.pg = "1"; const u = byId[decodeURIComponent(location.hash.slice(1))]; if (u) setTimeout(() => { printGlow(u); oldBanner(u); }, 50); } }).observe(document.body, {childList:true, subtree:true});
 /* Team only: big obvious banner when this unit is the oldest of its model in Texas (a Bounty). */
 function oldBanner(u){ document.getElementById("oldban")?.remove(); if (!getCode() || !feat("mm2") || !isOldestTX(u)) return;
   const ph = document.querySelector('#app [data-sec="photo"]'); if (!ph) return; const d = document.createElement("div"); d.id = "oldban"; d.className = "oldban";
-  d.innerHTML = `👑 <b>Oldest ${esc(u.model)} in Texas.</b> This one is a ${esc(label("money").replace(/s$/, ""))}. ${FIRE_AGE[u.id] ? FIRE_AGE[u.id] + " days in stock." : ""}`; ph.before(d); }
+  d.innerHTML = `👑 <b>Oldest ${esc(u.model)} in Texas.</b> This one is a Bounty. ${FIRE_AGE[u.id] ? FIRE_AGE[u.id] + " days in stock." : ""}`; ph.before(d); }
 
 /* ==== Nov 15 2026 batch 2 (Brandon) ==== */
 /* Tag tracking: built, printed, placed. Each store sees which paper tags to print or reprint. */
