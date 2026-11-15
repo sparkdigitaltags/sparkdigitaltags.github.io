@@ -367,10 +367,10 @@ body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#12121
 .blkst{border:2px solid #C8102E}
 .allbtn{display:block;width:100%;margin:8px 0;padding:12px;border-radius:12px;border:2px solid #121212;background:#fff;color:#121212;font:800 15px var(--display,system-ui);letter-spacing:.04em;cursor:pointer}
 .alsheet{background:#fff}.alg{margin:12px 0}.algh{font:800 12px var(--display,system-ui);letter-spacing:.1em;text-transform:uppercase;color:#666;margin-bottom:6px}
-.alc{display:flex;gap:12px;align-items:center;border:2px solid var(--lc);border-radius:14px;padding:10px;margin-bottom:8px}
+.alc{display:flex;gap:12px;align-items:center;border:3px solid var(--lb,var(--lc));border-radius:14px;padding:10px;margin-bottom:8px}
 .alq{flex:0 0 112px}.lqr{width:112px;height:112px;display:block}
 .alt{flex:1;color:#121212;line-height:1.25}.alt b{display:block;color:var(--lc);font-size:16px}.alt span{display:block;font-weight:700;font-size:14px}.alt small{display:block;color:#555;font-size:12px;margin-top:2px}.alt .almin{color:#C8102E;font-weight:700}
-.alapply{display:inline-block;margin-top:6px;background:var(--lc);color:#fff;font-weight:800;padding:7px 14px;border-radius:999px;text-decoration:none}
+.alapply{display:inline-block;margin-top:6px;background:var(--lb,var(--lc));color:#fff;font-weight:800;padding:7px 14px;border-radius:999px;text-decoration:none}
 .dqmust .dqchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.dqmust .dqchips button{padding:8px 12px;border-radius:999px;border:2px solid #F5B400;background:transparent;color:inherit;font-weight:700;cursor:pointer}
 .dqmust .dqchips button.on{background:#F5B400;color:#121212}.dqmust .dqsub{font:800 12px var(--display,system-ui);letter-spacing:.08em;text-transform:uppercase;opacity:.8;margin-top:6px}
 .dqkeep{font-size:13px;margin:-4px 0 8px;opacity:.9}.dqkeep button{background:none;border:0;color:#F5B400;font-weight:800;cursor:pointer;padding:0 4px}
@@ -2435,8 +2435,16 @@ function bountyFeed(st0){
 }
 
 /* All Lenders: every lender we have a QR code or prequalify link for, grouped by credit, each QR in the lender's colors. */
-const LBRAND = {sheffield:{c:"#0E553F", n:"Sheffield Financial"}, terrace:{c:"#1F2A5A", n:"Mower Finance by Terrace Finance"}, koalafi:{c:"#111111", n:"Koalafi"}, dcf:{c:"#1B4F8A", n:"Direct Credit Funding"}};
-const LGROUP = [["Good Credit", ["sheffield"]], ["Fair Credit", ["terrace"]], ["All Credit", ["koalafi"]], ["Commercial Lending", ["dcf"]]];
+/* Colors from each lender's logo (Terrace, Koalafi and DCF logos from Brandon Nov 15 2026). b = accent for the card edge. */
+const LBRAND = {sheffield:{c:"#0E553F", b:"#0E553F", n:"Sheffield Financial"}, terrace:{c:"#232B45", b:"#2F5DA8", n:"Mower Finance by Terrace Finance"}, koalafi:{c:"#0F3B5F", b:"#2BB0A0", n:"Koalafi"},
+  dcf:{c:"#2B3A4F", b:"#A80F2F", n:"Direct Credit Funding"}, snap:{c:"#121212", b:"#121212", n:"Snap Finance"}, acima:{c:"#121212", b:"#121212", n:"Acima"}};
+/* Extra lease to own links by store (from the store QR codes Brandon gave). */
+const XLEND = {
+  Lewisville:[{k:"snap", title:"Lease to own", sub:"Snap Finance. No credit needed to apply.", url:"https://bk.snapfinance.com/origination?paramId=3w%2FEWVFzVGfi1E%2BWcXyAQsljS1AwpiW%2FHm0nrA5gPGuDn3nxyFYujmWkSyyb89qsgmHX%2BrCyyVDXhMrTA%2FKxEz7nBBAhljmUQ3yem7XAML8%3D"}],
+  Burleson:[{k:"snap", title:"Lease to own", sub:"Snap Finance. No credit needed to apply.", url:"https://bk.snapfinance.com/origination?paramId=3w%2FEWVFzVGfi1E%2BWcXyAQsljS1AwpiW%2FHm0nrA5gPGuB7vCUC8jbR2WkSyyb89qsgmHX%2BrCyyVDXhMrTA%2FKxEz7nBBAhljmUQ3yem7XAML8%3D"}],
+  Colleyville:[{k:"acima", title:"Lease to own", sub:"Acima. No credit needed to apply.", url:"https://apply.acima.com/?app_id=lo&location_guid=loca-2ac58342-299a-4fa9-a30a-8c5010492a4a&utm_campaign=dyn-acima-pop-mp-dashboard&utm_medium=merchant&utm_source=qr"}],
+  Keller:[{k:"acima", title:"Lease to own", sub:"Acima. No credit needed to apply.", url:"https://apply.acima.com/?location_guid=loca-c2845603-5c94-47d6-90dd-6dbcf5df23a5&app_id=lo&utm_source=qr&utm_medium=merchant&utm_campaign=dyn-acima-vbs&utm_content=ins-qr-en-0825"}]};
+const LGROUP = [["Good Credit", ["sheffield"]], ["Fair Credit", ["terrace"]], ["All Credit", ["koalafi", "acima", "snap"]], ["Commercial Lending", ["dcf"]]];
 function qrSvg(text, color){
   try { const q = qrcode(0, "M"); q.addData(text); q.make(); const n = q.getModuleCount(); let d = "";
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += `M${c + 2},${r + 2}h1v1h-1z`;
@@ -2444,13 +2452,13 @@ function qrSvg(text, color){
 }
 function allLenders(u){
   document.getElementById("alov")?.remove();
-  const L = DATA.lenders[u.store] || []; const have = {}; L.forEach(l => have[l.k] = l); if (!have.dcf) have.dcf = DCF_L;
+  const L = DATA.lenders[u.store] || []; const have = {}; L.forEach(l => have[l.k] = l); if (!have.dcf) have.dcf = DCF_L; (XLEND[u.store] || []).forEach(l => { if (!have[l.k]) have[l.k] = l; });
   const price = money(u.now), small = !u.maphide && price > 0 && price < 1500;
   const ov = document.createElement("div"); ov.id = "alov"; ov.className = "dqov";
   ov.innerHTML = `<div class="dqsheet alsheet" role="dialog" aria-modal="true" aria-label="All lenders"><button type="button" class="dqx" aria-label="Close">×</button>
     <div class="dqh" style="color:#121212">All lenders at ${esc(u.store)}</div><p class="fine" style="color:#444;margin-top:2px">Scan a code or tap Apply. Each lender has its own approval and terms.</p>
-    ${LGROUP.map(([g, ks]) => { const ls2 = ks.filter(k => have[k]); if (!ls2.length) return ""; return `<div class="alg"><div class="algh">${g}</div>${ls2.map(k => { const l = have[k], b = LBRAND[k] || {c:"#121212", n:l.title}, url = lendUrl(u, l);
-      return `<div class="alc" style="--lc:${b.c}"><div class="alq">${qrSvg(url, b.c)}</div><div class="alt"><b>${esc(b.n)}</b><span>${esc(l.title)}</span><small>${esc(l.sub)}</small>${k === "sheffield" && small ? `<small class="almin">For purchases of $1,500 or more.</small>` : ""}<a class="alapply" href="${esc(url)}" target="_blank" rel="noopener">Apply ›</a></div></div>`; }).join("")}</div>`; }).join("")}
+    ${LGROUP.map(([g, ks]) => { const ls2 = ks.filter(k => have[k]); if (!ls2.length) return ""; return `<div class="alg"><div class="algh">${g}</div>${ls2.map(k => { const l = have[k], b = LBRAND[k] || {c:"#121212", b:"#121212", n:l.title}, url = l.url || lendUrl(u, l);
+      return `<div class="alc" style="--lc:${b.c};--lb:${b.b}"><div class="alq">${qrSvg(url, b.c)}</div><div class="alt"><b>${esc(b.n)}</b><span>${esc(l.title)}</span><small>${esc(l.sub)}</small>${k === "sheffield" && small ? `<small class="almin">For purchases of $1,500 or more.</small>` : ""}<a class="alapply" href="${esc(url)}" target="_blank" rel="noopener">Apply ›</a></div></div>`; }).join("")}</div>`; }).join("")}
     ${!FLAGS.lenders && isAdm() ? `<p class="fine labnote2">Testing: only you see this.</p>` : ""}</div>`;
   document.body.appendChild(ov); requestAnimationFrame(() => ov.classList.add("in"));
   const close = () => { ov.classList.remove("in"); setTimeout(() => ov.remove(), 250); };
