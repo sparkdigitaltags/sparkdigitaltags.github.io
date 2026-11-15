@@ -295,6 +295,22 @@ body.lsm .lists h2,body.lsm .apply h2{color:#121212;font-family:"Arial Black",Ar
 body.lsm .lists ul{padding-left:18px}body.lsm .lists li::marker{color:#C8102E;font-size:1.1em}
 body.lsm .lend.terrace,body.lsm .lend.koalafi,body.lsm .lend.dcf{background:#1F2A5A;border-color:#1F2A5A}
 body.lsm .lend .tier{color:#F5B400}
+.cmp{display:grid;gap:10px}.cmpc{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card)}
+.cmpt{font-family:var(--display);font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--fire)}
+.cmpc b{display:block;font-size:16px;margin:2px 0 6px}.cmpc ul{list-style:none;padding:0;margin:0 0 6px}.cmpc li{padding:4px 0;border-bottom:1px solid var(--line)}
+.cmpc li span{display:inline-block;min-width:74px;font-weight:700}.cmpc li em{display:block;font-style:normal;color:var(--muted);font-size:13px}.cmpc a{font-weight:700;color:var(--fire)}
+.dq{background:linear-gradient(160deg,#121212,#2A2A28);color:#fff;border-radius:16px;padding:16px}.dq p{color:#ddd;margin:6px 0 12px}
+.dqh{font-family:var(--display);font-weight:800;font-size:22px;line-height:1.15;text-transform:uppercase}.dqn{font-size:12px;color:#F5B400;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin:6px 0 4px}
+.dqbar{height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden}.dqbar i{display:block;height:100%;background:#F5B400;transition:width .3s}
+.dqa{display:grid;gap:8px;margin-top:12px}.dqa button{background:#fff;color:#121212;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:700;text-align:left;box-shadow:0 2px 0 #F5B400}
+.dqa button:active{transform:translateY(1px);box-shadow:none}.dqback{background:none;border:0;color:#bbb;margin-top:10px;font-size:14px;padding:6px 0}
+.dqres{display:grid;gap:8px;margin-top:10px}.dqu{display:flex;gap:10px;align-items:center;background:#fff;color:#121212;border-radius:12px;padding:8px;text-decoration:none}
+.dqu img{width:84px;height:64px;object-fit:contain;flex:none}.dqu b{font-size:15px}.dqu small{display:block;color:#555}.dqu em{display:block;font-style:normal;color:#1a7f37;font-size:13px;font-weight:600}
+.dqrank{display:inline-block;background:#C8102E;color:#fff;border-radius:8px;padding:0 6px;font-weight:800;font-size:12px}
+.dqcmp{margin-top:12px;background:rgba(255,255,255,.06);border-radius:12px;padding:8px}.dqcmp table{width:100%;border-collapse:collapse;font-size:13px}.dqcmp th,.dqcmp td{padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.12);text-align:left;color:#fff}
+.dqcta{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}.dqgo{background:#F5B400;color:#121212 !important;font-weight:800;border-radius:12px;padding:12px 16px;text-decoration:none}
+.labnote2{color:#8a6d00 !important;margin:8px 0 0}.mmst{background:#121212;color:#F5B400 !important;border-radius:6px;padding:1px 6px;font-weight:800}
+.treq{display:block;width:100%;margin-top:8px}
 .ulist{list-style:none;padding:0;margin:8px 0;max-height:236px;overflow-y:auto;border:1px solid #ddd;border-radius:12px;background:#fff;-webkit-overflow-scrolling:touch}.ulist.tall{max-height:472px}
 .ulist li{border-bottom:1px solid #eee;background:#fff !important;margin:0 !important;padding:0 !important}.ulist a,.ulist a:visited{color:#1d1d1f !important;background:#fff !important;text-decoration:none !important}.ulist .ub,.ulist .um{color:#1d1d1f !important}.ulist li:last-child{border-bottom:0}.ulist a{display:flex;align-items:center;gap:8px;min-height:46px;padding:4px 12px;color:#1d1d1f;text-decoration:none;font-size:15px}
 .ulist .ub{font-weight:800;min-width:54px}.ulist .um{flex:1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ulist .ud{color:#C8102E;font-weight:700;font-size:13px;white-space:nowrap}.ulist .us{color:#555;font-size:13px;white-space:nowrap}
@@ -368,6 +384,8 @@ function tag(u){
       <p class="fine">Each option opens that lender's secure application for ${esc(u.dba || "LSM Outdoor Power")} ${esc(u.store)}. Financing and leasing are subject to approval.</p>
     </section>
     <section class="leadsec" id="leadsec" data-sec="leads"></section>
+    <section class="sect" data-sec="quiz" id="quizsec" hidden></section>
+    <section class="sect" data-sec="compare" id="cmpsec" hidden></section>
     <section class="sect" data-sec="teaminfo">
       <h2>For our team</h2>
       <div class="fields">${fields.map(([k,v],i)=>`<div class="field"><span class="k">${k}</span><span class="v">${esc(v)}</span><button class="copy" id="c${i}" data-label="Copy" data-v="${esc(v)}">Copy</button></div>`).join("")}</div>
@@ -1015,6 +1033,10 @@ async function printTag(u){
     } else {
       if (w) w.close();
       if (ERRS[q.error] && q.error !== "nostore") { signOut(u.store); locSignin(u, ERRS[q.error]); return; }
+      if (q.error === "notag" && feat("tagreq")) { m.innerHTML = `No printed tag is on file for this unit yet.<button type="button" class="copy treq" id="treq">Request a printed tag</button>`;
+        document.getElementById("treq").onclick = async () => { const b = document.getElementById("treq"); b.disabled = true; b.textContent = "Sending...";
+          try { const r = await api({action:"tagreq", store:u.store, unit:u.unit, pin:getPin(u.store) || "", code:getCode()}); m.textContent = r.ok ? (r.dup ? "Already requested. Brandon is on it." : "Sent. Brandon will build it from the latest aging report, Hot List or Fire Sale list. Tap Print this tag again once it's ready.") : "Could not send. Try again."; }
+          catch(e){ m.textContent = "Could not connect. Try again."; } }; return; }
       m.textContent = q.error === "notag" ? "No printed tag is on file for this unit yet. Ask Brandon to build one." : "Could not get the tag. Try again.";
     }
   } catch(err){ if (w) w.close(); m.textContent = "Could not connect. Check your signal and try again."; }
@@ -1148,8 +1170,8 @@ function stonesInit(u){
   const box = document.getElementById("stonesec"); if (!box) return;
   const three = feat("stones3", u), S = three ? stones3For(u) : stonesFor(u);
   if (feat("mow", u)) { mowStones(box, u, S); box.hidden = false; return; }
-  box.innerHTML = three ? `<h2>Stepping Stones</h2><div class="locmeta"><b>Bargain, Bank, Buy.</b> Three stones: how it stacks up, how they'll pay, why today.${!FLAGS.stones3 ? " <b>Testing: only you see the 3 stones.</b>" : ""}</div>`
-    : `<h2>Stepping Stones</h2><div class="locmeta">Brand, Build, Bill, Bargain, Brag, Bank, Buy. Walk the tag top to bottom.</div>`;
+  box.innerHTML = three ? `<h2>${esc(label("stones"))}</h2><div class="locmeta"><b>Bargain, Bank, Buy.</b> Three stones: how it stacks up, how they'll pay, why today.${!FLAGS.stones3 ? " <b>Testing: only you see the 3 stones.</b>" : ""}</div>`
+    : `<h2>${esc(label("stones"))}</h2><div class="locmeta">Brand, Build, Bill, Bargain, Brag, Bank, Buy. Walk the tag top to bottom.</div>`;
   box.innerHTML += `<ol class="stones">${S.map(([k, say, why]) => `<li><b>${k}</b><span>${esc(say)}</span><small>${esc(why)}</small></li>`).join("")}</ol>`;
   box.hidden = false;
 }
@@ -1607,7 +1629,7 @@ async function chatRoom(room){
    One shared layout for every digital tag. Brandon (admin codes) can move sections, remove them (and add them back), and hide a
    section from customers, ISRs, BMs, GMs or team members. On Brandon's view, a yellow note on each section says who it is hidden
    from. Warranty and Fire Sale terms always show. Stepping Stones start hidden from ISRs. */
-const TAG_SECS = [["title","Store, brand and unit name"],["photo","Unit photo"],["price","Price and monthly payment"],["apply","Apply for financing"],["leads","Hold this unit and Contact me"],
+const TAG_SECS = [["title","Store, brand and unit name"],["photo","Unit photo"],["price","Price and monthly payment"],["apply","Apply for financing"],["leads","Hold this unit and Contact me"],["quiz","Find your perfect mower (discovery questions)"],["compare","Step up or step down"],
   ["teaminfo","Unit info and copy buttons"],["loc","Team tools: location, print, hangers, price change"],["stones","Stepping Stones"],["share","Post this unit"],["specs","Key features and specifications"],["warranty","Warranty and Fire Sale terms"]];
 const TEAM_ONLY = ["loc","stones","share"], TL_LOCKED = ["warranty"];
 const TL_ROLES = [["customer","Customers"],["isr","ISRs"],["bm","BMs"],["gm","GMs"],["dm","Division Managers"],["team","Team members"]];
@@ -1698,7 +1720,7 @@ function climbCard(S){
   if (!S) return "";
   const n = climbDone(S), next = CLIMB.find(c => !S.done[c[0]]), all = CLIMB.length;
   const pep = n >= all ? "All 5 done. You're a pro on the digital tags." : n === 0 ? "Start with one. Each takes about 2 minutes." : n <= 2 ? "Nice start. Keep it rolling." : "Almost there. Finish strong.";
-  return `<div class="climb" id="tlclimb"><div class="climbh">Your first 5 <b class="climbn">${n} of ${all}</b><span>${esc(pep)}</span></div>
+  return `<div class="climb" id="tlclimb"><div class="climbh">${esc(label("first5"))} <b class="climbn">${n} of ${all}</b><span>${esc(pep)}</span></div>
     <div class="climbbar"><i style="width:${Math.round(n / CLIMB.length * 100)}%"></i></div>
     <ol>${CLIMB.map(([k, t]) => `<li class="${S.done[k] ? "ok" : next && next[0] === k ? "nx" : ""}">${S.done[k] ? "✓" : "○"} ${esc(t)}${!S.done[k] && next && next[0] === k ? ` <button type="button" class="climbgo" data-show="${k}">Show me how</button>` : ""}</li>`).join("")}</ol>
     <button type="button" class="ghost climbtour" data-tour="1">New Location Tour</button>${feat("isrtour") ? `<button type="button" class="ghost climbtour" data-hunt="1">New ISR Tour: scavenger hunt</button>` : ""}</div>`;
@@ -1993,7 +2015,7 @@ function lsmLook(u){
 }
 window.addEventListener("hashchange", () => { if (!byId[decodeURIComponent(location.hash.slice(1))]) lsmLook(null); });
 function labTag(u){
-  lsmLook(u);
+  lsmLook(u); try { discTag(u); } catch(e){ console.error(e); }
   const pr = document.querySelector('#app [data-sec="price"]');
   document.querySelectorAll(".flames,.labnote").forEach(e => e.remove()); document.querySelectorAll(".pill.fire").forEach(e => e.classList.remove("blaze"));
   document.querySelectorAll(".firewords").forEach(e => e.remove());
@@ -2096,6 +2118,11 @@ function labPills(){
 
 /* ---- The Lab page ---- */
 const LAB_TESTS = [
+  ["tagreq", "Request a printed tag", "When Print this tag finds no tag, the team gets a Request a printed tag button. You get an email and the request lands in the Tag Requests tab.", ""],
+  ["mm2", "Money Makers: oldest in Texas", "Each store's feed only shows its Fire Sale units that are the oldest of that model in all of Texas, with the store abbreviation on every row.", "#store/colleyville"],
+  ["compare", "Step up or step down (customers)", "Customers see the next tier up and down of the unit they scanned, with at most 3 key differences and nothing else.", "#farmersbranch-109225-fce43e"],
+  ["quiz", "Find your perfect mower (customers)", "Discovery questions on mower tags: home or business, then that path's questions, then the top 3 units at that store with a side by side comparison and a prequalify button.", "#farmersbranch-109225-fce43e"],
+  ["names", "New names", "Uses the names you pick below for Your first 5, Stepping Stones and Money Makers.", ""],
   ["lsmlook", "LSM look on LSM tags", "LSM digital tags look like the printed LSM tag: LSM logo in a black header with the store and brand, white tag face, red payment box with the big yellow payment, black price bar, red bullets, navy lender cards.", "#farmersbranch-109225-fce43e"],
   ["stones3", "The 3 Stones", "Stepping Stones cut from 7 to 3: Bargain (step down and step up contrast from real tags), Bank (payment, then match the lender to the customer), Buy (the honest reason to act today and the ask).", "#farmersbranch-109225-fce43e"],
   ["training", "Team training", "First sign in welcome, the New Location Tour, the Your first 5 checklist with a progress bar, the morning and afternoon prompts, and the glowing showroom drawing buttons.", ""],
@@ -2114,12 +2141,15 @@ async function labPage(){
     <h2 style="margin-top:18px">Tests not live yet</h2>
     ${LAB_TESTS.filter(([k]) => !PARKED.includes(k)).map(([k, n, d, ex]) => `<div class="labrow"><div><b>${esc(k === "scene" ? n + ": " + SCENES[sceneV()].title : k === "mow" ? n + " (" + SCENES[sceneV()].stones + ")" : n)}</b> <span class="labst ${FLAGS[k] ? "live" : ""}">${FLAGS[k] ? "Live" : "Offline"}</span><small>${esc(d)}</small>${ex ? `<a href="${ex}">Try it on the example tag ›</a>` : k === "isrtour" ? `<a href="#" data-hunt="1">Start the hunt ›</a>` : k === "avatar" ? `<a href="#" data-av="1">Make my avatar ›</a>` : ""}</div>
       ${ADMIN_ONLY.includes(k) ? `<span class="labst">Only you</span>` : `<button type="button" class="${FLAGS[k] ? "ghost" : "copy"}" data-flag="${k}" data-val="${FLAGS[k] ? 0 : 1}">${FLAGS[k] ? "Take offline" : "Make live"}</button>`}</div>`).join("")}
+    <h2 style="margin-top:18px">Pick the names</h2><p class="fine" style="margin-top:0">Your pick shows on your phones now. Everyone sees it once New names is live.</p>
+    ${Object.keys(NAME_DEF).map(k => `<div class="labrow"><div><b>${esc(NAME_DEF[k])}</b><small>Now showing: ${esc(label(k))}</small></div><select data-nm="${k}" style="padding:9px;border:1px solid #ccc;border-radius:10px;font-size:15px;background:#fff;color:#1d1d1f;max-width:55%">${NAME_OPTS[k].map(o => `<option ${(FLAGS["nm_" + k] || NAME_DEF[k]) === o ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></div>`).join("")}
     <h2 style="margin-top:18px">Saved for later</h2><p class="fine" style="margin-top:0">Switched off everywhere, including your phones. The tags use regular Stepping Stones. Preview brings them back on this phone only.</p>
     <div class="labrow"><div><b>Preview saved items on this phone</b><small>${LAB_TESTS.filter(([k]) => PARKED.includes(k)).map(([, n]) => esc(n)).join(", ")}.</small></div><button type="button" class="${parkPreview() ? "copy" : "ghost"}" id="labpark">${parkPreview() ? "On" : "Off"}</button></div>
     <div class="lmsg" id="labmsg"></div></div></article>`;
   const msg = document.getElementById("labmsg"), a = chatAuth();
   const set = async (key, val) => { msg.textContent = "Saving..."; try { const r = await api({action:"setflag", store:a.store, pin:a.pin, code:getCode(), key, val}); if (r.ok) { setFlags(r.flags); labPage(); } else msg.textContent = "Could not save."; } catch(e){ msg.textContent = "Could not connect."; } };
   app.querySelectorAll("[data-flag]").forEach(b => b.onclick = () => set(b.dataset.flag, b.dataset.val));
+  app.querySelectorAll("[data-nm]").forEach(el => el.onchange = () => set("nm_" + el.dataset.nm, el.value));
   app.querySelectorAll("[data-scene]").forEach(b => b.onclick = () => set("sceneV", b.dataset.scene));
   app.querySelectorAll("[data-hunt]").forEach(b => b.onclick = e => { e.preventDefault(); huntStart(); });
   app.querySelectorAll("[data-av]").forEach(b => b.onclick = e => { e.preventDefault(); avatarMaker(); });
@@ -2130,6 +2160,128 @@ async function labPage(){
 
 window.addEventListener("hashchange", () => setTimeout(() => { labPills(); if (huntGet() && !document.getElementById("huntbar")) huntBar(); }, 350));
 setTimeout(() => { labPills(); if (huntGet() && !document.getElementById("huntbar")) huntBar(); }, 900);
+/* ======================= Lab: names, Money Makers, compare, discovery (Brandon Nov 15 2026) ======================= */
+const NAME_DEF = {first5:"Your first 5", stones:"Stepping Stones", money:"Money Makers"};
+const NAME_OPTS = {
+  first5: ["Your first 5","Starter Pack","Level 1","Earn Your Stripes","Quick 5","Unlock 5","Rookie Run","Side Quests","First Laps","Speed Run","Power Ups","Easy Wins","Lock In 5","Stack 5 Wins","Main Character Moves","Five to Thrive","Tutorial Mode","Clock In Combo","Get the Dubs","Day One Drops","Badge Run"],
+  stones: ["Stepping Stones","Game Plan","The Play","Talk Track","Cheat Codes","Pro Tips","Combo Moves","Closer Moves","Pitch Path","Playbook","Power Moves","Sales Hacks","The Assist","The Rundown","Mic Drop Lines","Easy Mode","Clutch Lines","The Walkthrough","Script Kit","Next Moves","Hot Lines"],
+  money: ["Money Makers","Hot Drops","Fire Picks","Loot Drops","Bounties","Most Wanted","Top Bounties","Quick Flips","Heat Check","Must Moves","Legendary Loot","Clutch Units","Bonus Round","The Hit List","Gold Mines","Payday Picks","Main Event","Spotlight Units","Boss Battles","Big Bag Units","Cash Drops"]};
+const label = k => { const v = FLAGS["nm_" + k]; return v && (FLAGS.names === true || isAdm()) ? v : NAME_DEF[k]; };
+
+/* Money Makers rule: a store's feed only shows its Fire Sale units that are the oldest of that model anywhere in Texas. */
+const ST_AB = {"Burleson":"BUR","Colleyville":"COL","Denton":"DEN","Farmers Branch":"FB","Keller":"KEL","Lewisville":"LEW","Renfro":"REN","San Antonio":"SA","Tyler":"TYL","Weatherford":"WFD","Springtown":"SPT","Gatesville":"GTV","Waco":"WACO"};
+const stAb = st => ST_AB[st] || String(st).slice(0, 4).toUpperCase();
+function oldestTX(){ const best = {}; DATA.units.forEach(u => { if (!u.fire || !TX_STORES.includes(u.store)) return; const k = snorm(u.model), a = FIRE_AGE[u.id] || 0; if (!best[k] || a > (FIRE_AGE[best[k].id] || 0)) best[k] = u; }); return best; }
+function mmFeed(st){ const best = oldestTX(); return DATA.units.filter(u => u.fire && u.store === st && best[snorm(u.model)] && best[snorm(u.model)].id === u.id).sort(byAge); }
+const urowLoc = u => urow(u, u.store).replace("</a></li>", `<span class="ux mmst">${esc(stAb(u.store))}</span></a></li>`);
+
+/* Unit facts parsed from the tag */
+function specMap(u){ const m = {}; (u.specs || []).forEach(s => { const i = s.indexOf(":"); if (i > 0) m[s.slice(0, i).trim().toLowerCase().replace(/[^a-z ]/g, "").trim()] = s.slice(i + 1).trim(); }); if (u.warranty) m.warranty = u.warranty; return m; }
+const deckIn = u => { const m = specMap(u), t = (m.deck || "") + " " + (u.name || ""); const mm = t.match(/(\d{2})\s*(?:"|”|in\b|inch)/i); return mm ? +mm[1] : 0; };
+const isCom = u => /commercial/i.test((u.warranty || "") + " " + (u.specs || []).join(" ") + " " + (u.name || ""));
+const cutMax = u => { const m = (u.specs || []).join(" ").match(/cutting height[^0-9]*[\d.]+"?\s*(?:to|-)\s*([\d.]+)/i); return m ? +m[1] : 0; };
+const hpOf = u => { const m = (u.specs || []).join(" ").match(/([\d.]+)\s*hp/i); return m ? +m[1] : 0; };
+const isStand = u => /stand.?on|stander|surfer/i.test(u.name || "");
+const MOWTYPES = ["mower", "walk", "rider"];
+
+/* Step up and step down: the next tier up and down of this kind of unit, with at most 3 key differences. */
+const DIFF_ORDER = ["deck", "engine", "drive", "transmission", "warranty", "cutting height", "speed", "frame", "fuel", "seat", "tires"];
+function unitDiffs(a, b){
+  const A = specMap(a), B = specMap(b), out = [];
+  for (const key of DIFF_ORDER) { const ka = Object.keys(A).find(k => k.includes(key)), kb = Object.keys(B).find(k => k.includes(key));
+    if (ka && kb && A[ka].toLowerCase() !== B[kb].toLowerCase() && !out.some(o => o[0] === key)) out.push([key, B[kb], A[ka]]);
+    if (out.length >= 3) break; }
+  if (out.length < 3) { const da = deckIn(a), db = deckIn(b); if (da && db && da !== db && !out.some(o => o[0] === "deck")) out.unshift(["deck", db + '" deck', da + '" deck']); }
+  if (out.length < 3 && isCom(a) !== isCom(b) && !out.some(o => o[0] === "warranty")) out.push(["build", isCom(b) ? "Commercial grade" : "Residential grade", isCom(a) ? "commercial grade" : "residential grade"]);
+  return out.slice(0, 3);
+}
+function tierPair(u){
+  const ty = utype(u), p = money(u.now);
+  const ok = x => x.id !== u.id && utype(x) === ty && snorm(x.model) !== snorm(u.model) && money(x.now) > 0;
+  let pool = DATA.units.filter(x => ok(x) && x.store === u.store);
+  if (pool.length < 2) pool = pool.concat(DATA.units.filter(x => ok(x) && x.store !== u.store && (x.dba || "") === (u.dba || "")));
+  const pick = (dir) => { const c = pool.filter(x => dir > 0 ? money(x.now) > p : money(x.now) < p).sort((a, b) => dir * (money(a.now) - money(b.now)));
+    return c.find(x => x.brand === u.brand && unitDiffs(u, x).length) || c.find(x => unitDiffs(u, x).length) || null; };
+  return {up: pick(1), dn: pick(-1)};
+}
+const tc2 = t => String(t || "").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).replace(/\b(Ii|Iii|Iv|Sd|Xd|Zt|Mz|Ztr|Efi|Hp)\b/g, x => x.toUpperCase());
+function compareHtml(u){
+  const {up, dn} = tierPair(u); if (!up && !dn) return "";
+  const card = (x, t) => { const d = unitDiffs(u, x); return `<div class="cmpc"><div class="cmpt">${t}</div><b>${esc(x.brand + " " + tc2(x.name))}</b>
+    <ul>${d.map(([k, theirs, mine]) => `<li><span>${esc(k[0].toUpperCase() + k.slice(1))}</span>${esc(theirs)} <em>vs ${esc(mine)} on this one</em></li>`).join("")}</ul><a href="#${esc(x.id)}">See it ›</a></div>`; };
+  return `<h2>Step up or step down</h2><div class="cmp">${up ? card(up, "Step up") : ""}${dn ? card(dn, "Step down") : ""}</div>${!FLAGS.compare && isAdm() ? `<p class="fine labnote2">Testing: only you see this.</p>` : ""}`;
+}
+
+/* Discovery: choose your own adventure. Commercial or residential, then that path's questions, then the top 3 units here. */
+const DQ = {
+  start: {q:"Is this for your home or your business?", sub:"Answer a few quick questions and we'll show you the 3 best fits on our lot.", a:[["Home", "res"], ["Business", "com"]]},
+  res: [
+    {k:"yard", q:"How big is your yard?", a:[["Under 1/4 acre", 0], ["1/4 to 1 acre", 1], ["1 to 3 acres", 2], ["More than 3 acres", 3]]},
+    {k:"terrain", q:"What's the ground like?", a:[["Mostly flat", 0], ["Some slopes", 1], ["Hills or ditches", 2]]},
+    {k:"obst", q:"Lots of trees and flower beds to mow around?", a:[["Yes, lots", 2], ["A few", 1], ["Wide open", 0]]},
+    {k:"grass", q:"What kind of grass?", a:[["St. Augustine", "sa"], ["Bermuda", "be"], ["Zoysia", "zo"], ["Not sure", "ns"]]},
+    {k:"freq", q:"How often will you mow?", a:[["Every week", 2], ["Every 2 weeks", 1], ["When it needs it", 0]]},
+    {k:"gate", q:"Does it need to fit through a gate? How wide is it?", a:[["Under 36 inches", 35], ["36 to 42 inches", 42], ["42 to 48 inches", 48], ["Wider, or no gate", 99]]},
+    {k:"pri", q:"What matters most to you?", a:[["Get done fast", "fast"], ["A comfortable ride", "comfort"], ["An easy monthly payment", "pay"], ["Built to last", "tough"]]}],
+  com: [
+    {k:"yards", q:"How many properties do you cut each week?", a:[["Under 15", 0], ["15 to 40", 1], ["40 to 80", 2], ["More than 80", 3]]},
+    {k:"crew", q:"How big is your crew?", a:[["Just me", 0], ["2 or 3", 1], ["4 to 8", 2], ["9 or more", 3]]},
+    {k:"trucks", q:"How many trucks and trailers run each day?", a:[["1", 0], ["2 or 3", 1], ["4 or more", 2]]},
+    {k:"goal", q:"What's the goal this season?", a:[["Scale up and add accounts", "scale"], ["Get efficient: cut faster, less downtime", "eff"], ["Replace a worn out machine", "replace"]]},
+    {k:"props", q:"What do you cut most?", a:[["Small residential lots", "small"], ["Big commercial or HOA", "big"], ["A mix", "mix"]]},
+    {k:"gate", q:"Do your crews go through backyard gates? How wide?", a:[["Under 36 inches", 35], ["36 to 42 inches", 42], ["42 to 48 inches", 48], ["Wider, or no gates", 99]]}]};
+function discRank(u, path, A){
+  const units = DATA.units.filter(x => x.store === u.store && MOWTYPES.includes(utype(x)) && money(x.now) > 0);
+  const fits = units.filter(x => { const d = deckIn(x); return !d || d <= (A.gate || 99); });
+  const target = path === "res" ? [30, 44, 52, 60][A.yard || 0] : [52, 60, 61, 66][A.yards || 0];
+  const score = x => { const d = deckIn(x) || 40, com = isCom(x), st = isStand(x), ty = utype(x); let s = 100 - Math.abs(d - target) * 2.2;
+    if (path === "res") { if (com) s -= 4; if (A.terrain === 2) s += hpOf(x) / 2 + (ty === "walk" ? -6 : 0); if (A.obst === 2 && ty === "mower") s += 6; if (A.grass === "sa" && cutMax(x) >= 4) s += 5;
+      if (A.freq === 2 && ty === "mower") s += 4; if (A.pri === "fast") s += d / 6 + (ty === "mower" ? 5 : 0); if (A.pri === "comfort" && ty !== "walk") s += 6; if (A.pri === "pay") s -= money(x.now) / 900; if (A.pri === "tough") s += com ? 10 : 0; if ((A.yard || 0) === 0 && ty === "walk") s += 8; }
+    else { s += com ? 20 : -25; if (A.goal === "scale") s += d / 5; if (A.goal === "eff") s += (st ? 8 : 0) + hpOf(x) / 3; if (A.props === "small" && (st || d <= 52)) s += 6; if (A.props === "big") s += d >= 60 ? 8 : 0; if ((A.crew || 0) >= 2 && st) s += 5; }
+    if (x.fire) s += 3; return s; };
+  return fits.sort((a, b) => score(b) - score(a)).filter((x, i, a) => a.findIndex(y => snorm(y.model) === snorm(x.model)) === i).slice(0, 3);
+}
+function discWhy(x, path, A){
+  const w = [], d = deckIn(x);
+  if (d && A.gate && A.gate < 99) w.push(`${d}" deck fits your ${A.gate === 35 ? "under 36\"" : "up to " + A.gate + "\""} gate`);
+  if (path === "com" && isCom(x)) w.push("Commercial grade, built for daily crews");
+  if (path === "res" && A.grass === "sa" && cutMax(x) >= 4) w.push(`Cuts as high as ${cutMax(x)}" for St. Augustine`);
+  if (isStand(x) && path === "com") w.push("Stand on: faster on and off, fits tight lots");
+  if (x.fire) w.push("Fire Sale price");
+  return w.slice(0, 2);
+}
+function discStart(box, u){
+  let path = null, i = -1; const A = {};
+  const sheff = lendersFor(u).find(l => l.k === "sheffield");
+  const paint = () => {
+    if (i === -1) { box.innerHTML = `<div class="dq"><div class="dqh">Find your perfect mower</div><p>${DQ.start.sub}</p><div class="dqa">${DQ.start.a.map(([t, v]) => `<button type="button" data-p="${v}">${t}</button>`).join("")}</div></div>`;
+      box.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { path = b.dataset.p; i = 0; paint(); }); return; }
+    const Q = DQ[path];
+    if (i < Q.length) { const q = Q[i];
+      box.innerHTML = `<div class="dq"><div class="dqbar"><i style="width:${Math.round((i + 1) / (Q.length + 1) * 100)}%"></i></div><div class="dqn">Question ${i + 1} of ${Q.length}</div><div class="dqh">${esc(q.q)}</div>
+        <div class="dqa">${q.a.map(([t], j) => `<button type="button" data-j="${j}">${esc(t)}</button>`).join("")}</div><button type="button" class="dqback">‹ Back</button></div>`;
+      box.querySelectorAll("[data-j]").forEach(b => b.onclick = () => { A[q.k] = q.a[+b.dataset.j][1]; i++; paint(); });
+      box.querySelector(".dqback").onclick = () => { i--; if (i < 0) { i = -1; path = null; } paint(); }; return; }
+    const top = discRank(u, path, A);
+    try { track("quiz", {store:u.store, unit:u.unit, d:(path + " " + Object.entries(A).map(([k, v]) => k + "=" + v).join(",")).slice(0, 60)}); } catch(e){}
+    if (!top.length) { box.innerHTML = `<div class="dq"><div class="dqh">Nothing on our lot fits that gate today</div><p>Tap Contact me and we'll find one that does.</p><button type="button" class="dqback" data-r="1">Start over</button></div>`; box.querySelector("[data-r]").onclick = () => { i = -1; paint(); }; return; }
+    const rows = top.length > 1 ? DIFF_ORDER.filter(k => { const vals = top.map(x => { const m = specMap(x), kk = Object.keys(m).find(z => z.includes(k)); return kk ? m[kk] : (k === "deck" && deckIn(x) ? deckIn(x) + '"' : ""); }); return vals.every(Boolean) && new Set(vals.map(v => v.toLowerCase())).size > 1; }).slice(0, 3) : [];
+    const val = (x, k) => { const m = specMap(x), kk = Object.keys(m).find(z => z.includes(k)); return kk ? m[kk] : (k === "deck" && deckIn(x) ? deckIn(x) + '"' : ""); };
+    box.innerHTML = `<div class="dq"><div class="dqh">Your top ${top.length} ${top.length === 1 ? "match" : "matches"} at ${esc(u.store)}</div>
+      <div class="dqres">${top.map((x, n) => `<a class="dqu" href="#${esc(x.id)}">${x.photo ? `<img src="${x.photo}" alt="">` : ""}<div><span class="dqrank">#${n + 1}</span> <b>${esc(x.brand + " " + tc2(x.name))}</b>
+        <small>${x.maphide ? "See today's price in store" : x.pay ? esc(x.pay) + "/mo on approved credit" : esc(x.now)}</small>${discWhy(x, path, A).map(w => `<em>✓ ${esc(w)}</em>`).join("")}</div></a>`).join("")}</div>
+      ${rows.length ? `<div class="dqcmp"><div class="dqn">How they compare</div><table><tr><th></th>${top.map((x, n) => `<th>#${n + 1}</th>`).join("")}</tr>${rows.map(k => `<tr><td>${esc(k[0].toUpperCase() + k.slice(1))}</td>${top.map(x => `<td>${esc(val(x, k))}</td>`).join("")}</tr>`).join("")}</table></div>` : ""}
+      <div class="dqcta">${sheff ? `<a class="dqgo" href="${esc(lendUrl(u, sheff))}" target="_blank" rel="noopener">Prequalify in 2 minutes</a>` : ""}<button type="button" class="dqback" data-r="1">Start over</button></div>
+      ${!FLAGS.quiz && isAdm() ? `<p class="fine labnote2">Testing: only you see this.</p>` : ""}</div>`;
+    box.querySelector("[data-r]").onclick = () => { i = -1; path = null; paint(); };
+  };
+  paint();
+}
+function discTag(u){
+  const c = document.getElementById("cmpsec"), q = document.getElementById("quizsec");
+  if (c) { const h = feat("compare") ? compareHtml(u) : ""; c.innerHTML = h; c.hidden = !h; }
+  if (q) { const on = feat("quiz") && MOWTYPES.includes(utype(u)); q.hidden = !on; if (on) discStart(q, u); else q.innerHTML = ""; }
+}
 /* Store home page (Nov 14 2026): sparkdigitaltags.github.io/#store/keller . Team signs in once here with the store PIN and the
    last 4 of their cell, then opens any unit. No prices on this page. */
 const STORES = [...new Set(DATA.units.map(u => u.store))];
@@ -2170,7 +2322,9 @@ function storeHome(st){
     <a class="copy copyall" href="#inventory/${slug(st)}" style="display:block;text-align:center;margin-top:8px">Inventory</a>
     <p class="fine" id="snote" style="margin:6px 0 14px">Searches every unit at every Spark store on the digital tags. Your store comes first.</p>
     <div id="shclimb"></div>
-    ${top.length || TX_STORES.includes(st) ? `<div class="top3"><div class="t3h">Money Makers</div>
+    ${feat("mm2") && TX_STORES.includes(st) ? (() => { const f = mmFeed(st); return `<div class="top3"><div class="t3h">${esc(label("money"))}</div><div class="t3s">Fire Sale units at ${esc(st)} that are the <b>oldest of their model in all of Texas</b>. Sell and post these first.${!FLAGS.mm2 ? " <b>Testing: only you see this rule.</b>" : ""}</div>
+      <ul class="ulist">${f.map(urowLoc).join("") || `<li class="none">None right now. Another store has the oldest of each model.</li>`}</ul><p class="ucount">${f.length} unit${f.length === 1 ? "" : "s"}${f.length > 5 ? ", scroll for more" : ""}</p></div>`; })()
+    : top.length || TX_STORES.includes(st) ? `<div class="top3"><div class="t3h">${esc(label("money"))}</div>
       ${top.length ? `<div class="t3s">Post these next. Oldest Fire Sale units at ${esc(st)} first. Post one and the next oldest moves up.</div><ol>${top.map(li).join("")}</ol>` : ""}
       ${TX_STORES.includes(st) ? `<div class="t3s" style="margin-top:10px"><b>Every Fire Sale unit in Texas</b> at LSM, ATS and Landscape Supply, oldest first.</div>
         <select id="mmf" aria-label="Which Fire Sale units" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:10px;font-size:16px;margin:6px 0;background:#fff;color:#1d1d1f">
