@@ -1998,7 +1998,7 @@ function labTag(u){
   document.querySelectorAll(".flames,.labnote").forEach(e => e.remove()); document.querySelectorAll(".pill.fire").forEach(e => e.classList.remove("blaze"));
   document.querySelectorAll(".firewords").forEach(e => e.remove());
   const ph = document.querySelector('#app [data-sec="photo"]');
-  if (u.fire && ph && feat("flames", u)) { ph.style.position = "relative";
+  if (false && u.fire && ph && feat("flames", u)) {   // Brandon Nov 14 2026: Fire Sale flames removed ph.style.position = "relative";
     const word = "FIRE SALE!";
     ph.insertAdjacentHTML("afterbegin", `<div class="firewords" aria-label="Fire Sale"><div class="fwflames" aria-hidden="true">${Array.from({length:14}, (_, i) => `<i style="left:${4 + i * 6.8}%;animation-delay:${(i * 173 % 900) / 1000}s;--s:${(0.6 + (i * 37 % 60) / 100).toFixed(2)}"></i>`).join("")}</div>
       <div class="fwtext" aria-hidden="true">${[...word].map((c, i) => `<span style="animation-delay:${(i * 97 % 700) / 1000}s">${c === " " ? "&nbsp;" : c}</span>`).join("")}</div>${!FLAGS.flames && isAdm() ? `<div class="fwnote">Testing: only you see this</div>` : ""}</div>`); }
@@ -2099,7 +2099,6 @@ const LAB_TESTS = [
   ["lsmlook", "LSM look on LSM tags", "LSM digital tags look like the printed LSM tag: LSM logo in a black header with the store and brand, white tag face, red payment box with the big yellow payment, black price bar, red bullets, navy lender cards.", "#farmersbranch-109225-fce43e"],
   ["stones3", "The 3 Stones", "Stepping Stones cut from 7 to 3: Bargain (step down and step up contrast from real tags), Bank (payment, then match the lender to the customer), Buy (the honest reason to act today and the ask).", "#farmersbranch-109225-fce43e"],
   ["training", "Team training", "First sign in welcome, the New Location Tour, the Your first 5 checklist with a progress bar, the morning and afternoon prompts, and the glowing showroom drawing buttons.", ""],
-  ["flames", "Fire Sale! in flames", "The words Fire Sale! burn across the unit photo on Fire Sale tags.", "#farmersbranch-109225-fce43e"],
   ["mow", "Mow to reveal the Stepping Stones", "Grass covers each stone. Touch the mower and swipe right to cut it and read the line. The section takes the scene's name.", "#farmersbranch-109225-fce43e"],
   ["stone3", "Stone 3 (Bill) wording", "Never say the APR unless it's 0%. Under $1,500: \"$49 down plus tax\" with the lease to own line. Examples: a $459 lease unit and an 11.99% unit.", "#farmersbranch-109122-4ef97e"],
   ["avatar", "Profile pic avatar", "A tour step to take a selfie and flip through 6 looks (Classic, Comic, Spark Pop, Sketch, 8 Bit, Neon).", ""],
