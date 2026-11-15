@@ -1105,7 +1105,8 @@ function stoneNeighbors(u){
 }
 function stones3For(u){
   const f = u.feats || [], L = lendersFor(u), apr0 = Number(u.apr) === 0, small = !!u.lease, days = FIRE_AGE[u.id];
-  const nm = x => brAb(x.brand) + " " + x.model, here = x => x.store === u.store ? "" : " at " + x.store;
+  const tc = t => String(t || "").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).replace(/\b(Ii|Iii|Iv|Sd|Zt|Mz|Ztr|Efi)\b/g, x => x.toUpperCase());
+  const nm = x => x.brand + " " + tc(x.name).replace(/\s+/g, " ").slice(0, 34), here = x => x.store === u.store ? "" : " at " + x.store;
   // Bargain: contrast with the step down and the step up
   let bargain, bw = "People buy the difference. Show the step down, show the step up, then land on this one.";
   if (u.maphide) { bargain = `This one's priced too low to show online. Walk them to the paper tag and say: "That's the best price we can show you in person."`; bw = "Below MAP stays off screens and posts. Say it in person only."; }
