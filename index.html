@@ -342,7 +342,7 @@ body.lsm .tshint{color:#555}
 .dqfab span:nth-child(2){flex:1}
 .dqfi{width:28px;height:28px;border-radius:50%;background:var(--gold,#F5B400);color:#121212;display:flex;align-items:center;justify-content:center;font-size:17px}
 .dqfgo{font-size:22px;color:var(--gold,#F5B400)}
-.dqfab.mini{left:auto;right:12px;width:auto;padding:8px 12px;font-size:13px}
+.dqfab.adm{right:150px;margin:0}.dqfab.mini{left:auto;right:12px;width:auto;padding:8px 12px;font-size:13px}
 .dqfab.mini span:nth-child(2){display:none}
 .dqov{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,0);display:flex;align-items:flex-end;justify-content:center;transition:background .25s}
 .dqov.in{background:rgba(0,0,0,.38)}
@@ -2239,7 +2239,7 @@ function tierChip(u, x, dir){
 }
 function swipeTiers(u){
   const ph = document.querySelector('#app [data-sec="photo"]'), gal = document.getElementById("gal");
-  document.querySelector("#app .tswipe")?.remove(); if (gal && gal.dataset.sw) { gal.hidden = !u.photo; delete gal.dataset.sw; }
+  document.querySelector("#app .tswipe")?.remove(); if (gal && gal.dataset.sw) { gal.style.display = ""; delete gal.dataset.sw; }
   if (!ph || !feat("compare", u)) return false;
   const {up, dn} = tierPair(u); if (!up && !dn) return false;
   const pic = x => x.photo ? `<img src="${x.photo}" alt="${esc(x.brand)} ${esc(x.model)}" draggable="false">` : `<div class="tsnp">${esc(x.brand)}</div>`;
@@ -2249,7 +2249,7 @@ function swipeTiers(u){
   w.innerHTML = `<div class="tstrack">${slides.join("")}</div><div class="tschip" aria-live="polite"></div>
     <div class="tshint"><span>${dn ? "‹ Step down" : ""}</span><span class="tsdots">${slides.map((_, i) => `<i${i === ci ? ' class="on"' : ""}></i>`).join("")}</span><span>${up ? "Step up ›" : ""}</span></div>
     ${!FLAGS.compare && isAdm() ? `<p class="fine labnote2" style="margin:4px 0 0">Testing: only you see this.</p>` : ""}`;
-  ph.insertBefore(w, ph.firstChild); if (gal) { gal.hidden = true; gal.dataset.sw = "1"; }
+  ph.insertBefore(w, ph.firstChild); if (gal) { gal.style.display = "none"; gal.dataset.sw = "1"; }
   const tr = w.querySelector(".tstrack"), chip = w.querySelector(".tschip"), dots = w.querySelectorAll(".tsdots i");
   const cDn = dn ? tierChip(u, dn, -1) : "", cUp = up ? tierChip(u, up, 1) : "";
   let last = 0;
@@ -2267,7 +2267,7 @@ function swipeTiers(u){
 function quizOverlay(u){
   document.getElementById("dqfab")?.remove(); document.getElementById("dqov")?.remove();
   if (!feat("quiz") || !MOWTYPES.includes(utype(u))) return;
-  const fab = document.createElement("button"); fab.type = "button"; fab.id = "dqfab"; fab.className = "dqfab";
+  const fab = document.createElement("button"); fab.type = "button"; fab.id = "dqfab"; fab.className = "dqfab" + (isAdm() ? " adm" : "");
   fab.innerHTML = `<span class="dqfi">?</span><span>How will you use this equipment?</span><span class="dqfgo">›</span>`;
   document.body.appendChild(fab); setTimeout(() => fab.classList.add("in"), 2500);
   fab.onclick = () => {
