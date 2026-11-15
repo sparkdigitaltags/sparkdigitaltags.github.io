@@ -2299,7 +2299,7 @@ function backBtn(){
 function jumpFix(){ if (!location.hash.includes("@")) return false; const [h, a] = location.hash.split("@"); sessionStorage.setItem("jump", a); history.replaceState(null, "", h || "#"); return true; }
 function jumpGo(){ const a = sessionStorage.getItem("jump"); if (!a) return; let n = 0;
   const t = setInterval(() => { const el = document.getElementById(a) || document.querySelector(`[data-sec="${a}"]`); if (el && el.offsetHeight > 30 && n > 6) { clearInterval(t); sessionStorage.removeItem("jump");
-      el.scrollIntoView({behavior:"smooth", block:"center"}); setTimeout(() => el.scrollIntoView({behavior:"smooth", block:"center"}), 1200); el.classList.add("jumpflash"); setTimeout(() => el.classList.remove("jumpflash"), 2600); } else if (++n > 40) { clearInterval(t); sessionStorage.removeItem("jump"); } }, 150); }
+      el.scrollIntoView({behavior:"smooth", block:"center"}); setTimeout(() => el.scrollIntoView({behavior:"smooth", block:"center"}), 1200); el.classList.add("jumpflash"); setTimeout(() => el.classList.remove("jumpflash"), 2600); } else if (++n > 110) { clearInterval(t); sessionStorage.removeItem("jump"); } }, 150); }
 window.addEventListener("hashchange", () => { if (jumpFix()) route(); setTimeout(jumpGo, 60); });
 /* Zoom on every location diagram map: + and − buttons, drag to move. */
 function zoomify(){ document.querySelectorAll(".locmap:not([data-z])").forEach(m => { const svg = m.querySelector("svg"); if (!svg) return; m.dataset.z = "1";
