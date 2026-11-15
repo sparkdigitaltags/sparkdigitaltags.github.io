@@ -1801,8 +1801,8 @@ function tlEditor(){
 const CLIMB = [
   ["find", "Find a unit by the last 4 of its serial", "On your store page, type the last 4 of the serial number in Find any unit, or take a photo of the serial plate."],
   ["loc", "Set where a unit sits", "On any tag, tap Set location, pick the spot, and tap Save."],
-  ["print", "Print a tag", "On any tag, tap Print this tag. The printed tag shows the in store price."],
-  ["post", "Post a Money Maker", "On a Money Maker's tag, open Post this unit and pick where to post. The caption is written for you."],
+  ["print", "Print a tag from your phone", "Connect your phone to the store Wi Fi. Open any tag, tap Print this tag, then tap Share and Print and pick the store printer. Hang it on the unit."],
+  ["post", "Post a Bounty", "On a Bounty's tag, open Post this unit and pick where to post. The caption is written for you."],
   ["hanger", "Place a QR hanger on the showroom map", "On any tag, tap Update QR Code Hanger Locations, pick a hanger, tap where it hangs, and Save."]];
 const CAMPS = ["Base Camp", "Camp 1", "Camp 2", "Camp 3", "Camp 4", "the Summit"];
 let SHERPA = null;
@@ -1822,7 +1822,7 @@ function climbCard(S){
   return `<div class="climb" id="tlclimb"><div class="climbh">${esc(label("first5"))} <b class="climbn">${n} of ${all}</b><span>${esc(pep)}</span></div>
     <div class="climbbar"><i style="width:${Math.round(n / CLIMB.length * 100)}%"></i></div>
     <ol>${CLIMB.map(([k, t]) => `<li class="${S.done[k] ? "ok" : next && next[0] === k ? "nx" : ""}">${S.done[k] ? "✓" : "○"} ${esc(t)}${!S.done[k] && next && next[0] === k ? ` <button type="button" class="climbgo" data-show="${k}">Show me how</button>` : ""}</li>`).join("")}</ol>
-    <button type="button" class="ghost climbtour" data-tour="1">New Location Tour</button>${feat("isrtour") ? `<button type="button" class="ghost climbtour" data-hunt="1">New ISR Tour: scavenger hunt</button>` : ""}</div>`;
+    <button type="button" class="ghost climbtour" data-tour="1">New Location Tour</button>${feat("isrtour") ? `<button type="button" class="ghost climbtour" data-hunt="1">New ISR Tour</button>` : ""}</div>`;
 }
 function wireClimb(root){ root.querySelectorAll("[data-av]").forEach(b => b.onclick = () => avatarMaker()); root.querySelectorAll("[data-hunt]").forEach(b => b.onclick = () => huntStart()); root.querySelectorAll("[data-show]").forEach(b => b.onclick = () => sherpaShow(b.dataset.show)); root.querySelectorAll("[data-tour]").forEach(b => b.onclick = () => tourStart()); }
 function sherpaModal(title, body, btns){
@@ -2384,13 +2384,25 @@ function ladderBtn(u){ const ap = document.querySelector('#app [data-sec="apply"
 /* Tags to print: hide handhelds unless they're Fire Sale (SPIFF) units. */
 const tqHide = (st, t) => { const x = DATA.units.find(y => y.store === st && String(y.unit) === t.unit); return !x || (isHandheld(x) && !x.fire); };
 
+
+/* Lender adoption (Brandon Nov 15 2026). Acima year to date from the Acima Retailer Production Report, pulled Nov 15 2026. */
+const ADOPT = {asof:"Nov 15, 2026", acima:{"Waco":[9,8,1,1169.96],"Keller":[9,7,2,2635.82],"Farmers Branch":[5,1,0,0],"Bradenton":[4,4,4,7242.36],"Belleview":[2,2,1,986.79],"Augusta":[2,2,1,286.75],"Lakeland":[1,1,1,1267.73],"Springtown":[1,1,0,0],"Weatherford":[1,0,0,0]},
+  stores:["Burleson","Colleyville","Denton","Farmers Branch","Keller","Lewisville","Renfro","Tyler","Gatesville","Springtown","Weatherford","Waco","Bradenton","Lakeland","Naples","Sarasota","Tampa","Belleview","Augusta","Waynesboro"]};
+function adoptCard(){
+  const box = document.getElementById("adopt"); if (!box) return;
+  const A = ADOPT.acima, none = ADOPT.stores.filter(s => !A[s] || !A[s][0]), tot = Object.values(A).reduce((t, a) => [t[0] + a[0], t[1] + a[1], t[2] + a[2], t[3] + a[3]], [0, 0, 0, 0]);
+  box.innerHTML = `<h2>Lender adoption <small>Acima, year to date</small></h2><div class="admcard"><p class="admmut" style="margin-top:0">From the Acima Retailer Production Report, ${esc(ADOPT.asof)}. ${tot[0]} applications, ${tot[1]} approved, ${tot[2]} funded, ${fmt$(tot[3])} funded.</p>
+    <table class="roletab" style="min-width:0;width:100%;color:#121212"><thead><tr><th>Store</th><th>Apps</th><th>Approved</th><th>Funded</th><th>$ Funded</th></tr></thead><tbody>${ADOPT.stores.map(s => { const a = A[s] || [0, 0, 0, 0]; return `<tr style="${a[0] ? "" : "background:#FDE3E7"}"><td>${esc(s)}</td><td>${a[0]}</td><td>${a[1]}</td><td>${a[2]}</td><td>${a[3] ? fmt$(a[3]) : ""}</td></tr>`; }).join("")}</tbody></table>
+    <p style="margin:8px 0 0;color:#C8102E"><b>${none.length} stores with no Acima applications this year:</b> ${esc(none.join(", "))}. Prioritize these for training.</p>
+    <p class="admmut">Next: Snap, Koalafi, Terrace and Sheffield by store, once those reports are connected.</p></div>`;
+}
 /* Admin to do list (Brandon Nov 15 2026): things to ask Justin and what's still needed to make tests live. Checks save on this phone. */
 const TODO = [
   ["Ask Justin", "Fire Sale list updates (newest list for all states)"], ["Ask Justin", "Sign the Snap dealer agreements"], ["Ask Justin", "Sheffield new dealer packages"],
-  ["Initial payment training", "Acima initial payment amount, and whether sales tax is included"], ["Initial payment training", "Snap initial payment amount, and whether sales tax is included"],
+  ["Initial payment training", "Snap: confirm whether sales tax is added to the $39 processing fee (ask April San Miguel, 940 432 8921)"], ["Initial payment training", "Acima: no set initial payment (prepaid rent is set per lease). Decide how we teach it"],
   ["Initial payment training", "Terrace, WEF and Synchrony: initial payment or down payment, if any"], ["Initial payment training", "Confirm Koalafi is $49 plus tax"],
   ["Lenders", "WEF QR code or link for each store"], ["Lenders", "Synchrony QR code or link for each store, and Spark's Synchrony program minimum"],
-  ["Lenders", "Snap and Acima codes for the stores that don't have them yet"], ["Lenders", "Lender launch checklist, and where to count deals by branch (Acima, Sheffield, Terrace, Koalafi, Snap reports)"]];
+  ["Lenders", "Snap codes for the stores that don't have them yet (Acima is done for all 20 stores)"], ["Lenders", "Snap: sign in again so Claude can pull the Snap reports by store (Snap logs out each store separately)"], ["Lenders", "Lender launch checklist, and where to count deals by branch (Acima, Sheffield, Terrace, Koalafi, Snap reports)"]];
 function adminTodo(){
   const box = document.getElementById("todo"); if (!box) return;
   let done = {}; try { done = JSON.parse(ls.get("sparktodo") || "{}"); } catch(e){}
@@ -2399,11 +2411,11 @@ function adminTodo(){
   box.querySelectorAll("[data-td]").forEach(c => c.onchange = () => { done[c.dataset.td] = c.checked; ls.set("sparktodo", JSON.stringify(done)); adminTodo(); });
 }
 /* Initial payment training for team members (Lab preview, not live until every amount is in). */
-const IP_LENDERS = [["Koalafi", "$49 plus sales tax"], ["Acima", ""], ["Snap", ""]];
+const IP_LENDERS = [["Koalafi", "$49 plus sales tax"], ["Snap", "$39 processing fee at signing in Texas, Florida, Georgia and Kentucky"], ["Acima", "No set amount. Prepaid rent is set on each lease, more than $0 and under 40% of the price"]];
 function ipTrainHtml(){
   const known = IP_LENDERS.filter(l => l[1]);
   return `<h2 style="margin-top:18px" id="iptrain">Initial payment training (team) <span class="labst">Not live</span></h2>
-    <p class="fine" style="margin-top:0">For team members only. Waiting on ${IP_LENDERS.filter(l => !l[1]).map(l => l[0]).join(" and ")}. See the To do list on Spark Admin.</p>
+    <p class="fine" style="margin-top:0">For team members only. Snap and Acima are from their merchant portals (Nov 15 2026). Still to confirm: whether Snap's $39 has sales tax added. See the To do list on Spark Admin.</p>
     <div class="labrow"><div>${IP_LENDERS.map(([n, a]) => `<div><b>${esc(n)}</b>: ${a ? esc(a) : "<i>waiting on Brandon</i>"}</div>`).join("")}</div></div>
     <p class="fine"><b>Quiz preview</b> (one question per lender once all amounts are in):</p>
     ${known.map(([n, a]) => `<div class="labrow"><div><b>What is the initial payment for ${esc(n)}?</b><small>A) $0 &nbsp; B) ${esc(a)} &nbsp; C) $99 &nbsp; D) $149. Answer: B.</small></div></div>`).join("")}`;
@@ -2584,6 +2596,9 @@ const XLEND = {
   Burleson:[{k:"snap", title:"Lease to own", sub:"Snap Finance. No credit needed to apply.", url:"https://bk.snapfinance.com/origination?paramId=3w%2FEWVFzVGfi1E%2BWcXyAQsljS1AwpiW%2FHm0nrA5gPGuB7vCUC8jbR2WkSyyb89qsgmHX%2BrCyyVDXhMrTA%2FKxEz7nBBAhljmUQ3yem7XAML8%3D"}],
   Colleyville:[{k:"acima", title:"Lease to own", sub:"Acima. No credit needed to apply.", url:"https://apply.acima.com/?app_id=lo&location_guid=loca-2ac58342-299a-4fa9-a30a-8c5010492a4a&utm_campaign=dyn-acima-pop-mp-dashboard&utm_medium=merchant&utm_source=qr"}],
   Keller:[{k:"acima", title:"Lease to own", sub:"Acima. No credit needed to apply.", url:"https://apply.acima.com/?location_guid=loca-c2845603-5c94-47d6-90dd-6dbcf5df23a5&app_id=lo&utm_source=qr&utm_medium=merchant&utm_campaign=dyn-acima-vbs&utm_content=ins-qr-en-0825"}]};
+/* Acima lease to own links for every store (from the Acima merchant portal, Application Links, Nov 15 2026). */
+const ACIMA_LOC = {"Keller": "c2845603-5c94-47d6-90dd-6dbcf5df23a5", "Denton": "709a574c-e609-4da6-b098-100498c9e399", "Farmers Branch": "cab74a31-18f4-43d3-9008-008cd1797178", "Colleyville": "2ac58342-299a-4fa9-a30a-8c5010492a4a", "Lewisville": "bf8a4698-12c2-4fbd-94ab-9fda3cf4c8e5", "Burleson": "4769aaa1-5e8a-4bd3-afe2-3a50bae4855c", "Renfro": "efad5a55-cbbe-4a66-b061-8e2fa21bff36", "Tyler": "300dd063-96a1-4e8a-abda-c87b1374c65e", "Gatesville": "abc6e518-6e50-4ef4-80c4-3b3d676c6492", "Springtown": "cf201a72-e2a5-4020-a67d-5658c3f34b9f", "Weatherford": "2b9083ae-ad4a-47fe-96bd-fc64d2666072", "Waco": "5574227f-e7fd-453e-bd5a-90467a7cda17", "Sarasota": "4ddda7a8-6ec9-4535-97a4-2be50dbc0f47", "Bradenton": "9adfeeb6-2adf-4a3d-849b-6ab810aa4b63", "Naples": "186c9777-7bbb-47f7-99f7-a2405cba85ac", "Tampa": "ab5dfd18-cf4d-4fe2-a0da-244a5e861198", "Lakeland": "5faa197b-f83d-40dd-8c2d-d401189325c1", "Belleview": "eca5c92e-9d33-4da0-b008-a6e709efb539", "Augusta": "c8bf1de5-0522-4d2f-83c3-230b65c05e5a", "Waynesboro": "3ba2a428-f328-4a59-919e-7b33b12201fa"};
+Object.entries(ACIMA_LOC).forEach(([st, g]) => { const L = XLEND[st] = XLEND[st] || []; if (!L.some(l => l.k === "acima")) L.push({k:"acima", title:"Lease to own", sub:"Acima. No credit needed to apply.", url:"https://apply.acima.com/?app_id=lo&location_guid=loca-" + g + "&utm_medium=merchant&utm_source=qr"}); });
 const LGROUP = [["Good Credit", ["sheffield"]], ["Fair Credit", ["terrace"]], ["All Credit", ["koalafi", "acima", "snap"]], ["Commercial Lending", ["dcf"]]];
 function qrSvg(text, color){
   try { const q = qrcode(0, "M"); q.addData(text); q.make(); const n = q.getModuleCount(); let d = "";
@@ -2977,7 +2992,7 @@ function adminHome(){
       ${live ? `<div class="admnums"><span><b>${mine.length}</b> units</span><span><b>${mine.filter(u => u.fire).length}</b> Fire Sale</span></div><a class="admbtn" href="#store/${slug(st)}">Open store page</a>` : `<div class="admmut" style="margin-top:8px">${["Mowers Inc","Taylor"].includes(i.dba) ? "Paused (team side frozen; lender QR codes still work)" : "Not on digital tags yet"}</div>`}</div>`; }).join("");
   const list = units.slice(0, 150).map(u => `<li><a href="#${esc(u.id)}">${u.fire ? `<span class="admfire">Fire Sale</span> ` : ""}${esc(u.m + " " + u.name)}</a><small>${esc(u.store)}, unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}</small></li>`).join("");
   app.innerHTML = `${ADMIN_CSS}<div class="adm"><div class="admh"><img src="/m/icon-192.png" alt=""><div><b>Spark Admin</b><small>${all.length} units across ${STORES.length} live locations</small></div></div>
-    <div class="admlinks"><a href="/dash/" target="_blank" rel="noopener">Activity dashboard and LSM rollout ›</a> &nbsp; <a href="#inventory">Inventory ›</a>${isAdm() ? ` &nbsp; <a href="#lab">Lab ›</a>` : ""}${chatOn() ? ` &nbsp; <a href="#chat">Team chat ›</a>` : ""}</div><div id="todo"></div><div id="blk"></div>
+    <div class="admlinks"><a href="/dash/" target="_blank" rel="noopener">Activity dashboard and LSM rollout ›</a> &nbsp; <a href="#inventory">Inventory ›</a>${isAdm() ? ` &nbsp; <a href="#lab">Lab ›</a>` : ""}${chatOn() ? ` &nbsp; <a href="#chat">Team chat ›</a>` : ""}</div><div id="todo"></div><div id="adopt"></div><div id="blk"></div>
     <input id="admq" type="search" placeholder="Search brand, model, unit or serial" value="${esc(ADM.q)}">
     <div class="admf">${opts("dba", Object.values(LOC_INFO).map(i => i.dba), "All brands (DBA)")}${opts("state", Object.values(LOC_INFO).map(i => i.state), "All states")}
       ${opts("loc", Object.keys(LOC_INFO).filter(st => (!ADM.dba || LOC_INFO[st].dba === ADM.dba) && (!ADM.state || LOC_INFO[st].state === ADM.state)), "All locations")}
@@ -3012,7 +3027,7 @@ function route(){
   if (/^today$/i.test(h)) { window.scrollTo(0, 0); return todayPage(); }
   { const ch = /^chat(?:\/(.+))?$/i.exec(h); if (ch) { setManifest(""); window.scrollTo(0, 0); return ch[1] ? chatRoom(ch[1]) : chatHome(); } }
   { const iv = /^inventory(?:\/(.+))?$/i.exec(h); if (iv) { setManifest(""); window.scrollTo(0, 0); return inventory(iv[1] ? STORES.find(x => slug(x) === slug(iv[1])) : ""); } }
-  if (/^admin$/i.test(h)) { const mf = document.getElementById("mf"); if (mf) mf.setAttribute("href", "/m/admin.webmanifest"); const t = document.getElementById("amt"); if (t) t.setAttribute("content", "Spark Admin"); window.scrollTo(0, 0); const ar = adminHome(); setTimeout(() => { try { adminTodo(); blockersAdmin(); } catch(e){ console.error(e); } }, 30); return ar; }
+  if (/^admin$/i.test(h)) { const mf = document.getElementById("mf"); if (mf) mf.setAttribute("href", "/m/admin.webmanifest"); const t = document.getElementById("amt"); if (t) t.setAttribute("content", "Spark Admin"); window.scrollTo(0, 0); const ar = adminHome(); setTimeout(() => { try { adminTodo(); adoptCard(); blockersAdmin(); } catch(e){ console.error(e); } }, 30); return ar; }
   { const sm0 = /^store\/(.+)$/i.exec(h), st0 = sm0 ? STORES.find(x => slug(x) === slug(sm0[1])) : (byId[h] && getCode() && (isAll() || getPin(byId[h].store)) ? byId[h].store : ""); setManifest(st0); }
   const sm = /^store\/(.+)$/i.exec(h);
   if (sm) { const st = STORES.find(x => slug(x) === slug(sm[1])); if (st) { const r = storeHome(st); setTimeout(() => { try { bountyFeed(st); blockersStore(st); tagQ(st); } catch(e){ console.error(e); } }, 30); return r; } }
