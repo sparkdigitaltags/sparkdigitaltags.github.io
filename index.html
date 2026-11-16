@@ -402,6 +402,7 @@ body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#12121
 
 /* Brandon Nov 16 2026: unit rows never run off the right edge */
 .ulist{grid-template-columns:minmax(0,1fr)}.ulist li{min-width:0}.ulist li>a{flex:1;min-width:0}.ulist .um{min-width:38%;flex:1 1 0}.ulist .ub{flex-shrink:0}.ulist li>a{flex-wrap:wrap;row-gap:0;padding-top:6px;padding-bottom:6px}
+.climbr{display:block;font-size:13px;font-weight:700;color:#8a6d00;margin:2px 0 0}
 </style>
 
 </head>
@@ -1810,7 +1811,7 @@ const CLIMB = [
 const CAMPS = ["Base Camp", "Camp 1", "Camp 2", "Camp 3", "Camp 4", "the Summit"];
 let SHERPA = null;
 async function sherpaLoad(force){
-  if (!getCode() || !feat("training")) return null;   // Brandon Nov 14 2026: the training is a Lab test until he makes it live if (SHERPA && !force && Date.now() - SHERPA._at < 120000) return SHERPA;
+  if (!getCode() || !(feat("training") || SQ_LIVE)) return null;   // Brandon Nov 16 2026: Side Quests are live for every signed in team member; the welcome, tour and other training stay in the Lab   // Brandon Nov 14 2026: the training is a Lab test until he makes it live if (SHERPA && !force && Date.now() - SHERPA._at < 120000) return SHERPA;
   const a = chatAuth(); if (!a) return null;
   try { const r = await api({action:"sherpa", store:a.store, pin:a.pin, code:getCode()}); if (r.ok) { r._at = Date.now(); r.done = r.done || {}; chatFlag(r); if (tourMode()) r.done = tmDone(); SHERPA = r; } } catch(e){}
   return SHERPA;
@@ -1818,14 +1819,18 @@ async function sherpaLoad(force){
 function sherpaMark(step){ if (tourMode()) { const d = tmDone(); d[step] = d[step] || new Date().toISOString(); sessionStorage.setItem("sparktmdone", JSON.stringify(d)); if (SHERPA) SHERPA.done[step] = d[step]; return; }
   const a = chatAuth(); if (!a) return; if (SHERPA) SHERPA.done[step] = SHERPA.done[step] || new Date().toISOString(); api({action:"sherpamark", store:a.store, pin:a.pin, code:getCode(), step}).catch(() => {}); }
 const climbDone = S => CLIMB.filter(c => S && S.done[c[0]]).length;
+/* Brandon Nov 16 2026: Side Quests come 3 at a time. Finish a round and the next one opens. */
+const SQ_LIVE = true, SQ_N = 3;
+function sqRound(S){ const i = CLIMB.findIndex(c => !S.done[c[0]]); if (i < 0) return {list:CLIMB, r:0, done:true}; const st = Math.floor(i / SQ_N) * SQ_N; return {list:CLIMB.slice(st, st + SQ_N), r:st / SQ_N, done:false}; }
 function climbCard(S){
   if (!S) return "";
-  const n = climbDone(S), next = CLIMB.find(c => !S.done[c[0]]), all = CLIMB.length;
-  const pep = n >= all ? "All 5 done. You're a pro on the digital tags." : n === 0 ? "Start with one. Each takes about 2 minutes." : n <= 2 ? "Nice start. Keep it rolling." : "Almost there. Finish strong.";
-  return `<div class="climb" id="tlclimb"><div class="climbh">${esc(label("first5"))} <b class="climbn">${n} of ${all}</b><span>${esc(pep)}</span></div>
-    <div class="climbbar"><i style="width:${Math.round(n / CLIMB.length * 100)}%"></i></div>
-    <ol>${CLIMB.map(([k, t]) => `<li class="${S.done[k] ? "ok" : next && next[0] === k ? "nx" : ""}">${S.done[k] ? "✓" : "○"} ${esc(t)}${!S.done[k] && next && next[0] === k ? ` <button type="button" class="climbgo" data-show="${k}">Show me how</button>` : ""}</li>`).join("")}</ol>
-    <button type="button" class="ghost climbtour" data-tour="1">New Location Tour</button>${feat("isrtour") ? `<button type="button" class="ghost climbtour" data-hunt="1">New ISR Tour</button>` : ""}</div>`;
+  const R = sqRound(S), L = R.list, n = L.filter(c => S.done[c[0]]).length, next = L.find(c => !S.done[c[0]]), all = L.length, rounds = Math.ceil(CLIMB.length / SQ_N);
+  const pep = R.done ? "All done. You're a pro on the digital tags." : n === 0 ? "Start with one. Each takes about 2 minutes." : n < all - 1 ? "Nice start. Keep it rolling." : "One more and the next round opens.";
+  const head = R.done ? `${CLIMB.length} of ${CLIMB.length}` : `${n} of ${all}`, rnd = R.done || rounds < 2 ? "" : ` <span class="climbr">Round ${R.r + 1} of ${rounds}</span>`;
+  return `<div class="climb" id="tlclimb"><div class="climbh">${esc(label("first5"))}${rnd} <b class="climbn">${head}</b><span>${esc(pep)}</span></div>
+    <div class="climbbar"><i style="width:${Math.round((R.done ? 1 : n / all) * 100)}%"></i></div>
+    <ol>${L.map(([k, t]) => `<li class="${S.done[k] ? "ok" : next && next[0] === k ? "nx" : ""}">${S.done[k] ? "✓" : "○"} ${esc(t)}${!S.done[k] && next && next[0] === k ? ` <button type="button" class="climbgo" data-show="${k}">Show me how</button>` : ""}</li>`).join("")}</ol>
+    ${feat("training") ? `<button type="button" class="ghost climbtour" data-tour="1">New Location Tour</button>` : ""}${feat("isrtour") ? `<button type="button" class="ghost climbtour" data-hunt="1">New ISR Tour</button>` : ""}</div>`;
 }
 function wireClimb(root){ root.querySelectorAll("[data-av]").forEach(b => b.onclick = () => avatarMaker()); root.querySelectorAll("[data-hunt]").forEach(b => b.onclick = () => huntStart()); root.querySelectorAll("[data-show]").forEach(b => b.onclick = () => sherpaShow(b.dataset.show)); root.querySelectorAll("[data-tour]").forEach(b => b.onclick = () => tourStart()); }
 function sherpaModal(title, body, btns){
@@ -1838,12 +1843,12 @@ async function sherpaGreet(){
   if (document.getElementById("shmodal") || document.getElementById("coach")) return;
   const S = await sherpaLoad(); if (!S) return;
   const now = new Date(), slot = now.toDateString() + (now.getHours() >= 12 ? " pm" : " am"), key = "sparkslot" + getCode() + (tourMode() ? "tm" + (sessionStorage.getItem("sparktmsess") || (sessionStorage.setItem("sparktmsess", String(Date.now())), sessionStorage.getItem("sparktmsess"))) : "");
-  if (!S.done.welcome) { sherpaMark("welcome"); ls.set(key, slot);
+  if (feat("training") && !S.done.welcome) { sherpaMark("welcome"); ls.set(key, slot);
     return sherpaModal(`Welcome to Spark Digital Tags, ${S.first || "team"}!`, `This app is your guide to the digital tags. Take the 1 minute tour to see how a digital tag works for you and your customers. The tour is always here when you come back to any tag: just tap <b>Take the tour</b>.`, [["Take the tour", () => tourStart()], ["Later", null]]); }
   if (ls.get(key) === slot) return; ls.set(key, slot);
-  const n = climbDone(S), next = CLIMB.find(c => !S.done[c[0]]), hi = now.getHours() < 12 ? "Good morning" : "Good afternoon";
-  if (next) return sherpaModal(`${hi}, ${S.first}. Next up: ${next[1]}`, `${esc(next[2])}<br><br>You've done ${n} of ${CLIMB.length}. ${n >= 3 ? "Almost there!" : n ? "Keep it rolling." : "It takes about 2 minutes."}`, [["Show me how", () => sherpaShow(next[0])], ["Not now", null]]);
-  if (!S.done.tour) return sherpaModal(`${hi}, ${S.first}. All 5 done!`, `All ${CLIMB.length} motions are done. Want the quick tour as a refresher?`, [["Take the tour", () => tourStart()], ["Not now", null]]);
+  const R = sqRound(S), n = R.list.filter(c => S.done[c[0]]).length, next = R.list.find(c => !S.done[c[0]]), hi = now.getHours() < 12 ? "Good morning" : "Good afternoon";
+  if (next) return sherpaModal(`${hi}, ${S.first}. Next up: ${next[1]}`, `${esc(next[2])}<br><br>You've done ${n} of ${R.list.length} Side Quests this round. ${n === R.list.length - 1 ? "One more and the next round opens!" : n ? "Keep it rolling." : "It takes about 2 minutes."}`, [["Show me how", () => sherpaShow(next[0])], ["Not now", null]]);
+  if (feat("training") && !S.done.tour) return sherpaModal(`${hi}, ${S.first}. All 5 done!`, `All ${CLIMB.length} motions are done. Want the quick tour as a refresher?`, [["Take the tour", () => tourStart()], ["Not now", null]]);
 }
 function sherpaUnit(){
   const cur = byId[decodeURIComponent(location.hash.slice(1))], st = cur ? cur.store : (STORES.find(x => getPin(x)) || (STORES.includes("Keller") ? "Keller" : STORES[0]));
