@@ -690,12 +690,13 @@ function locShow(u, r){
     ${(() => { const n = DATA.units.filter(x => x.fire && TX_STORES.includes(x.store) && snorm(x.model) === snorm(u.model)).length; return n ? `<button class="ghost" id="lmodel" style="width:100%;margin-top:8px">Model ${esc(u.model)}: ${n} Fire Sale in Texas</button><ul class="ulist" id="lmodell" hidden></ul>` : ""; })()}
     <div class="lmsg" id="lprintm"></div>
     <button class="ghost" id="lhang" style="width:100%;margin-top:8px">Update QR Code Hanger Locations</button>
+    ${feat("hangprint") && HANG_PDF.includes(slug(u.store)) ? `<button class="ghost" id="lhangp" style="width:100%;margin-top:8px">Print QR hangers</button><div class="fine" style="margin:4px 0 0">PB01 to PB10. Print double sided, flip on the long edge.</div>` : ""}
     ${PRQ_ON[u.store] ? `<button class="ghost" id="lprq" style="width:100%;margin-top:8px">Request a price change</button>` : ""}
     ${r.name ? `<div class="locmeta">Signed in as ${esc(r.name)}</div>` : ""}`;
   const lm = document.getElementById("lmap");
   if (lm) lm.onclick = () => { const o = document.createElement("div"); o.className="full"; o.innerHTML = `<div class="locmap">${mapSvg(u.store, r.loc)}</div>`; o.onclick=()=>o.remove(); document.body.appendChild(o); };
   document.getElementById("lupd").onclick = () => locEdit(u, r);
-  const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r); document.getElementById("lhang").onclick = () => hangEdit(u, r); const pq = document.getElementById("lprq"); if (pq) pq.onclick = () => priceReqEdit(u, r); document.getElementById("lprint").onclick = () => printTag(u);
+  const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r); document.getElementById("lhang").onclick = () => hangEdit(u, r); const hp = document.getElementById("lhangp"); if (hp) hp.onclick = () => { window.open("hangers/" + slug(u.store) + ".pdf?v=1116", "_blank"); track("hangprint", {store:u.store, unit:u.unit}); }; const pq = document.getElementById("lprq"); if (pq) pq.onclick = () => priceReqEdit(u, r); document.getElementById("lprint").onclick = () => printTag(u);
   const lmo = document.getElementById("lmodel"); if (lmo) lmo.onclick = () => { const L = document.getElementById("lmodell"); if (!L.hidden) { L.hidden = true; return; }
     L.innerHTML = DATA.units.filter(x => x.fire && TX_STORES.includes(x.store) && snorm(x.model) === snorm(u.model)).sort((a, b) => (b.store === u.store) - (a.store === u.store) || byAge(a, b)).map(x => urow(x, u.store)).join(""); L.hidden = false; };
   document.getElementById("lout").onclick = () => { signOut(u.store); document.getElementById("sharesec").hidden = true; document.getElementById("stonesec").hidden = true; document.body.classList.remove("staff"); locSignin(u); leadInit(u); };
@@ -2224,7 +2225,10 @@ function labPills(){
 }
 
 /* ---- The Lab page ---- */
+/* Brandon Nov 16 2026: signed in team members print their store's QR Pegboard Hangers (PB01 to PB10) from any tag. Lab first. */
+const HANG_PDF = ["burleson","colleyville","denton","farmersbranch","keller","lewisville","renfro","gatesville","springtown","tyler","weatherford","waco","sarasota"];
 const LAB_TESTS = [
+  ["hangprint", "Print QR hangers (team)", "Under Update QR Code Hanger Locations on every tag, signed in team members get Print QR hangers. It opens their store's PB01 to PB10 sheet to print double sided.", "#keller-73009-36ca88@lhangp"],
   ["tagreq", "Request a printed tag", "When Print this tag finds no tag, the team gets a Request a printed tag button. You get an email and the request lands in the Tag Requests tab.", ""],
   ["mm2", "Money Makers: oldest in Texas", "Each store's feed only shows its Fire Sale units that are the oldest of that model in all of Texas. Every row shows the store code, and the oldest unit at your own store says It's HERE! instead.", "#store/colleyville"],
   ["compare", "Step up or step down in the photo (customers)", "Swipe the unit photo: Too Much Power? (the step down) on the left, More Power! (the step up) on the right. While they swipe, the single most compelling difference floats in the middle.", "#farmersbranch-109225-fce43e"],
