@@ -399,6 +399,9 @@ body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#12121
 .ldbtn{display:block;width:100%;margin:8px 0 10px;padding:14px;border:0;border-radius:14px;background:#F5B400;color:#121212;font:800 17px var(--display,system-ui);letter-spacing:.03em;cursor:pointer;box-shadow:0 6px 18px rgba(245,180,0,.35)}
 .ldstep{font:800 12px var(--display,system-ui);letter-spacing:.1em;text-transform:uppercase;color:#888}.ldgo{display:block;text-align:center;padding:14px;font-size:17px;margin:10px 0}.ldnext{display:block;width:100%;background:none;border:2px solid #121212;border-radius:12px;padding:12px;font-weight:800;color:#121212;cursor:pointer}
 .todo .tdg{font:800 12px var(--display,system-ui);letter-spacing:.08em;text-transform:uppercase;color:#C8102E;margin:10px 0 4px}.todo .tdi{display:flex;gap:8px;align-items:flex-start;padding:5px 0;color:#121212}.todo .tdi input{width:20px;height:20px;flex:0 0 auto}.todo .tdi.done{opacity:.5;text-decoration:line-through}
+
+/* Brandon Nov 16 2026: unit rows never run off the right edge */
+.ulist{grid-template-columns:minmax(0,1fr)}.ulist li{min-width:0}.ulist li>a{flex:1;min-width:0}.ulist .um{min-width:38%;flex:1 1 0}.ulist .ub{flex-shrink:0}.ulist li>a{flex-wrap:wrap;row-gap:0;padding-top:6px;padding-bottom:6px}
 </style>
 
 </head>
@@ -1504,7 +1507,7 @@ function shareInit(u, name){
     const $ = n => "$" + Number(n).toLocaleString("en-US", {maximumFractionDigits:0});
     const spl = i => { const a = TOP3AMT && TOP3AMT[i]; if (!a) return ""; return a[1] ? `<span class="spl">Fire Sale SPIFF ${$(a[0])} + Manufacturer SPIFF ${$(a[1])} = <b>Total ${$(a[0] + a[1])}</b></span>` : `<span class="spl"><b>Fire Sale SPIFF ${$(a[0])}</b></span>`; };
     if (!TOP3AMT && TOP3SP) top3Amt().then(x => { if (x) draw(); });
-    const topHtml = top.length ? `<div class="top3"><div class="t3h">Money Makers</div><div class="t3s">Oldest Fire Sale units first. Post one and the next oldest moves up.</div><ol>${top.map(i => { const t = byId[i]; return `<li>${i === u.id ? `<b>${esc(t.brand + " " + t.name)}</b> (this unit)` : `<a href="#${i}">${esc(t.brand + " " + t.name)}</a>`}<small> Unit ${esc(t.unit)}</small>${spl(i)}</li>`; }).join("")}</ol></div>` : "";
+    const topHtml = top.length ? `<div class="top3"><div class="t3h">${esc(label("money"))}</div><div class="t3s">Oldest Fire Sale units first. Post one and the next oldest moves up.</div><ol>${top.map(i => { const t = byId[i]; return `<li>${i === u.id ? `<b>${esc(t.brand + " " + t.name)}</b> (this unit)` : `<a href="#${i}">${esc(t.brand + " " + t.name)}</a>`}<small> Unit ${esc(t.unit)}</small>${spl(i)}</li>`; }).join("")}</ol></div>` : "";
     box.innerHTML = topHtml + `<h2>Post this unit</h2>
       <div class="sharegrid">${PLAT.map(p => {
         const why = p.mkt ? mkBlock() : (p.market && !MARKET_OK[u.brand.toUpperCase()] ? "Not approved for " + u.brand + " yet" : "");
@@ -1729,7 +1732,7 @@ async function chatRoom(room){
    section from customers, ISRs, BMs, GMs or team members. On Brandon's view, a yellow note on each section says who it is hidden
    from. Warranty and Fire Sale terms always show. Stepping Stones start hidden from ISRs. */
 const TAG_SECS = [["title","Store, brand and unit name"],["photo","Unit photo"],["price","Price and monthly payment"],["apply","Apply for financing"],["leads","Hold this unit and Contact me"],["quiz","Find your perfect mower (discovery questions)"],["compare","Step up or step down"],
-  ["teaminfo","Unit info and copy buttons"],["loc","Team tools: location, print, hangers, price change"],["stones","Stepping Stones"],["share","Post this unit"],["specs","Key features and specifications"],["warranty","Warranty and Fire Sale terms"]];
+  ["teaminfo","Unit info and copy buttons"],["loc","Team tools: location, print, hangers, price change"],["stones","Cheat Codes"],["share","Post this unit"],["specs","Key features and specifications"],["warranty","Warranty and Fire Sale terms"]];
 const TEAM_ONLY = ["loc","stones","share"], TL_LOCKED = ["warranty"];
 const TL_ROLES = [["customer","Customers"],["isr","ISRs"],["bm","BMs"],["gm","GMs"],["dm","Division Managers"],["team","Team members"]];
 const TL_DEF = {order: TAG_SECS.map(x => x[0]), hidden: [], roles: {stones: ["isr"]}};
@@ -3032,7 +3035,8 @@ const ADMIN_CSS = `<style>.adm{max-width:1000px;margin:0 auto;padding:14px;font:
 .admgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}.admcard{color:#1d1d1f;background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
 .admrow{display:flex;justify-content:space-between}.admbtn{display:block;margin-top:10px;text-align:center;background:#121212;color:#fff;border-radius:10px;padding:8px;text-decoration:none;font-weight:700;font-size:14px}
 .admlist{list-style:none;padding:0;margin:0;background:#fff;border-radius:12px}.admlist li{padding:10px 14px;border-bottom:1px solid #eee}.admlist a{color:#1d1d1f;font-weight:600;text-decoration:none;display:block}.admlist small{color:#666}
-.admfire{background:#C8102E;color:#fff;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px}</style>`;
+.admfire{background:#C8102E;color:#fff;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px}
+</style>`;
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
   ["tledit","tlpanel","coach","shmodal"].forEach(id => document.getElementById(id)?.remove());
