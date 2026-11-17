@@ -1187,6 +1187,20 @@ async function printTag(u){
   const m = document.getElementById("lprintm"), w = window.open("", "_blank");
   if (w) w.document.write('<p style="font:16px system-ui;padding:20px">Getting the tag...</p>');
   m.textContent = "Getting the tag...";
+  // Nov 17 2026: units with a DT built tag (tag bank) print straight from the DT, so new units never bounce back
+  await tbLoad;
+  if (TB[u.id]) {   // Nov 17 2026: open this unit's own tag PDF (front and back) straight from the DT, never bounce back
+    if (!getKey()) { if (w) w.close(); m.textContent = "Your phone needs a fresh sign in to print. Tap Sign out below, sign back in, then tap Print this tag."; return; }
+    try {
+      const url = URL.createObjectURL(new Blob([await tbBytes(u.id)], {type:"application/pdf"}));
+      try { if (w && !w.closed) w.location.href = url; } catch(e){}
+      m.innerHTML = `<a class="copy" style="display:inline-block;margin:6px 0" href="${url}" target="_blank" rel="noopener">Open the tag PDF</a><br>Tag opened. Use Print in that tab. Print double sided, flip on the long edge.`;
+      markPrinted([u.id]); sparkDo("print", u); delete TS[u.store]; setTimeout(() => printGlow(u), 2500); return;
+    } catch(e){
+      try { if (w && !w.closed) w.document.body.innerHTML = '<p style="font:16px system-ui;padding:20px">That tag could not open. Go back to the DT tab for help.</p>'; } catch(_){}
+      m.textContent = "That tag could not open on this phone. Sign out, sign back in and try again. If it still fails, tell Brandon the unit number."; return;
+    }
+  }
   try {
     const q = await api({action:"tagpdf", store:u.store, unit:u.unit, pin:getPin(u.store) || "", code:getCode()});
     if (q.ok && q.pdf) {
@@ -2568,10 +2582,10 @@ async function tbBytes(id){
   const key = await crypto.subtle.importKey("raw", Uint8Array.from(atob(getKey()), c => c.charCodeAt(0)), "AES-GCM", false, ["decrypt"]);
   return new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM", iv: raw.slice(0, 12)}, key, raw.slice(12)));
 }
-async function sheetPrint(ids, msg){
+async function sheetPrint(ids, msg, win0){
   ids = ids.filter(id => TB[id]); if (!ids.length) return;
   const say = t => { if (msg) msg.textContent = t; };
-  let win = null; try { win = window.open("", "_blank"); if (win) win.document.write("<p style='font:18px system-ui;padding:24px'>Building your tags. This tab fills in when they're ready.</p>"); } catch(e){ win = null; }
+  let win = win0 || null; try { if (!win) win = window.open("", "_blank"); if (win) win.document.write("<p style='font:18px system-ui;padding:24px'>Building your tags. This tab fills in when they're ready.</p>"); } catch(e){ win = null; }
   say("Building " + ids.length + " tag" + (ids.length === 1 ? "" : "s") + "...");
   if (!window.PDFLib) await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
   const {PDFDocument, rgb} = PDFLib, out = await PDFDocument.create(), W = 612, H = 792, TW = 306, TH = 396;
