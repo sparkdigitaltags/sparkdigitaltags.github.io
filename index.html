@@ -409,7 +409,7 @@ body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#12121
 .sheetbar{position:fixed;left:50%;transform:translateX(-50%);bottom:64px;z-index:60;background:#121212;color:#fff;border-radius:14px;padding:10px 12px;display:flex;gap:8px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:700;max-width:94vw}
 .sheetbar button{border:0;border-radius:10px;padding:8px 12px;font-weight:800}.sheetbar .go{background:#F5B400;color:#121212}.sheetbar .x{background:#333;color:#fff}
 .tbq li{display:flex;align-items:center;gap:8px}.tbq input{width:22px;height:22px;flex:none}.tbdone{opacity:.55}
-.hpstack{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:6px 0}.hpstack:empty{display:none}#hpstack~.lrow .galadd{display:flex;align-items:center;justify-content:center;text-align:center}.hpth{position:relative;aspect-ratio:1}.hpth img{width:100%;height:100%;object-fit:cover;border-radius:8px}.hpx{position:absolute;top:2px;right:2px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:13px;padding:0}.homebtn{left:auto;right:auto;left:104px;text-decoration:none;display:inline-block}.homebtn[hidden]{display:none}</style>
+.hpstack{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:6px 0}.hpstack:empty{display:none}#hpstack~.lrow .galadd{display:flex;align-items:center;justify-content:center;text-align:center}.hpth{position:relative;aspect-ratio:1}.hpth img{width:100%;height:100%;object-fit:cover;border-radius:8px}.hpx{position:absolute;top:2px;right:2px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:13px;padding:0}.homebtn{left:auto;right:auto;left:104px;text-decoration:none;display:inline-block}.homebtn[hidden]{display:none}.zbar[hidden]{display:none!important}</style>
 
 </head>
 <body style="margin:0">
@@ -900,7 +900,29 @@ const LAYOUT_BASE = [
   {k:"acc", t:"box", n:"ACCESSORIES", x:140, y:430, w:200, h:56, f:"#E6DCCB", s:17}];
 const ROOMS = {}, LAYOUT_PENDING = {};
 const VW0 = 860, VH0 = 620;
-function roomOf(store){ return ROOMS[store] || LAYOUT_BASE; }
+/* Store drawings from showroom photos (Brandon Nov 17 2026, Denton first). Used only until the store saves its own drawing
+   (a saved or approved drawing from the team always wins, so nothing the team did is replaced). Top of the drawing is the back
+   of the store. Denton: mower showroom in back, retail room up front, one doorway between them. */
+const STORE_ROOMS = {
+  Denton: [
+    {k:"rollup", t:"door", n:"ROLL UP DOOR", x:40, y:16, w:150, h:16, s:15},
+    {k:"stock", t:"box", n:"BOXED STOCK", x:32, y:120, w:120, h:110, f:"#E6DCCB", s:16},
+    {k:"riders", t:"pads", n:"ZERO TURNS AND STAND ONS", x:220, y:44, w:430, h:80, f:"#DCE5D0", s:17},
+    {k:"walk", t:"box", n:"ECHO AND CUB CADET MOWERS", x:190, y:200, w:270, h:52, f:"#DCE5D0", s:15},
+    {k:"push", t:"box", n:"STIHL AND SCAG MOWERS", x:480, y:180, w:260, h:52, f:"#DCE5D0", s:15},
+    {k:"saws", t:"box", n:"STIHL SAW WALL", x:776, y:40, w:56, h:240, f:"#D9CBB4", s:17, r:-90},
+    {k:"wall1", t:"wall", n:"", x:20, y:296, w:100, h:10},
+    {k:"doorway", t:"door", n:"TO MOWER SHOWROOM", x:120, y:292, w:150, h:18, s:15},
+    {k:"wall2", t:"wall", n:"", x:270, y:296, w:570, h:10},
+    {k:"oil", t:"box", n:"OIL, FUEL, BATTERIES", x:32, y:330, w:60, h:200, f:"#D9CBB4", s:15, r:-90},
+    {k:"sales", t:"box", n:"SALES COUNTER", x:300, y:330, w:240, h:58, f:"#BFAE92", s:18},
+    {k:"trim", t:"box", n:"STIHL TRIMMER RACK", x:300, y:430, w:210, h:90, f:"#E6DCCB", s:16},
+    {k:"honda", t:"box", n:"HONDA AND BATTERY MOWERS", x:540, y:420, w:200, h:56, f:"#E6DCCB", s:14},
+    {k:"blow", t:"box", n:"STIHL BLOWER WALL", x:776, y:330, w:56, h:240, f:"#D9CBB4", s:17, r:-90},
+    {k:"door", t:"door", n:"FRONT DOORS", x:40, y:588, w:150, h:22, s:18},
+    {k:"win1", t:"window", n:"WINDOWS", x:220, y:593, w:520, h:12, s:15}]
+};
+function roomOf(store){ return ROOMS[store] || STORE_ROOMS[store] || LAYOUT_BASE; }
 /* Edit handles on the box being edited (Brandon Nov 14 2026): X top right cancels the edits to that box, the circle arrow top left
    turns it (drag, or tap for 15 degrees), the corner arrows bottom right resize it (drag). Drawn inside the box's own rotation. */
 function editHandles(x, y, w, h, Z){
@@ -979,7 +1001,7 @@ function fxSvg(items, sel){
 }
 function roomBg(store, items, sel){
   return `<rect width="${VW0}" height="${VH0}" fill="#F4EFE6"/><rect x="22" y="22" width="816" height="576" fill="none" stroke="#2c2725" stroke-width="10"/>` +
-    fxSvg(items || roomOf(store), sel) + (ROOMS[store] || items ? "" : _T(430, 140, "Best guess layout. Add showroom photos so we can draw yours.", {s:15, c:"#8a817c"}));
+    fxSvg(items || roomOf(store), sel) + (ROOMS[store] || STORE_ROOMS[store] || items ? "" : _T(430, 140, "Best guess layout. Add showroom photos so we can draw yours.", {s:15, c:"#8a817c"}));
 }
 function showroomOf(store){ return SHOWROOMS[store] || {vb:[VW0, VH0], bg: roomBg(store)}; }
 function hangSvg(store, H, sel, items, fsel, hand){
@@ -1070,7 +1092,7 @@ async function hangEdit(u, r){
       <button class="ghost${SHERPA && !SHERPA.done.drawing ? " standout" : ""}" id="hroom" style="width:100%;margin-top:8px">Edit the showroom drawing (needs approval)</button>
       <button class="ghost${SHERPA && !SHERPA.done.drawing ? " standout" : ""}" id="hdraw" style="width:100%;margin-top:8px">Draw walls and shelves with your finger (needs approval)</button>
       <div class="hphoto"><h3>Showroom photos</h3>
-        <p class="fine" style="margin:0 0 6px">${ROOMS[u.store] ? "Add new photos if the layout changes." : "This drawing is our best guess. Fix it with Edit the showroom drawing, or take 3 to 6 photos of your showroom from the front door and each corner so we can draw your real layout. No customers or faces, please."}</p>
+        <p class="fine" style="margin:0 0 6px">${ROOMS[u.store] || STORE_ROOMS[u.store] ? "Add new photos if the layout changes." : "This drawing is our best guess. Fix it with Edit the showroom drawing, or take 3 to 6 photos of your showroom from the front door and each corner so we can draw your real layout. No customers or faces, please."}</p>
         ${feat("photostack") ? `<div class="hpstack" id="hpstack"></div>
         <div class="lrow"><label class="copy galadd">Take a photo<input type="file" accept="image/*" capture="environment" hidden id="hcam"></label><label class="ghost galadd">Pick from photos<input type="file" accept="image/*" multiple hidden id="hpick"></label></div>
         <button class="copy" id="hpsave" style="width:100%;margin-top:8px;display:none"></button>` : `<label class="copy copyall galadd">Add showroom photos<input type="file" accept="image/*" capture="environment" multiple hidden id="hfile"></label>`}
