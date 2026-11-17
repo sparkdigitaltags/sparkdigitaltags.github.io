@@ -409,7 +409,7 @@ body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#12121
 .sheetbar{position:fixed;left:50%;transform:translateX(-50%);bottom:64px;z-index:60;background:#121212;color:#fff;border-radius:14px;padding:10px 12px;display:flex;gap:8px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:700;max-width:94vw}
 .sheetbar button{border:0;border-radius:10px;padding:8px 12px;font-weight:800}.sheetbar .go{background:#F5B400;color:#121212}.sheetbar .x{background:#333;color:#fff}
 .tbq li{display:flex;align-items:center;gap:8px}.tbq input{width:22px;height:22px;flex:none}.tbdone{opacity:.55}
-.hpstack{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:6px 0}.hpstack:empty{display:none}#hpstack~.lrow .galadd{display:flex;align-items:center;justify-content:center;text-align:center}.hpth{position:relative;aspect-ratio:1}.hpth img{width:100%;height:100%;object-fit:cover;border-radius:8px}.hpx{position:absolute;top:2px;right:2px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:13px;padding:0}.homebtn{left:auto;right:auto;left:104px;text-decoration:none;display:inline-block}.homebtn[hidden]{display:none}.zbar[hidden]{display:none!important}.homebtn{left:10px!important;bottom:auto!important;top:calc(10px + env(safe-area-inset-top));background:#F5B400!important;color:#121212!important;padding:8px 14px}.a2hs{position:fixed;left:8px;right:8px;top:calc(56px + env(safe-area-inset-top));z-index:949;background:#F5B400;color:#121212;border-radius:14px;padding:10px 40px 10px 12px;box-shadow:0 4px 14px rgba(0,0,0,.3);font:600 14px system-ui;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.a2hs .go{border:0;border-radius:999px;background:#121212;color:#fff;padding:8px 14px;font-weight:800}.a2hs .x{position:absolute;right:8px;top:8px;border:0;background:none;font-size:16px}body:has(#homebtn:not([hidden])){padding-top:44px}</style>
+.hpstack{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:6px 0}.hpstack:empty{display:none}#hpstack~.lrow .galadd{display:flex;align-items:center;justify-content:center;text-align:center}.hpth{position:relative;aspect-ratio:1}.hpth img{width:100%;height:100%;object-fit:cover;border-radius:8px}.hpx{position:absolute;top:2px;right:2px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:13px;padding:0}.homebtn{left:auto;right:auto;left:104px;text-decoration:none;display:inline-block}.homebtn[hidden]{display:none}.zbar[hidden]{display:none!important}.homebtn{left:10px!important;bottom:auto!important;top:calc(10px + env(safe-area-inset-top));background:#F5B400!important;color:#121212!important;padding:8px 14px}.a2hs{position:fixed;left:8px;right:8px;top:calc(56px + env(safe-area-inset-top));z-index:949;background:#F5B400;color:#121212;border-radius:14px;padding:10px 40px 10px 12px;box-shadow:0 4px 14px rgba(0,0,0,.3);font:600 14px system-ui;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.a2hs .go{border:0;border-radius:999px;background:#121212;color:#fff;padding:8px 14px;font-weight:800}.a2hs .x{position:absolute;right:8px;top:8px;border:0;background:none;font-size:16px}body:has(#homebtn:not([hidden])){padding-top:44px}.mhbar{position:sticky;bottom:0;background:#fff;padding:8px 0;z-index:3}.mhbar .copy[disabled]{opacity:.6}</style>
 
 </head>
 <body style="margin:0">
@@ -776,6 +776,54 @@ function locEdit(u, r){
   draw();
 }
 
+/* Home many units at once (Brandon Nov 17 2026, Lab "masshome", live for Kayde). Pick a spot on the store map, check the units
+   that are there, and tap Home. Each unit is saved the same way as homing it one at a time (action "set"), 3 at a time. */
+function massHome(st){
+  document.title = "Home many units | " + st;
+  const back = `<p style="margin-top:12px"><a class="ghost" href="#store/${slug(st)}">Back</a></p>`;
+  if (!getCode() || (!isAll() && !getPin(st))) { app.innerHTML = `<article class="card"><div class="sect"><h2>Home many units</h2><p>Sign in on the <a href="#store/${slug(st)}">${esc(st)} store page</a> first, then come back here.</p>${back}</div></article>`; return; }
+  if (!feat("masshome")) { app.innerHTML = `<article class="card"><div class="sect"><h2>Home many units</h2><p>This is still in the Lab and not turned on for you yet.</p>${back}</div></article>`; return; }
+  const U = DATA.units.filter(u => u.store === st).sort((a, b) => String(a.brand).localeCompare(b.brand) || String(a.model).localeCompare(b.model));
+  const SEL = new Set(), F = {q:"", br:""}; let pick = "", busy = false;
+  const l4 = u => String(u.serial || "").slice(-4);
+  const shown = () => U.filter(u => (!F.br || brAb(u.brand) === F.br) && (!F.q || (String(u.serial) + " " + u.model + " " + u.name + " " + u.unit).toLowerCase().includes(F.q.toLowerCase())));
+  app.innerHTML = `<article class="card"><div class="sect"><h2>Home many units</h2>
+    <p class="fine" style="margin-top:0">1. Tap the spot on the map. 2. Check every unit that is there. 3. Tap Home.</p>
+    <div class="locmap" id="mhmap"></div><div class="zgrid" id="mhz"></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,40%);gap:6px;margin-top:10px">
+      <input id="mhq" type="search" autocomplete="off" placeholder="Last 4 of serial, or model" aria-label="Filter units" style="padding:10px;border:1px solid #ccc;border-radius:10px;font-size:16px;background:#fff;color:#1d1d1f">
+      <select id="mhb" aria-label="Manufacturer" style="width:100%;padding:9px;border:1px solid #ccc;border-radius:10px;font-size:15px;background:#fff;color:#1d1d1f"><option value="">All brands</option>${[...new Set(U.map(u => brAb(u.brand)))].sort().map(b => `<option>${esc(b)}</option>`).join("")}</select></div>
+    <div class="lrow"><button class="ghost" id="mhall">Check all shown</button><button class="ghost" id="mhnone">Clear</button></div>
+    <ul class="ulist tall mhl" id="mhl" style="max-height:46vh;overflow-y:auto"></ul>
+    <div class="mhbar"><button class="copy" id="mhgo" style="width:100%;margin:0"></button><div class="lmsg" id="mhmsg"></div></div>
+    ${back}</div></article>`;
+  const paintMap = () => { document.getElementById("mhmap").innerHTML = mapSvg(st, pick);
+    document.getElementById("mhz").innerHTML = layoutOf(st).labels.map(([k, n]) => `<button class="zbtn${k === pick ? " on" : ""}" data-z="${esc(k)}" aria-label="${esc(n)}">${esc(k)}<small>${esc(n)}</small></button>`).join("");
+    document.querySelectorAll("#mhz [data-z], #mhmap .zp").forEach(b => b.onclick = () => { pick = b.dataset.z; paintMap(); paintGo(); }); };
+  const paintGo = () => { const b = document.getElementById("mhgo"); b.disabled = busy;
+    b.textContent = !pick ? "Tap a spot on the map first" : !SEL.size ? "Check the units at " + zname(st, pick) : `Home ${SEL.size} unit${SEL.size > 1 ? "s" : ""} to ${zname(st, pick)}`; };
+  const paintList = () => { const L = shown();
+    document.getElementById("mhl").innerHTML = L.map(u => `<li><label style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer"><input type="checkbox" data-id="${esc(u.id)}" ${SEL.has(u.id) ? "checked" : ""} style="width:22px;height:22px;flex:none">
+      <span style="flex:1;min-width:0"><b>${esc(brAb(u.brand))}</b> ${esc(u.model)}<br><span class="fine" style="color:#555">${esc(u.name || "")}</span></span><span class="ux">SN ${esc(l4(u))}</span></label></li>`).join("") || `<li class="none">No units match.</li>`;
+    document.querySelectorAll("#mhl [data-id]").forEach(c => c.onchange = () => { c.checked ? SEL.add(c.dataset.id) : SEL.delete(c.dataset.id); paintGo(); }); };
+  document.getElementById("mhq").oninput = e => { F.q = e.target.value.trim(); paintList(); };
+  document.getElementById("mhb").onchange = e => { F.br = e.target.value; paintList(); };
+  document.getElementById("mhall").onclick = () => { shown().forEach(u => SEL.add(u.id)); paintList(); paintGo(); };
+  document.getElementById("mhnone").onclick = () => { SEL.clear(); paintList(); paintGo(); };
+  document.getElementById("mhgo").onclick = async () => {
+    const m = document.getElementById("mhmsg"); if (busy) return;
+    if (!pick) { m.textContent = "Tap a spot on the map first."; return; }
+    if (!SEL.size) { m.textContent = "Check at least one unit."; return; }
+    busy = true; paintGo(); const todo = U.filter(u => SEL.has(u.id)), bad = []; let ok = 0, stop = "";
+    const one = async u => { if (stop) return bad.push(u); try { const r = await api({action:"set", store:st, unit:u.unit, pin:getPin(st), code:getCode(), loc:pick});
+        if (r.ok) { ok++; SEL.delete(u.id); } else { bad.push(u); if (ERRS[r.error] && r.error !== "nostore") stop = ERRS[r.error]; } } catch(e){ bad.push(u); }
+      m.textContent = `Homing ${ok + bad.length} of ${todo.length}...`; };
+    for (let i = 0; i < todo.length; i += 3) await Promise.all(todo.slice(i, i + 3).map(one));
+    busy = false; track("masshome", {st, n: ok, loc: pick}); if (ok) sparkDo("loc", todo[0]);
+    m.textContent = stop ? stop + (ok ? ` ${ok} homed before that.` : "") : bad.length ? `Homed ${ok} to ${zname(st, pick)}. ${bad.length} didn't save (still checked). Check your signal and tap Home again.` : `Done. ${ok} unit${ok > 1 ? "s" : ""} homed to ${zname(st, pick)}.`;
+    paintList(); paintGo(); };
+  mapLoad(st).then(paintMap); paintMap(); paintList(); paintGo();
+}
 /* Store map label editor (Nov 9 2026). ISRs and managers move labels and add new ones.
    Floor, Lot, Warehouse and Shop are required at every store, so they can be moved but not removed. */
 function mapEdit(u, r){
@@ -2029,7 +2077,7 @@ async function sherpaTag(){
    phones (admin codes), and tag features show only on their example tag. */
 let FLAGS = (() => { try { return JSON.parse(ls.get("sparkflags") || "{}") || {}; } catch(e){ return {}; } })();
 /* Pilot (Brandon Nov 17 2026): Kayde at Denton gets the team Lab tools live before the rest of the team. */
-const PILOT = [{store:"Denton", first:"kayde", feats:["sheet4","hangprint","tagreq","tagtrack","today","topsearch","blockers","mpkit","a2hs"]}];
+const PILOT = [{store:"Denton", first:"kayde", feats:["sheet4","hangprint","tagreq","tagtrack","today","topsearch","blockers","mpkit","a2hs","masshome"]}];
 function pilotOn(k){ if (!getCode() || typeof isBT === "function" && isBT()) return false; const f = String(ls.get("sparkfirst") || "").trim().toLowerCase();
   return PILOT.some(p => p.first === f && p.feats.includes(k) && !!getPin(p.store)); }
 const LAB_EX = {flames:["farmersbranch-109225-fce43e"], mow:["farmersbranch-109225-fce43e"], stone3:["farmersbranch-109122-4ef97e","farmersbranch-109225-fce43e"]};
@@ -2352,6 +2400,7 @@ function labPills(){
 /* Brandon Nov 16 2026: signed in team members print their store's QR Pegboard Hangers (PB01 to PB10) from any tag. Lab first. */
 const HANG_PDF = ["burleson","colleyville","denton","farmersbranch","keller","lewisville","renfro","gatesville","springtown","tyler","weatherford","waco","sarasota"];
 const LAB_TESTS = [
+  ["masshome", "Home many units at once", "On the store page, Home many units opens the store map. Tap the spot, check every unit that is there (filter by last 4 or brand, or Check all shown), then tap Home. Live for Kayde (Denton) now.", "#homing/denton"],
   ["a2hs", "Add the DT to the home screen", "On the store home page, signed in team members get a yellow bar: one tap install on Android, the 2 steps on iPhone. Live for Kayde (Denton) now.", "#store/denton"],
   ["mapedit2", "Store map: remove, drag and turn", "In Edit store map labels, Floor, Lot, Warehouse and Shop can be removed like any other label. Drag a label to move it, and tap a label for Turn left and Turn right.", "#denton-85361-e2c164@locsec"],
   ["photostack", "Showroom photo stack", "Under Showroom photos, Take a photo adds each shot to a tray. Pick from photos adds several at once. Remove any with the X, then Save sends them all together. Up to 10.", "#denton-85361-e2c164@lhang"],
@@ -3172,7 +3221,7 @@ function storeHome(st){
   sherpaLoad().then(S => { const c = document.getElementById("shclimb"); if (!S || !c) return; c.innerHTML = climbCard(S); wireClimb(c);
     if (sessionStorage.getItem("sparkshow") === "find") { sessionStorage.removeItem("sparkshow"); setTimeout(() => sherpaShow("find"), 400); } else sherpaGreet(); });
   box.innerHTML = `<div id="shchat">${chatBtn()}</div><h2 style="margin-top:4px">Find any unit</h2>${finderHtml("sh")}
-    <a class="copy copyall" href="#inventory/${slug(st)}" style="display:block;text-align:center;margin-top:8px">Inventory</a>
+    <a class="copy copyall" href="#inventory/${slug(st)}" style="display:block;text-align:center;margin-top:8px">Inventory</a>${feat("masshome") ? `<a class="copy copyall" href="#homing/${slug(st)}" style="display:block;text-align:center;margin-top:8px;background:#1F2A5A;color:#fff">Home many units</a>` : ""}
     <p class="fine" id="snote" style="margin:6px 0 14px">Searches every unit at every Spark store on the digital tags. Your store comes first.</p>
     <div id="shclimb"></div>
     <div id="tagq"></div><div id="blkst"></div>
@@ -3322,6 +3371,7 @@ function route(){
   if (/^lab$/i.test(h)) { setManifest(""); window.scrollTo(0, 0); return labPage(); }
   if (/^beta$/i.test(h)) { window.scrollTo(0, 0); return betaPage(); }
   if (/^stores$/i.test(h)) { setManifest(""); window.scrollTo(0, 0); return storesPage(); }
+  { const mh = /^homing\/(.+)$/i.exec(h); if (mh) { window.scrollTo(0, 0); const st = STORES.find(x => slug(x) === slug(mh[1])); if (st) return massHome(st); } }
   if (/^today$/i.test(h)) { window.scrollTo(0, 0); return todayPage(); }
   { const ch = /^chat(?:\/(.+))?$/i.exec(h); if (ch) { setManifest(""); window.scrollTo(0, 0); return ch[1] ? chatRoom(ch[1]) : chatHome(); } }
   { const iv = /^inventory(?:\/(.+))?$/i.exec(h); if (iv) { setManifest(""); window.scrollTo(0, 0); return inventory(iv[1] ? STORES.find(x => slug(x) === slug(iv[1])) : ""); } }
