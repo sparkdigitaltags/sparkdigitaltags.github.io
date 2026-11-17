@@ -613,7 +613,7 @@ const GENERIC = { bg: `<rect width="860" height="1010" fill="${G}"/><rect x="0" 
 /* Display frames (Brandon Nov 17 2026). Denton's map became the real aerial photo, turned so the store is at the top and the road at the
    bottom. Labels stay saved in the old drawing's numbers, so every location the team made keeps its spot; the frame turns them onto the
    photo for display and turns a moved label back before saving. */
-const MAPFRAME = { Denton: { to: (x, y) => [100 - x, 97.8 - 1.7455 * y], from: (X, Y) => [100 - X, (97.8 - Y) / 1.7455] } };
+const MAPFRAME = { Denton: { to: (x, y) => [100 - x, 79.3 - 1.319 * y], from: (X, Y) => [100 - X, (79.3 - Y) / 1.319] } };
 const clampP = v => Math.min(98, Math.max(2, v)), r1 = v => Math.round(v * 10) / 10;
 const toView = (st, x, y) => { const f = MAPFRAME[st]; const [a, b] = f ? f.to(+x, +y) : [+x, +y]; return [clampP(a), clampP(b)]; };
 const fromView = (st, X, Y) => { const f = MAPFRAME[st]; X = Math.min(97, Math.max(3, X)); Y = Math.min(97, Math.max(3, Y)); const [a, b] = f ? f.from(X, Y) : [X, Y]; return [r1(a), r1(b)]; };
