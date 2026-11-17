@@ -403,6 +403,12 @@ body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#12121
 /* Brandon Nov 16 2026: unit rows never run off the right edge */
 .ulist{grid-template-columns:minmax(0,1fr)}.ulist li{min-width:0}.ulist li>a{flex:1;min-width:0}.ulist .um{min-width:38%;flex:1 1 0}.ulist .ub{flex-shrink:0}.ulist li>a{flex-wrap:wrap;row-gap:0;padding-top:6px;padding-bottom:6px}
 .climbr{display:block;font-size:13px;font-weight:700;color:#8a6d00;margin:2px 0 0}
+
+/* V12 Keep All Three (Nov 17 2026) */
+.admdash{width:100%;height:1500px;border:1px solid #ddd;border-radius:12px;background:#fff}
+.sheetbar{position:fixed;left:50%;transform:translateX(-50%);bottom:64px;z-index:60;background:#121212;color:#fff;border-radius:14px;padding:10px 12px;display:flex;gap:8px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:700;max-width:94vw}
+.sheetbar button{border:0;border-radius:10px;padding:8px 12px;font-weight:800}.sheetbar .go{background:#F5B400;color:#121212}.sheetbar .x{background:#333;color:#fff}
+.tbq li{display:flex;align-items:center;gap:8px}.tbq input{width:22px;height:22px;flex:none}.tbdone{opacity:.55}
 </style>
 
 </head>
@@ -688,6 +694,7 @@ function locShow(u, r){
     ${r.canMap ? `<button class="ghost" id="lmapedit" style="width:100%;margin-top:8px">Edit store map labels</button>` : ""}
     <button class="copy" id="lprint" style="width:100%;margin-top:8px">Print this tag</button>
     ${(() => { const n = DATA.units.filter(x => x.fire && TX_STORES.includes(x.store) && snorm(x.model) === snorm(u.model)).length; return n ? `<button class="ghost" id="lmodel" style="width:100%;margin-top:8px">Model ${esc(u.model)}: ${n} Fire Sale in Texas</button><ul class="ulist" id="lmodell" hidden></ul>` : ""; })()}
+    ${sheetOk(u) ? `<button class="ghost" id="lsheet" style="width:100%;margin-top:8px">${sheetHas(u.id) ? "✓ On your 4 up sheet" : "Add to 4 up sheet"}</button>` : ""}
     <div class="lmsg" id="lprintm"></div>
     <button class="ghost" id="lhang" style="width:100%;margin-top:8px">Update QR Code Hanger Locations</button>
     ${feat("hangprint") && HANG_PDF.includes(slug(u.store)) ? `<button class="ghost" id="lhangp" style="width:100%;margin-top:8px">Print QR hangers</button><div class="fine" style="margin:4px 0 0">PB01 to PB10. Print double sided, flip on the long edge.</div>` : ""}
@@ -696,7 +703,7 @@ function locShow(u, r){
   const lm = document.getElementById("lmap");
   if (lm) lm.onclick = () => { const o = document.createElement("div"); o.className="full"; o.innerHTML = `<div class="locmap">${mapSvg(u.store, r.loc)}</div>`; o.onclick=()=>o.remove(); document.body.appendChild(o); };
   document.getElementById("lupd").onclick = () => locEdit(u, r);
-  const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r); document.getElementById("lhang").onclick = () => hangEdit(u, r); const hp = document.getElementById("lhangp"); if (hp) hp.onclick = () => { window.open("hangers/" + slug(u.store) + ".pdf?v=1116", "_blank"); track("hangprint", {store:u.store, unit:u.unit}); }; const pq = document.getElementById("lprq"); if (pq) pq.onclick = () => priceReqEdit(u, r); document.getElementById("lprint").onclick = () => printTag(u);
+  const me = document.getElementById("lmapedit"); if (me) me.onclick = () => mapEdit(u, r); document.getElementById("lhang").onclick = () => hangEdit(u, r); const sb = document.getElementById("lsheet"); if (sb) sb.onclick = () => { sheetToggle(u.id); sb.textContent = sheetHas(u.id) ? "✓ On your 4 up sheet" : "Add to 4 up sheet"; }; const hp = document.getElementById("lhangp"); if (hp) hp.onclick = () => { window.open("hangers/" + slug(u.store) + ".pdf?v=1116", "_blank"); track("hangprint", {store:u.store, unit:u.unit}); }; const pq = document.getElementById("lprq"); if (pq) pq.onclick = () => priceReqEdit(u, r); document.getElementById("lprint").onclick = () => printTag(u);
   const lmo = document.getElementById("lmodel"); if (lmo) lmo.onclick = () => { const L = document.getElementById("lmodell"); if (!L.hidden) { L.hidden = true; return; }
     L.innerHTML = DATA.units.filter(x => x.fire && TX_STORES.includes(x.store) && snorm(x.model) === snorm(u.model)).sort((a, b) => (b.store === u.store) - (a.store === u.store) || byAge(a, b)).map(x => urow(x, u.store)).join(""); L.hidden = false; };
   document.getElementById("lout").onclick = () => { signOut(u.store); document.getElementById("sharesec").hidden = true; document.getElementById("stonesec").hidden = true; document.body.classList.remove("staff"); locSignin(u); leadInit(u); };
@@ -2228,6 +2235,7 @@ function labPills(){
 /* Brandon Nov 16 2026: signed in team members print their store's QR Pegboard Hangers (PB01 to PB10) from any tag. Lab first. */
 const HANG_PDF = ["burleson","colleyville","denton","farmersbranch","keller","lewisville","renfro","gatesville","springtown","tyler","weatherford","waco","sarasota"];
 const LAB_TESTS = [
+  ["sheet4", "Print tags 4 per sheet (team)", "Team members get Add to 4 up sheet on every tag and the Tags to print screen. Tags are built from the DT, 4 to a letter sheet, no Drive. Only you see it until you turn it on.", "#tags/denton"],
   ["hangprint", "Print QR hangers (team)", "Under Update QR Code Hanger Locations on every tag, signed in team members get Print QR hangers. It opens their store's PB01 to PB10 sheet to print double sided.", "#keller-73009-36ca88@lhangp"],
   ["tagreq", "Request a printed tag", "When Print this tag finds no tag, the team gets a Request a printed tag button. You get an email and the request lands in the Tag Requests tab.", ""],
   ["mm2", "Money Makers: oldest in Texas", "Each store's feed only shows its Fire Sale units that are the oldest of that model in all of Texas. Every row shows the store code, and the oldest unit at your own store says It's HERE! instead.", "#store/colleyville"],
@@ -2449,11 +2457,93 @@ function ipTrainHtml(){
 
 /* ==== Nov 15 2026 batch 3 (Brandon) ==== */
 /* Version names: say "go back to V9" and Claude redeploys that version. */
-const SPARK_VERSION = {n:11, name:"Today", date:"Nov 15, 2026"};
-const SPARK_VERSIONS = [[11, "Today", "Beta Testers, Today screen, payment options ladder, bulk print and filters, pinch zoom test, Spark S, Move First!, admin To do"], [10, "Beta Ready", "Back button, jump links, map zoom, changed vs new tags, aging report truth, final names"], [9, "Blockers", "Tags to print, ready alert, Bounty Blockers, All Lenders, quiz must haves"],
+const SPARK_VERSION = {n:12, name:"Keep All Three", date:"Nov 17, 2026"};
+const SPARK_VERSIONS = [[12, "Keep All Three", "Same address, same unit IDs, same sheet. Tags print straight from the DT, 4 per sheet. Tags to Print screen. Admin dashboard inside the DT"], [11, "Today", "Beta Testers, Today screen, payment options ladder, bulk print and filters, pinch zoom test, Spark S, Move First!, admin To do"], [10, "Beta Ready", "Back button, jump links, map zoom, changed vs new tags, aging report truth, final names"], [9, "Blockers", "Tags to print, ready alert, Bounty Blockers, All Lenders, quiz must haves"],
   [8, "Swipe", "It's HERE!, Too Much Power and More Power swipe, quiz overlay, top search"], [7, "Tag Requests", "Request a printed tag, Bounties oldest in TX, compare, discovery quiz"],
   [6, "No Flames", "Fire Sale flames removed, 3 Stones and LSM look tests"], [5, "Lab", "Spark Lab with live toggles"], [4, "Sherpa", "First sign in welcome, tour, daily prompts"],
   [3, "Chat", "Team chat and showroom drawing"], [2, "Finder", "All units on the DT and the unit finder"], [1, "Admin", "Spark Admin home and activity dashboard"]];
+
+/* ==== V12 "Keep All Three" (Brandon Nov 17 2026) ====
+   Same address, same unit IDs, same Google Sheet. Paper tags now print straight from the DT: every regular unit's
+   Snub Tag is built from the DT's own data and kept in the site, locked with the team key (t/<id>.bin). Only signed
+   in team members can open one. Tags print 4 to a letter sheet (fronts, then mirrored backs for duplex, long edge),
+   so no cardstock is wasted. No Drive. */
+let TB = {}; const tbLoad = fetch("t/index.json?v=" + Math.floor(Date.now() / 60000)).then(r => r.ok ? r.json() : {}).then(j => { TB = j || {}; return TB; }).catch(() => TB);
+const tbCount = st => Object.values(TB).filter(t => t.s === st).length;
+const SHEET_KEY = "sparksheet";
+const sheetIds = () => { try { return JSON.parse(ls.get(SHEET_KEY) || "[]"); } catch(e){ return []; } };
+const sheetSave = a => { ls.set(SHEET_KEY, JSON.stringify(a)); sheetBar(); };
+const sheetHas = id => sheetIds().includes(id);
+const sheetOk = u => !!TB[u.id] && !!getKey() && (isAdm() || feat("sheet4"));
+function sheetToggle(id){ const a = sheetIds(); sheetSave(a.includes(id) ? a.filter(x => x !== id) : [...a, id]); }
+const PRINTED_KEY = "sparkprinted";
+const printedMap = () => { try { return JSON.parse(ls.get(PRINTED_KEY) || "{}"); } catch(e){ return {}; } };
+function markPrinted(ids){ const m = printedMap(); ids.forEach(id => m[id] = TB[id] ? TB[id].h : 1); ls.set(PRINTED_KEY, JSON.stringify(m)); }
+const isPrinted = id => { const m = printedMap(); return !!m[id] && TB[id] && m[id] === TB[id].h; };   // a rebuilt (changed) tag shows up again
+async function tbBytes(id){
+  const t = TB[id]; if (!t) throw new Error("no tag");
+  const b64 = await fetch("t/" + encodeURIComponent(id) + ".bin?v=" + t.h).then(r => { if (!r.ok) throw new Error("missing"); return r.text(); });
+  const raw = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey("raw", Uint8Array.from(atob(getKey()), c => c.charCodeAt(0)), "AES-GCM", false, ["decrypt"]);
+  return new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM", iv: raw.slice(0, 12)}, key, raw.slice(12)));
+}
+async function sheetPrint(ids, msg){
+  ids = ids.filter(id => TB[id]); if (!ids.length) return;
+  const say = t => { if (msg) msg.textContent = t; };
+  say("Building " + ids.length + " tag" + (ids.length === 1 ? "" : "s") + "...");
+  if (!window.PDFLib) await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  const {PDFDocument, rgb} = PDFLib, out = await PDFDocument.create(), W = 612, H = 792, TW = 306, TH = 396;
+  const FR = [[0, TH], [TW, TH], [0, 0], [TW, 0]], BK = [[TW, TH], [0, TH], [TW, 0], [0, 0]];   // backs mirror for long edge duplex
+  const cut = p => { p.drawLine({start:{x:W / 2, y:0}, end:{x:W / 2, y:H}, thickness:0.9, color:rgb(0.13, 0.13, 0.13)}); p.drawLine({start:{x:0, y:H / 2}, end:{x:W, y:H / 2}, thickness:0.9, color:rgb(0.13, 0.13, 0.13)}); };
+  let done = [], bad = [];
+  for (let i = 0; i < ids.length; i += 4) {
+    const grp = []; for (const id of ids.slice(i, i + 4)) { say(`Building tag ${done.length + bad.length + 1} of ${ids.length}...`);
+      try { const src = await PDFDocument.load(await tbBytes(id)); const [f, b] = await out.embedPages([src.getPage(0), src.getPage(1)]); grp.push([f, b]); done.push(id); } catch(e){ bad.push(id); } }
+    if (!grp.length) continue;
+    const pf = out.addPage([W, H]); grp.forEach(([f], k) => pf.drawPage(f, {x:FR[k][0], y:FR[k][1], width:TW, height:TH})); cut(pf);
+    const pb = out.addPage([W, H]); grp.forEach(([, b], k) => pb.drawPage(b, {x:BK[k][0], y:BK[k][1], width:TW, height:TH})); cut(pb);
+  }
+  if (!done.length) { say("Those tags could not be opened. Sign in again and retry."); return; }
+  window.open(URL.createObjectURL(new Blob([await out.save()], {type:"application/pdf"})), "_blank");
+  markPrinted(done); track("sheetprint", {n:done.length, store:(TB[done[0]] || {}).s || ""});
+  say(`Opened ${Math.ceil(done.length / 4)} sheet${done.length > 4 ? "s" : ""} (${done.length} tag${done.length === 1 ? "" : "s"}). Print double sided, flip on the long edge, then cut once each way.${bad.length ? ` ${bad.length} could not be opened.` : ""}`);
+}
+function sheetBar(){
+  let b = document.getElementById("sheetbar"); const a = sheetIds().filter(id => TB[id]);
+  if (!a.length || !getKey()) { b && b.remove(); return; }
+  if (!b) { b = document.createElement("div"); b.id = "sheetbar"; b.className = "sheetbar"; document.body.appendChild(b); }
+  const left = (4 - a.length % 4) % 4;
+  b.innerHTML = `<span>4 up sheet: ${a.length}${left ? `, room for ${left} more` : ", full"}</span><button type="button" class="go">Print</button><button type="button" class="x" aria-label="Clear the sheet">Clear</button>`;
+  b.querySelector(".go").onclick = async () => { const m = document.createElement("span"); b.prepend(m); await sheetPrint(a, null); sheetSave([]); };
+  b.querySelector(".x").onclick = () => sheetSave([]);
+}
+tbLoad.then(() => { sheetBar(); if (/^#(admin|tags\/)/i.test(location.hash)) route(); });
+/* Tags to Print: every regular tag ready for this location, grouped into new and already printed. */
+let TBSEL = new Set();
+async function tagsPage(st){
+  await tbLoad; document.title = "Tags to print" + (st ? ", " + st : "");
+  const app = document.getElementById("app") || document.body;
+  if (!getCode() || !getKey() || !(isAll() || (st && getPin(st)))) { app.innerHTML = `<article class="card"><div class="sect"><h2>Tags to print</h2><p>Sign in on any tag at this store first.</p></div></article>`; return; }
+  const stores = [...new Set(Object.values(TB).map(t => t.s))].sort();
+  if (!st) st = stores[0] || "";
+  const rows = Object.entries(TB).filter(([, t]) => t.s === st).map(([id, t]) => ({id, t, u:byId[id]})).filter(r => r.u)
+    .sort((a, b) => (a.u.brand + a.u.model).localeCompare(b.u.brand + b.u.model));
+  const todo = rows.filter(r => !isPrinted(r.id)), done = rows.filter(r => isPrinted(r.id));
+  const li = r => `<li class="${isPrinted(r.id) ? "tbdone" : ""}"><input type="checkbox" data-id="${esc(r.id)}" ${TBSEL.has(r.id) ? "checked" : ""} aria-label="Select ${esc(r.u.model)}"><a href="#${esc(r.id)}"><span class="ub">${esc(brAb(r.u.brand))}</span><span class="um">${esc(r.u.model)}</span><span class="ud">Unit ${esc(r.u.unit)}</span></a></li>`;
+  app.innerHTML = `<article class="card"><div class="sect"><h2>Tags to print</h2>
+    <p class="fine" style="margin-top:0">Regular price tags for ${esc(st)}, built from each unit's digital tag so the paper always matches. Fire Sale tags are not in this list. They print 4 to a sheet. Print double sided, flip on the long edge, then cut once down the middle and once across.</p>
+    ${isAll() && stores.length > 1 ? `<select id="tbst" aria-label="Location">${stores.map(x => `<option ${x === st ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>` : ""}
+    <div class="tqbar" style="margin:10px 0"><button type="button" class="ghost" id="tball">Select all ${todo.length} to print</button><button type="button" class="copy" id="tbgo" ${TBSEL.size ? "" : "disabled"}>Print ${TBSEL.size || ""} selected (${Math.ceil(TBSEL.size / 4) || 0} sheet${Math.ceil(TBSEL.size / 4) === 1 ? "" : "s"})</button></div>
+    <div class="lmsg" id="tbm"></div>
+    <div class="tqh">Need to print (${todo.length})</div><ul class="ulist tbq">${todo.map(li).join("") || `<li class="tqok">All printed. 👍</li>`}</ul>
+    ${done.length ? `<div class="tqh">Printed on this phone (${done.length})</div><ul class="ulist tbq">${done.map(li).join("")}</ul>` : ""}
+  </div></article>`;
+  const sel = document.getElementById("tbst"); if (sel) sel.onchange = () => { TBSEL.clear(); location.hash = "tags/" + slug(sel.value); };
+  app.querySelectorAll("[data-id]").forEach(c => c.onchange = () => { c.checked ? TBSEL.add(c.dataset.id) : TBSEL.delete(c.dataset.id); tagsPage(st); });
+  document.getElementById("tball").onclick = () => { const on = todo.length && todo.every(r => TBSEL.has(r.id)); todo.forEach(r => on ? TBSEL.delete(r.id) : TBSEL.add(r.id)); tagsPage(st); };
+  document.getElementById("tbgo").onclick = async () => { await sheetPrint([...TBSEL], document.getElementById("tbm")); TBSEL.clear(); setTimeout(() => { if (/^#tags\//i.test(location.hash)) tagsPage(st); }, 1500); };
+}
+
 /* Back button on every page: goes to the page they were on before. */
 let NAVN = +(sessionStorage.getItem("navn") || 0);
 window.addEventListener("hashchange", () => { NAVN++; sessionStorage.setItem("navn", NAVN); backBtn(); });
@@ -3015,10 +3105,10 @@ function adminHome(){
   const locsAll = Object.entries(LOC_INFO).filter(([st, i]) => (!ADM.dba || i.dba === ADM.dba) && (!ADM.state || i.state === ADM.state) && (!ADM.loc || st === ADM.loc));
   const cards = locsAll.map(([st, i]) => { const mine = units.filter(u => u.store === st), live = STORES.includes(st);
     return `<div class="admcard"><div class="admrow"><b>${esc(st)}</b><span class="admmut">${esc(i.state)}</span></div><div class="admmut">${esc(i.dba)}</div>
-      ${live ? `<div class="admnums"><span><b>${mine.length}</b> units</span><span><b>${mine.filter(u => u.fire).length}</b> Fire Sale</span></div><a class="admbtn" href="#store/${slug(st)}">Open store page</a>` : `<div class="admmut" style="margin-top:8px">${["Mowers Inc","Taylor"].includes(i.dba) ? "Paused (team side frozen; lender QR codes still work)" : "Not on digital tags yet"}</div>`}</div>`; }).join("");
+      ${live ? `<div class="admnums"><span><b>${mine.length}</b> units</span><span><b>${mine.filter(u => u.fire).length}</b> Fire Sale</span></div><a class="admbtn" href="#store/${slug(st)}">Open store page</a>${tbCount(st) ? `<a class="admbtn" href="#tags/${slug(st)}" style="margin-left:6px">Tags to print (${tbCount(st)})</a>` : ""}` : `<div class="admmut" style="margin-top:8px">${["Mowers Inc","Taylor"].includes(i.dba) ? "Paused (team side frozen; lender QR codes still work)" : "Not on digital tags yet"}</div>`}</div>`; }).join("");
   const list = units.slice(0, 150).map(u => `<li><a href="#${esc(u.id)}">${u.fire ? `<span class="admfire">Fire Sale</span> ` : ""}${esc(u.m + " " + u.name)}</a><small>${esc(u.store)}, unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}</small></li>`).join("");
   app.innerHTML = `${ADMIN_CSS}<div class="adm"><div class="admh"><img src="/m/icon-192.png" alt=""><div><b>Spark Admin</b><small>${all.length} units across ${STORES.length} live locations</small></div></div>
-    <div class="admlinks"><a href="/dash/" target="_blank" rel="noopener">Activity dashboard and LSM rollout ›</a> &nbsp; <a href="#inventory">Inventory ›</a>${isAdm() ? ` &nbsp; <a href="#lab">Lab ›</a>` : ""}${chatOn() ? ` &nbsp; <a href="#chat">Team chat ›</a>` : ""}</div><div id="todo"></div><div id="adopt"></div><div id="blk"></div>
+    <div class="admlinks"><a href="#admin@admdash">Activity dashboard ›</a> &nbsp; <a href="#tags/denton">Tags to print ›</a> &nbsp; <a href="#inventory">Inventory ›</a>${isAdm() ? ` &nbsp; <a href="#lab">Lab ›</a>` : ""}${chatOn() ? ` &nbsp; <a href="#chat">Team chat ›</a>` : ""}</div><div id="todo"></div><div id="adopt"></div><div id="blk"></div>
     <input id="admq" type="search" placeholder="Search brand, model, unit or serial" value="${esc(ADM.q)}">
     <div class="admf">${opts("dba", Object.values(LOC_INFO).map(i => i.dba), "All brands (DBA)")}${opts("state", Object.values(LOC_INFO).map(i => i.state), "All states")}
       ${opts("loc", Object.keys(LOC_INFO).filter(st => (!ADM.dba || LOC_INFO[st].dba === ADM.dba) && (!ADM.state || LOC_INFO[st].state === ADM.state)), "All locations")}
@@ -3026,6 +3116,7 @@ function adminHome(){
       <select data-k="fire" aria-label="Fire Sale"><option value="">Fire Sale and regular</option><option value="fire" ${ADM.fire === "fire" ? "selected" : ""}>Fire Sale only</option><option value="reg" ${ADM.fire === "reg" ? "selected" : ""}>Regular only</option></select>
       ${Object.values(ADM).some(Boolean) ? `<button class="admclear" id="admx">Clear</button>` : ""}</div>
     <div class="admnums big"><span><b>${units.length}</b> units</span><span><b>${units.filter(u => u.fire).length}</b> Fire Sale</span><span><b>${new Set(units.map(u => u.store)).size}</b> locations</span><span><b>${new Set(units.map(u => u.m)).size}</b> manufacturers</span></div>
+    <h2 id="admdash">Activity dashboard <small class="admmut"><a href="/dash/" target="_blank" rel="noopener">open full screen</a></small></h2><iframe class="admdash" src="/dash/?embed=1" title="Activity dashboard" loading="lazy"></iframe>
     <h2>Locations</h2><div class="admgrid">${cards || `<p class="admmut">No locations match.</p>`}</div>
     <h2>Units ${units.length > 150 ? `<small class="admmut">(first 150 of ${units.length}, narrow the filters)</small>` : ""}</h2><ul class="admlist">${list || `<li class="admmut">No units match.</li>`}</ul>
     <p class="admmut" style="margin:18px 0;color:#bbb">Add this page to your home screen for the Spark Admin app. Signed in with all store access. <a href="#" id="admout">Sign out</a></p></div>`;
@@ -3054,6 +3145,7 @@ function route(){
   if (/^today$/i.test(h)) { window.scrollTo(0, 0); return todayPage(); }
   { const ch = /^chat(?:\/(.+))?$/i.exec(h); if (ch) { setManifest(""); window.scrollTo(0, 0); return ch[1] ? chatRoom(ch[1]) : chatHome(); } }
   { const iv = /^inventory(?:\/(.+))?$/i.exec(h); if (iv) { setManifest(""); window.scrollTo(0, 0); return inventory(iv[1] ? STORES.find(x => slug(x) === slug(iv[1])) : ""); } }
+  { const tg = /^tags\/(.+)$/i.exec(h); if (tg) { setManifest(""); window.scrollTo(0, 0); return tagsPage(STORES.find(x => slug(x) === slug(tg[1])) || ""); } }
   if (/^admin$/i.test(h)) { const mf = document.getElementById("mf"); if (mf) mf.setAttribute("href", "/m/admin.webmanifest"); const t = document.getElementById("amt"); if (t) t.setAttribute("content", "Spark Admin"); window.scrollTo(0, 0); const ar = adminHome(); setTimeout(() => { try { adminTodo(); adoptCard(); blockersAdmin(); } catch(e){ console.error(e); } }, 30); return ar; }
   { const sm0 = /^store\/(.+)$/i.exec(h), st0 = sm0 ? STORES.find(x => slug(x) === slug(sm0[1])) : (byId[h] && getCode() && (isAll() || getPin(byId[h].store)) ? byId[h].store : ""); setManifest(st0); }
   const sm = /^store\/(.+)$/i.exec(h);
