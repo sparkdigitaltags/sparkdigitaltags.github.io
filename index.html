@@ -409,7 +409,7 @@ body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#12121
 .sheetbar{position:fixed;left:50%;transform:translateX(-50%);bottom:64px;z-index:60;background:#121212;color:#fff;border-radius:14px;padding:10px 12px;display:flex;gap:8px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.3);font-weight:700;max-width:94vw}
 .sheetbar button{border:0;border-radius:10px;padding:8px 12px;font-weight:800}.sheetbar .go{background:#F5B400;color:#121212}.sheetbar .x{background:#333;color:#fff}
 .tbq li{display:flex;align-items:center;gap:8px}.tbq input{width:22px;height:22px;flex:none}.tbdone{opacity:.55}
-.hpstack{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:6px 0}.hpstack:empty{display:none}#hpstack~.lrow .galadd{display:flex;align-items:center;justify-content:center;text-align:center}.hpth{position:relative;aspect-ratio:1}.hpth img{width:100%;height:100%;object-fit:cover;border-radius:8px}.hpx{position:absolute;top:2px;right:2px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:13px;padding:0}.homebtn{left:auto;right:auto;left:104px;text-decoration:none;display:inline-block}.homebtn[hidden]{display:none}.zbar[hidden]{display:none!important}.homebtn{left:10px!important;bottom:auto!important;top:calc(10px + env(safe-area-inset-top));background:#F5B400!important;color:#121212!important;padding:8px 14px}.a2hs{position:fixed;left:8px;right:8px;top:calc(56px + env(safe-area-inset-top));z-index:949;background:#F5B400;color:#121212;border-radius:14px;padding:10px 40px 10px 12px;box-shadow:0 4px 14px rgba(0,0,0,.3);font:600 14px system-ui;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.a2hs .go{border:0;border-radius:999px;background:#121212;color:#fff;padding:8px 14px;font-weight:800}.a2hs .x{position:absolute;right:8px;top:8px;border:0;background:none;font-size:16px}</style>
+.hpstack{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:6px 0}.hpstack:empty{display:none}#hpstack~.lrow .galadd{display:flex;align-items:center;justify-content:center;text-align:center}.hpth{position:relative;aspect-ratio:1}.hpth img{width:100%;height:100%;object-fit:cover;border-radius:8px}.hpx{position:absolute;top:2px;right:2px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:13px;padding:0}.homebtn{left:auto;right:auto;left:104px;text-decoration:none;display:inline-block}.homebtn[hidden]{display:none}.zbar[hidden]{display:none!important}.homebtn{left:10px!important;bottom:auto!important;top:calc(10px + env(safe-area-inset-top));background:#F5B400!important;color:#121212!important;padding:8px 14px}.a2hs{position:fixed;left:8px;right:8px;top:calc(56px + env(safe-area-inset-top));z-index:949;background:#F5B400;color:#121212;border-radius:14px;padding:10px 40px 10px 12px;box-shadow:0 4px 14px rgba(0,0,0,.3);font:600 14px system-ui;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.a2hs .go{border:0;border-radius:999px;background:#121212;color:#fff;padding:8px 14px;font-weight:800}.a2hs .x{position:absolute;right:8px;top:8px;border:0;background:none;font-size:16px}body:has(#homebtn:not([hidden])){padding-top:44px}</style>
 
 </head>
 <body style="margin:0">
@@ -2682,12 +2682,22 @@ function backBtn(){
    otherwise the store this phone is signed in to. */
 function homeStore(){ const h = decodeURIComponent(location.hash.slice(1)), u = byId[h];
   if (u) return u.store; const m = /^(?:store|tags)\/([^@]+)/i.exec(h); if (m) return STORES.find(x => slug(x) === m[1].toLowerCase()) || null;
-  const a = typeof chatAuth === "function" ? chatAuth() : null; return a && !isAll() ? a.store : null; }
+  const a = typeof chatAuth === "function" ? chatAuth() : null; if (a && !isAll()) return a.store;
+  const r = ls.get("sparkhome"); return r && STORES.includes(r) ? r : null; }   // last store home this phone opened (Nov 17 2026)
+/* Shown to the team, and inside the home screen app (customers never install it). The Find a unit page gets it too
+   (Brandon Nov 17 2026). With no store known yet, Home opens the store list. */
 function homeBtn(){
   let b = document.getElementById("homebtn"); const st = homeStore(), here = st && location.hash.toLowerCase() === "#store/" + slug(st);
   if (!b) { b = document.createElement("a"); b.id = "homebtn"; b.className = "backbtn homebtn"; document.body.appendChild(b); }
-  if (!st || here || !getCode() || (typeof isBT === "function" && isBT())) { b.hidden = true; a2hsBar(); return; }   // team only (Brandon Nov 17 2026)
-  b.hidden = false; b.href = "#store/" + slug(st); b.textContent = "⌂ Home"; b.setAttribute("aria-label", st + " store home page"); a2hsBar();
+  const team = getCode() || isStandalone(), bt = typeof isBT === "function" && isBT();
+  if (here || !team || bt || (!st && /^#stores$/i.test(location.hash))) { b.hidden = true; a2hsBar(); return; }   // team only, never the customer
+  b.hidden = false; b.href = st ? "#store/" + slug(st) : "#stores"; b.textContent = "⌂ Home"; b.setAttribute("aria-label", st ? st + " store home page" : "Pick your store"); a2hsBar();
+}
+/* Store list: where Home goes when the phone has not opened a store yet (a new home screen app on iPhone starts empty). */
+function storesPage(){
+  const groups = SPARK_LOCS.map(([d, stt, list]) => [d, stt, list.filter(x => STORES.includes(x))]).filter(g => g[2].length);
+  app.innerHTML = `<article class="card"><div class="sect"><h2>Pick your store</h2><p class="fine" style="margin-top:0">Tap your store. Next time, Home takes you straight there.</p>
+    ${groups.map(([d, stt, list]) => `<h3 style="margin:14px 0 6px">${esc(d)} ${esc(stt)}</h3>${list.map(x => `<a class="ghost" href="#store/${slug(x)}" style="display:block;text-align:center;margin:6px 0">${esc(x)}</a>`).join("")}`).join("")}</div></article>`;
 }
 /* Add the DT to the home screen (Brandon Nov 17 2026, pilot: Kayde). On the store home page a yellow bar offers it.
    Android/Chrome: one tap install. iPhone: shows the 2 steps (Share, then Add to Home Screen). */
@@ -2699,9 +2709,9 @@ function a2hsBar(){
   const show = m && getCode() && feat("a2hs") && !isStandalone() && !sessionStorage.getItem("a2hs_x");
   if (!show) { if (b) b.remove(); return; }
   if (!b) { b = document.createElement("div"); b.id = "a2hs"; b.className = "a2hs"; document.body.appendChild(b); }
-  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1), crios = /CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);
   b.innerHTML = `<b>Put the DT on your home screen</b>` + (A2HS_EVT ? `<button type="button" class="go">Add it</button>`
-    : ios ? `<span>Tap <b>Share</b> <span aria-hidden="true">⬆︎</span> at the bottom of Safari, then <b>Add to Home Screen</b>.</span>`
+    : ios ? `<span>1. Tap the <b>Share</b> button <span aria-hidden="true">⬆︎</span> (a square with an arrow pointing up). ${crios ? "It is at the top right, next to the web address." : "In Safari it is on the bar at the bottom of the screen."}<br>2. Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.<br>3. Open the new icon and sign in to your store one time.</span>`
     : `<span>Tap the <b>⋮</b> menu, then <b>Add to Home screen</b> or <b>Install app</b>.</span>`) + `<button type="button" class="x" aria-label="Hide">✕</button>`;
   const g = b.querySelector(".go"); if (g) g.onclick = async () => { const e = A2HS_EVT; A2HS_EVT = null; e.prompt(); const r = await e.userChoice.catch(() => ({})); track("a2hs", {o: r.outcome || ""}); a2hsBar(); };
   b.querySelector(".x").onclick = () => { sessionStorage.setItem("a2hs_x", "1"); b.remove(); };
@@ -3124,6 +3134,7 @@ const TX_STORES = ["Burleson", "Colleyville", "Denton", "Farmers Branch", "Gates
 const TX_DBA = {"LSM Outdoor Power":"LSM", "ATS Outdoors":"ATS", "Landscape Supply":"LNDS"};
 const slug = st => String(st).toLowerCase().replace(/[^a-z0-9]+/g, "");
 function storeHome(st){
+  if (getCode() || isStandalone()) ls.set("sparkhome", st);
   document.title = "Spark Digital Tags | " + st;
   const units = DATA.units.filter(u => u.store === st);
   const dba = (units[0] && units[0].dba) || "LSM Outdoor Power";
@@ -3301,6 +3312,7 @@ function route(){
   ["tledit","tlpanel","coach","shmodal"].forEach(id => document.getElementById(id)?.remove());
   if (/^lab$/i.test(h)) { setManifest(""); window.scrollTo(0, 0); return labPage(); }
   if (/^beta$/i.test(h)) { window.scrollTo(0, 0); return betaPage(); }
+  if (/^stores$/i.test(h)) { setManifest(""); window.scrollTo(0, 0); return storesPage(); }
   if (/^today$/i.test(h)) { window.scrollTo(0, 0); return todayPage(); }
   { const ch = /^chat(?:\/(.+))?$/i.exec(h); if (ch) { setManifest(""); window.scrollTo(0, 0); return ch[1] ? chatRoom(ch[1]) : chatHome(); } }
   { const iv = /^inventory(?:\/(.+))?$/i.exec(h); if (iv) { setManifest(""); window.scrollTo(0, 0); return inventory(iv[1] ? STORES.find(x => slug(x) === slug(iv[1])) : ""); } }
