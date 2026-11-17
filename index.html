@@ -612,15 +612,15 @@ const GENERIC = { bg: `<rect width="860" height="1010" fill="${G}"/><rect x="0" 
   labels: [["F1","Floor",34,36],["L1","Lot",50,76],["WH1","Warehouse",79,30],["SHOP","Shop",79,44]] };
 const MAPLIVE = {};   // store -> labels saved by the team
 function layoutOf(store){ const d = LAYOUTS[store] || GENERIC; let L = (MAPLIVE[store] || d.labels).map(a => a.slice());
-  REQ.forEach(([c,n],i) => { if (!L.some(a => a[0] === c)) { const g = GENERIC.labels[i]; L.push([c, n, g[2], g[3]]); } });
+  if (!MAPLIVE[store]) REQ.forEach(([c,n],i) => { if (!L.some(a => a[0] === c)) { const g = GENERIC.labels[i]; L.push([c, n, g[2], g[3]]); } });
   return {bg: d.bg, labels: L, drawn: !!LAYOUTS[store], vb: d.vb || [860, 1010]}; }
 function zname(store, code){ const l = layoutOf(store).labels.find(a => a[0] === code); return l ? l[1] : (ZN[code] || ""); }
 async function mapLoad(store){ if (MAPLIVE[store] || !LOC_API) return; try { const r = await api({action:"map", store}); if (r.ok && Array.isArray(r.labels) && r.labels.length) MAPLIVE[store] = r.labels; } catch(e){} }
 function mapSvg(store, sel, opt){
   const lay = layoutOf(store), edit = opt && opt.edit; if (opt && opt.labels) lay.labels = opt.labels;
   const [VW, VH] = lay.vb, Z = VW / 860;   // each map keeps its satellite view's shape; pins scale with it
-  const pins = lay.labels.map(([k,n,x,y]) => { const X=x*VW/100, Y=y*VH/100, on=k===sel, nm=edit||lay.labels.length<=8, t=nm?n:k, fs=(nm?(on?30:25):(on?24:19))*Z, w=Math.max(44*Z, t.length*fs*0.56+26*Z), h=fs*1.75;
-    return `<g class="zp" data-z="${esc(k)}"><rect x="${X-w/2}" y="${Y-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="${on?"#C8102E":"#6d6662"}" stroke="#fff" stroke-width="${3*Z}" opacity="${sel&&!on?.8:1}"/><text x="${X}" y="${Y+fs*0.36}" text-anchor="middle" ${_F} font-size="${fs}" fill="#fff">${esc(t)}</text></g>`; }).join("");
+  const pins = lay.labels.map(([k,n,x,y,rt]) => { const X=x*VW/100, Y=y*VH/100, on=k===sel, nm=edit||lay.labels.length<=8, t=nm?n:k, fs=(nm?(on?30:25):(on?24:19))*Z, w=Math.max(44*Z, t.length*fs*0.56+26*Z), h=fs*1.75;
+    return `<g class="zp" data-z="${esc(k)}" data-x="${X}" data-y="${Y}"${Number(rt) ? ` transform="rotate(${Number(rt)} ${X} ${Y})"` : ""}><rect x="${X-w/2}" y="${Y-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="${on?"#C8102E":"#6d6662"}" stroke="#fff" stroke-width="${3*Z}" opacity="${sel&&!on?.8:1}"/><text x="${X}" y="${Y+fs*0.36}" text-anchor="middle" ${_F} font-size="${fs}" fill="#fff">${esc(t)}</text></g>`; }).join("");
   return `<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${esc(store)} store map${sel?", "+esc(zname(store,sel))+" highlighted":""}">${lay.bg}${pins}</svg>`;
 }
 const ls = {get:k=>{try{return localStorage.getItem(k)}catch(e){return null}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}, del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
@@ -774,20 +774,33 @@ function locEdit(u, r){
 function mapEdit(u, r){
   const box = document.getElementById("locsec");
   let L = layoutOf(u.store).labels.map(a => a.slice()), sel = "";
-  const isReq = c => REQ.some(q => q[0] === c);
+  const M2 = feat("mapedit2"), isReq = c => !M2 && REQ.some(q => q[0] === c);   // Lab mapedit2 (Nov 17): defaults can be removed, labels drag and turn
   const newCode = n => { const w = n.toUpperCase().replace(/[^A-Z0-9 ]/g, "").trim().split(/\s+/).filter(Boolean);
     let b = (w.length > 1 ? w.map(x => x[0]).join("") : (w[0] || "X")).slice(0, 4), c = b, i = 2;
     while (L.some(a => a[0] === c)) c = b.slice(0, 3) + i++; return c; };
   const draw = (msg) => {
     box.innerHTML = `<h2>Store map labels</h2>
-      <div class="locmeta">Tap a label, then tap the spot where it belongs. Floor, Lot, Warehouse and Shop stay on every store map.</div>
+      <div class="locmeta">${M2 ? "Drag a label to move it, or tap a label and then tap where it belongs. Tap a label to turn it. Remove any label you don't use." : "Tap a label, then tap the spot where it belongs. Floor, Lot, Warehouse and Shop stay on every store map."}</div>
       <div class="locmap mapedit" id="emap">${mapSvg(u.store, sel, {edit:true, labels:L})}</div>
+      ${M2 && sel ? `<div class="lrow"><button class="ghost" id="mtl">Turn left</button><button class="ghost" id="mtr">Turn right</button></div>` : ""}
       <div class="lablist">${L.map(([k,n]) => `<div class="labrow${k===sel?" on":""}"><button class="lab" data-s="${esc(k)}"><b>${esc(k)}</b> ${esc(n)}</button>${isReq(k) ? `<span class="req">Required</span>` : `<button class="ghost del" data-d="${esc(k)}">Remove</button>`}</div>`).join("")}</div>
       <form id="addf" class="addf"><input id="addn" maxlength="24" placeholder="New label, like Down Below" aria-label="New label name"><button class="copy" type="submit">Add</button></form>
       <div class="lrow"><button class="copy" id="msave">Save map</button><button class="ghost" id="mcancel">Cancel</button></div>
       <div class="lmsg" id="lmsg">${msg ? esc(msg) : ""}</div>`;
-    const svg = box.querySelector("#emap svg");
+    const svg = box.querySelector("#emap svg"); let moved = false;
+    const turn = d => { const a = L.find(x => x[0] === sel); if (!a) return; let v = ((Number(a[4]) || 0) + d + 540) % 360 - 180; if (v) a[4] = v; else a.length = 4; draw(a[1] + " turned. Tap Save map when you're done."); };
+    if (M2 && sel) { document.getElementById("mtl").onclick = () => turn(-15); document.getElementById("mtr").onclick = () => turn(15); }
+    if (M2) { svg.style.touchAction = "none"; let dg = null;
+      const at = e => { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
+      svg.onpointerdown = e => { const g = e.target.closest(".zp"); if (!g) return; dg = {g, k:g.dataset.z, p0:at(e), rot:g.getAttribute("transform") || ""}; moved = false; svg.setPointerCapture(e.pointerId); };
+      svg.onpointermove = e => { if (!dg) return; const p = at(e), dx = p.x - dg.p0.x, dy = p.y - dg.p0.y; if (!moved && Math.hypot(dx, dy) < 12 * layoutOf(u.store).vb[0] / 860) return; moved = true; dg.g.setAttribute("transform", `translate(${dx} ${dy}) ${dg.rot}`); };
+      svg.onpointerup = e => { if (!dg) return; const d = dg; dg = null; if (!moved) return; const p = at(e), vb = layoutOf(u.store).vb, a = L.find(x => x[0] === d.k);
+        const nx = Number(d.g.dataset.x) + p.x - d.p0.x, ny = Number(d.g.dataset.y) + p.y - d.p0.y;
+        a[2] = Math.round(Math.min(97, Math.max(3, nx / vb[0] * 100)) * 10) / 10; a[3] = Math.round(Math.min(97, Math.max(3, ny / vb[1] * 100)) * 10) / 10; sel = d.k;
+        draw(a[1] + " moved. Tap Save map when you're done."); };
+      svg.onpointercancel = () => { dg = null; draw(); }; }
     svg.onclick = e => {
+      if (moved) { moved = false; return; }
       const g = e.target.closest(".zp"); if (g) { sel = g.dataset.z; return draw(); }
       if (!sel) return draw("Tap a label first.");
       const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p = pt.matrixTransform(svg.getScreenCTM().inverse());
@@ -795,7 +808,7 @@ function mapEdit(u, r){
       draw(a[1] + " moved. Tap Save map when you're done.");
     };
     box.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { sel = b.dataset.s; draw(); document.getElementById("emap").scrollIntoView({block:"center", behavior:"smooth"}); });
-    box.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { L = L.filter(a => a[0] !== b.dataset.d); if (sel === b.dataset.d) sel = ""; draw(); });
+    box.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { if (L.length <= 1) return draw("A map needs at least one label."); const gone = L.find(a => a[0] === b.dataset.d); L = L.filter(a => a[0] !== b.dataset.d); if (sel === b.dataset.d) sel = ""; draw(M2 && gone ? gone[1] + " removed. Units already set there keep their spot until someone updates them. Tap Save map to keep the change." : ""); });
     document.getElementById("addf").onsubmit = e => { e.preventDefault(); const n = document.getElementById("addn").value.trim().replace(/\s+/g, " ");
       if (!n) return; if (L.length >= 40) return draw("That's the most labels one map can hold.");
       if (L.some(a => a[1].toLowerCase() === n.toLowerCase())) return draw("There's already a label with that name.");
@@ -2281,6 +2294,7 @@ function labPills(){
 /* Brandon Nov 16 2026: signed in team members print their store's QR Pegboard Hangers (PB01 to PB10) from any tag. Lab first. */
 const HANG_PDF = ["burleson","colleyville","denton","farmersbranch","keller","lewisville","renfro","gatesville","springtown","tyler","weatherford","waco","sarasota"];
 const LAB_TESTS = [
+  ["mapedit2", "Store map: remove, drag and turn", "In Edit store map labels, Floor, Lot, Warehouse and Shop can be removed like any other label. Drag a label to move it, and tap a label for Turn left and Turn right.", "#denton-85361-e2c164@locsec"],
   ["photostack", "Showroom photo stack", "Under Showroom photos, Take a photo adds each shot to a tray. Pick from photos adds several at once. Remove any with the X, then Save sends them all together. Up to 10.", "#denton-85361-e2c164@lhang"],
   ["mpkit", "Marketplace kit", "In Post this unit, Marketplace adds category, location, Save the photo, 4 easy steps and I posted it, which logs each listing so we can track Marketplace posts by person and store.", "#keller-73009-36ca88@sharesec"],
   ["sheet4", "Print tags 4 per sheet (team)", "Team members get Add to 4 up sheet on every tag and the Tags to print screen. Tags are built from the DT, 4 to a letter sheet, no Drive. Only you see it until you turn it on.", "#tags/denton"],
