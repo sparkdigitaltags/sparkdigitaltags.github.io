@@ -2554,8 +2554,11 @@ async function tagsPage(st){
     ${done.length ? `<div class="tqh">Printed on this phone (${done.length})</div><ul class="ulist tbq">${done.map(li).join("")}</ul>` : ""}
   </div></article>`;
   const sel = document.getElementById("tbst"); if (sel) sel.onchange = () => { TBSEL.clear(); location.hash = "tags/" + slug(sel.value); };
-  app.querySelectorAll("[data-id]").forEach(c => c.onchange = () => { c.checked ? TBSEL.add(c.dataset.id) : TBSEL.delete(c.dataset.id); tagsPage(st); });
-  document.getElementById("tball").onclick = () => { const on = todo.length && todo.every(r => TBSEL.has(r.id)); todo.forEach(r => on ? TBSEL.delete(r.id) : TBSEL.add(r.id)); tagsPage(st); };
+  const tbBtn = () => { const n = TBSEL.size, sh = Math.ceil(n / 4); const g = document.getElementById("tbgo"); if (g) { g.disabled = !n; g.textContent = `Print ${n || ""} selected (${sh} sheet${sh === 1 ? "" : "s"})`; }
+    const a = document.getElementById("tball"); if (a) a.textContent = todo.length && todo.every(r => TBSEL.has(r.id)) ? "Clear all" : `Select all ${todo.length} to print`; };
+  app.querySelectorAll("[data-id]").forEach(c => c.onchange = () => { c.checked ? TBSEL.add(c.dataset.id) : TBSEL.delete(c.dataset.id); tbBtn(); });
+  document.getElementById("tball").onclick = () => { const on = todo.length && todo.every(r => TBSEL.has(r.id)); todo.forEach(r => on ? TBSEL.delete(r.id) : TBSEL.add(r.id));
+    app.querySelectorAll("[data-id]").forEach(c => c.checked = TBSEL.has(c.dataset.id)); tbBtn(); };
   document.getElementById("tbgo").onclick = async () => { await sheetPrint([...TBSEL], document.getElementById("tbm")); TBSEL.clear(); setTimeout(() => { if (/^#tags\//i.test(location.hash)) tagsPage(st); }, 1500); };
 }
 
@@ -2659,7 +2662,7 @@ async function tagQ(st){
     ${pl.length ? `<div class="tqh">Printed. Put them on the unit (${pl.length})</div><ul class="ulist">${pl.map(row).join("")}</ul>` : ""}
     ${!rows.length ? `<p class="tqok">Nothing to print for this filter. 👍</p>` : ""}${dn.length ? `<p class="ucount">${dn.length} placed this week</p>` : ""}</div>`;
   box.querySelectorAll("[data-tf]").forEach(s => s.onchange = () => { F[s.dataset.tf] = s.value; tagQ(st); });
-  box.querySelectorAll("[data-u]").forEach(c => c.onchange = () => { c.checked ? sel.add(c.dataset.u) : sel.delete(c.dataset.u); tagQ(st); });
+  box.querySelectorAll("[data-u]").forEach(c => c.onchange = async () => { c.checked ? sel.add(c.dataset.u) : sel.delete(c.dataset.u); const y = window.scrollY; await tagQ(st); window.scrollTo(0, y); });
   box.querySelector('[data-tq="all"]').onclick = () => { const on = printable.length && printable.every(r => sel.has(r.t.unit)); printable.forEach(r => on ? sel.delete(r.t.unit) : sel.add(r.t.unit)); tagQ(st); };
   box.querySelector('[data-tq="print"]').onclick = async () => { const us = [...sel].map(u => DATA.units.find(x => x.store === st && String(x.unit) === u)).filter(Boolean); await bulkPrint(us, document.getElementById("tqm")); sel.clear(); setTimeout(() => tagQ(st), 1500); };
 }
