@@ -792,8 +792,17 @@ function mapEdit(u, r){
     if (M2 && sel) { document.getElementById("mtl").onclick = () => turn(-15); document.getElementById("mtr").onclick = () => turn(15); }
     if (M2) { svg.style.touchAction = "none"; let dg = null;
       const at = e => { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
-      svg.onpointerdown = e => { const g = e.target.closest(".zp"); if (!g) return; dg = {g, k:g.dataset.z, p0:at(e), rot:g.getAttribute("transform") || ""}; moved = false; svg.setPointerCapture(e.pointerId); };
-      svg.onpointermove = e => { if (!dg) return; const p = at(e), dx = p.x - dg.p0.x, dy = p.y - dg.p0.y; if (!moved && Math.hypot(dx, dy) < 12 * layoutOf(u.store).vb[0] / 860) return; moved = true; dg.g.setAttribute("transform", `translate(${dx} ${dy}) ${dg.rot}`); };
+      const PT = new Set(); let pan = null;   // one finger on an empty spot pans a zoomed map; two fingers pinch (zoom handles that)
+      svg.onpointerdown = e => { PT.add(e.pointerId); moved = false;
+        if (PT.size > 1) { if (dg) { dg.g.setAttribute("transform", dg.rot); dg = null; } pan = null; moved = true; return; }
+        const g = e.target.closest(".zp"), zb = svg.closest(".zbox");
+        if (!g) { if (zb && zb.classList.contains("zoomed")) pan = {zb, x:e.clientX, y:e.clientY, sl:zb.scrollLeft, st:zb.scrollTop}; return; }
+        dg = {g, k:g.dataset.z, p0:at(e), rot:g.getAttribute("transform") || ""}; svg.setPointerCapture(e.pointerId); };
+      const lift = e => { PT.delete(e.pointerId); };
+      svg.addEventListener("pointerup", lift); svg.addEventListener("pointercancel", lift);
+      svg.addEventListener("pointermove", e => { if (!pan || PT.size > 1) return; const dx = e.clientX - pan.x, dy = e.clientY - pan.y; if (Math.hypot(dx, dy) > 8) moved = true; pan.zb.scrollLeft = pan.sl - dx; pan.zb.scrollTop = pan.st - dy; });
+      svg.addEventListener("pointerup", () => { pan = null; });
+      svg.onpointermove = e => { if (!dg || PT.size > 1) return; const p = at(e), dx = p.x - dg.p0.x, dy = p.y - dg.p0.y; if (!moved && Math.hypot(dx, dy) < 12 * layoutOf(u.store).vb[0] / 860) return; moved = true; dg.g.setAttribute("transform", `translate(${dx} ${dy}) ${dg.rot}`); };
       svg.onpointerup = e => { if (!dg) return; const d = dg; dg = null; if (!moved) return; const p = at(e), vb = layoutOf(u.store).vb, a = L.find(x => x[0] === d.k);
         const nx = Number(d.g.dataset.x) + p.x - d.p0.x, ny = Number(d.g.dataset.y) + p.y - d.p0.y;
         a[2] = Math.round(Math.min(97, Math.max(3, nx / vb[0] * 100)) * 10) / 10; a[3] = Math.round(Math.min(97, Math.max(3, ny / vb[1] * 100)) * 10) / 10; sel = d.k;
@@ -2399,16 +2408,22 @@ function btBar(){ let b = document.getElementById("btbar"); const t = btGet(); i
 
 /* Pinch to zoom on the location maps, like photos on an iPhone (Lab test until it's right). */
 function pinchify(box, svg, onZ){
-  let z = 1, d0 = 0, z0 = 1, m0 = null, last = 0;
+  let z = 1, d0 = 0, z0 = 1, m0 = null, last = 0, bw = 0, p1 = null;   // bw = map width at 1x (tall maps are height limited)
+  const sizeZ = () => { if (z <= 1.02) { svg.style.width = ""; svg.style.maxWidth = ""; svg.style.maxHeight = ""; svg.style.margin = ""; return; }
+    svg.style.width = (bw * z) + "px"; svg.style.maxWidth = "none"; svg.style.maxHeight = "none"; svg.style.margin = (bw * z < box.clientWidth ? "0 auto" : "0"); };
   const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY), mid = t => [(t[0].clientX + t[1].clientX) / 2, (t[0].clientY + t[1].clientY) / 2];
   const setZ = (nz, cx, cy) => { nz = Math.max(1, Math.min(5, nz)); const r = box.getBoundingClientRect(), px = cx - r.left, py = cy - r.top;
-    const ux = (box.scrollLeft + px) / z, uy = (box.scrollTop + py) / z; z = nz; svg.style.width = (z * 100) + "%"; svg.style.maxWidth = "none";
+    const ux = (box.scrollLeft + px) / z, uy = (box.scrollTop + py) / z; if (z <= 1.02) bw = svg.getBoundingClientRect().width; z = nz; sizeZ();
     box.scrollLeft = ux * z - px; box.scrollTop = uy * z - py; box.classList.toggle("zoomed", z > 1.02); onZ && onZ(z); };
   box.addEventListener("touchstart", e => { if (e.touches.length === 2) { d0 = dist(e.touches); z0 = z; m0 = mid(e.touches); e.preventDefault(); } else if (e.touches.length === 1) { const n = Date.now(); if (n - last < 300) { const t = e.touches[0]; setZ(z > 1.5 ? 1 : 2.5, t.clientX, t.clientY); e.preventDefault(); } last = n; } }, {passive:false});
   box.addEventListener("touchmove", e => { if (e.touches.length === 2 && d0) { e.preventDefault(); const m = mid(e.touches); setZ(z0 * dist(e.touches) / d0, m[0], m[1]); if (m0) { box.scrollLeft -= m[0] - m0[0]; box.scrollTop -= m[1] - m0[1]; } m0 = m; } }, {passive:false});
-  box.addEventListener("touchend", e => { if (e.touches.length < 2) { d0 = 0; m0 = null; } });
+  box.addEventListener("touchend", e => { if (e.touches.length < 2) { d0 = 0; m0 = null; } p1 = null; });
+  // one finger moves a zoomed map (the store map editor pans on its own so it can tell a drag from a tap)
+  box.addEventListener("touchstart", e => { p1 = e.touches.length === 1 && z > 1.02 && !box.closest(".mapedit") ? {x:e.touches[0].clientX, y:e.touches[0].clientY, sl:box.scrollLeft, st:box.scrollTop} : null; });
+  box.addEventListener("touchmove", e => { if (!p1 || e.touches.length !== 1) return; e.preventDefault(); box.scrollLeft = p1.sl - (e.touches[0].clientX - p1.x); box.scrollTop = p1.st - (e.touches[0].clientY - p1.y); }, {passive:false});
   box.addEventListener("wheel", e => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); setZ(z * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX, e.clientY); } }, {passive:false});
-  return { reset: () => { const r = box.getBoundingClientRect(); setZ(1, r.left, r.top); } };
+  return { reset: () => { const r = box.getBoundingClientRect(); setZ(1, r.left, r.top); },
+    to: (nz, sl, st) => { if (z <= 1.02) bw = svg.getBoundingClientRect().width; z = nz; sizeZ(); box.classList.toggle("zoomed", z > 1.02); onZ && onZ(z); box.scrollLeft = sl; box.scrollTop = st; } };
 }
 
 /* Bulk print: merge the chosen tags into one PDF to print from a phone or computer. */
@@ -2628,10 +2643,16 @@ function jumpGo(){ const a = sessionStorage.getItem("jump"); if (!a) return; let
       el.scrollIntoView({behavior:"smooth", block:"center"}); setTimeout(() => el.scrollIntoView({behavior:"smooth", block:"center"}), 1200); el.classList.add("jumpflash"); setTimeout(() => el.classList.remove("jumpflash"), 2600); } else if (++n > 110) { clearInterval(t); sessionStorage.removeItem("jump"); } }, 150); }
 window.addEventListener("hashchange", () => { if (jumpFix()) route(); setTimeout(jumpGo, 60); });
 /* Zoom on every location diagram map: + and − buttons, drag to move. */
-function zoomify(){ if (!feat("mapzoom")) return; document.querySelectorAll(".locmap:not([data-z])").forEach(m => { const svg = m.querySelector("svg"); if (!svg) return; m.dataset.z = "1";
+const ZOOM_STORES = ["Denton"];   // Brandon Nov 17 2026: Denton gets map zoom for placing labels and units, before the rest
+const zoomOn = () => { if (feat("mapzoom")) return true; const u = byId[decodeURIComponent(location.hash.slice(1))]; return !!(u && ZOOM_STORES.includes(u.store)); };
+function zoomify(){ if (!zoomOn()) return; document.querySelectorAll(".locmap:not([data-z])").forEach(m => { const svg = m.querySelector("svg"); if (!svg) return; m.dataset.z = "1";
   const box = document.createElement("div"); box.className = "zbox"; svg.before(box); box.appendChild(svg);
   const bar = document.createElement("div"); bar.className = "zbar"; bar.hidden = true; bar.innerHTML = `<button type="button" aria-label="Reset zoom">1x</button>`; m.appendChild(bar);
-  const pz = pinchify(box, svg, z => { bar.hidden = z <= 1.02; }); bar.onclick = e => { e.stopPropagation(); e.preventDefault(); pz.reset(); }; }); }
+  const key = (m.id || "map") + "|" + location.hash, keep = ZKEEP[key];   // keep the zoom when the map redraws (each tap in the editors redraws it)
+  const pz = pinchify(box, svg, z => { bar.hidden = z <= 1.02; ZKEEP[key] = Object.assign(ZKEEP[key] || {}, {z}); }); bar.onclick = e => { e.stopPropagation(); e.preventDefault(); pz.reset(); };
+  box.addEventListener("scroll", () => { if (ZKEEP[key]) Object.assign(ZKEEP[key], {sl:box.scrollLeft, st:box.scrollTop}); });
+  if (keep && keep.z > 1.02) requestAnimationFrame(() => pz.to(keep.z, keep.sl || 0, keep.st || 0)); }); }
+const ZKEEP = {};
 new MutationObserver(() => { zoomify(); const b = document.getElementById("lprint"); if (b && !b.dataset.pg) { b.dataset.pg = "1"; const u = byId[decodeURIComponent(location.hash.slice(1))]; if (u) setTimeout(() => { printGlow(u); oldBanner(u); }, 50); } }).observe(document.body, {childList:true, subtree:true});
 /* Team only: big obvious banner when this unit is the oldest of its model in Texas (a Bounty). */
 function oldBanner(u){ document.getElementById("oldban")?.remove(); if (!getCode() || !feat("mm2") || !isOldestTX(u)) return;
