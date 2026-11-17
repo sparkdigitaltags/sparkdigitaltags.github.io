@@ -1983,13 +1983,17 @@ async function sherpaTag(){
    Tests that are not live yet. Brandon turns each one on or off from #lab. While a test is offline it shows only on Brandon's
    phones (admin codes), and tag features show only on their example tag. */
 let FLAGS = (() => { try { return JSON.parse(ls.get("sparkflags") || "{}") || {}; } catch(e){ return {}; } })();
+/* Pilot (Brandon Nov 17 2026): Kayde at Denton gets the team Lab tools live before the rest of the team. */
+const PILOT = [{store:"Denton", first:"kayde", feats:["sheet4","hangprint","tagreq","tagtrack","today","topsearch","blockers","mpkit"]}];
+function pilotOn(k){ if (!getCode() || typeof isBT === "function" && isBT()) return false; const f = String(ls.get("sparkfirst") || "").trim().toLowerCase();
+  return PILOT.some(p => p.first === f && p.feats.includes(k) && !!getPin(p.store)); }
 const LAB_EX = {flames:["farmersbranch-109225-fce43e"], mow:["farmersbranch-109225-fce43e"], stone3:["farmersbranch-109122-4ef97e","farmersbranch-109225-fce43e"]};
 const ADMIN_ONLY = ["flames", "mow", "scene"];   // Brandon Nov 14 2026: nobody else sees the flames, the mower stones or the mower scenes, even if a flag is set
 /* Saved for later (Brandon Nov 14 2026): the OPE scenes, the mower Stepping Stones and the avatar are kept but switched off,
    even for Brandon. The scenes are scrapped (Brandon Nov 14 2026); the training uses a simple checklist. Lab preview on this phone only. */
 const PARKED = ["scene", "mow", "avatar"];
 const parkPreview = () => isAdm() && ls.get("sparkparkprev") === "1";
-function feat(k, u){ if (PARKED.includes(k) && !parkPreview()) return false; if (FLAGS[k] !== true && typeof isBT === "function" && isBT()) return BT_FEATS.includes(k); if (ADMIN_ONLY.includes(k) && !isAdm()) return false; if (FLAGS[k] === true) return true; if (!isAdm()) return false; const ex = LAB_EX[k]; return ex ? !!(u && ex.includes(u.id)) : true; }
+function feat(k, u){ if (PARKED.includes(k) && !parkPreview()) return false; if (FLAGS[k] !== true && typeof isBT === "function" && isBT()) return BT_FEATS.includes(k); if (ADMIN_ONLY.includes(k) && !isAdm()) return false; if (FLAGS[k] === true) return true; if (pilotOn(k)) return true; if (!isAdm()) return false; const ex = LAB_EX[k]; return ex ? !!(u && ex.includes(u.id)) : true; }
 const tourMode = () => isAdm() && ls.get("sparktourmode") === "1";
 function setFlags(f){ if (!f) return; const a = JSON.stringify(FLAGS); FLAGS = f; ls.set("sparkflags", JSON.stringify(f)); try { topFind(); } catch(e){} if (a !== JSON.stringify(f)) { const u = byId[decodeURIComponent(location.hash.slice(1))]; if (u) labTag(u); } }
 
