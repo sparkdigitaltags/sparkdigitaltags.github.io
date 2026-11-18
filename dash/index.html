@@ -28,6 +28,12 @@ button.ck{cursor:pointer}.pbar{height:8px;background:#eee;border-radius:4px;over
 .feed td:first-child{white-space:nowrap;color:var(--mut);font-size:13px}
 .mut{color:var(--mut)}.err{color:var(--down)}
 .tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6px;color:#fff}
+tr.tap,.kpi.tap{cursor:pointer}tr.tap:hover td,tr.tap:focus td{background:#faf6f6}.kpi.tap:hover{box-shadow:0 0 0 2px var(--red) inset}tr.tap td:first-child::after{content:" ›";color:#bbb}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;justify-content:center;align-items:flex-start;padding:4vh 10px;z-index:9;overflow-y:auto}
+.pane{background:#fff;border-radius:14px;max-width:720px;width:100%;padding:16px 18px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.pane h2{margin:0 0 2px;font-size:18px}.pane .x{float:right;background:#eee;color:var(--ink);padding:6px 12px}
+.sum{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.sum span{background:var(--bg);border-radius:8px;padding:4px 10px;font-size:13px}
+.ev{border-bottom:1px solid var(--line);padding:9px 0}.ev:last-child{border:0}.ev .t{color:var(--mut);font-size:13px}.ev dl{display:grid;grid-template-columns:max-content 1fr;gap:2px 10px;margin:6px 0 0;font-size:14px}.ev dt{color:var(--mut)}.ev dd{margin:0}
 </style></head>
 <body>
 <header><h1>Spark Digital Tag Activity</h1><p>Every customer and team interaction on the digital tags, by day, week and month</p></header>
@@ -47,7 +53,7 @@ const TYPES = {
   photo: {n:"Unit photos", g:"t"}, room: {n:"Showroom photos", g:"t"}, diagram: {n:"Showroom drawing requests", g:"t"}, print: {n:"Tags printed", g:"t"}, newdevice: {n:"New device sign ins", g:"t"}, find: {n:"Units found by serial", g:"t"}, quiz: {n:"Customer quizzes", g:"c"} };
 const KPI = ["scan", "lead", "go", "post", "move", "signin"];
 function normalize(D){
-  const out = [], P = (t, type, st, who, what) => { const d = new Date(t); if (!isNaN(d)) out.push({d, type, st: st || "", who: who || "", what: what || ""}); };
+  const out = [], P = (t, type, st, who, what, x) => { const d = new Date(t); if (!isNaN(d)) out.push(Object.assign({d, t: String(t), type, st: st || "", who: who || "", what: what || ""}, x || {})); };
   (D.events || []).forEach(r => { const [t, ty, st, unit, tag, det, who] = r;
     if (ty === "scan") P(t, who ? "staffscan" : "scan", st, who, unit ? "Unit " + unit : "");
     else if (ty === "go") P(t, "go", st, "", det + (tag ? " from " + tag : ""));
@@ -61,12 +67,24 @@ function normalize(D){
     else if (ty === "quiz") P(t, "quiz", st, who, det || (unit ? "Unit " + unit : "")); });
   (D.moves || []).forEach(r => P(r[0], r[2] ? "move" : "map", r[1], r[3], r[2] ? "Unit " + r[2] : "Map or hangers"));
   (D.posts || []).forEach(r => P(r[0], "post", r[1], r[4], "Unit " + r[2] + " to " + r[3]));
-  (D.leads || []).forEach(r => P(r[0], "lead", r[1], "Customer", "Unit " + r[2] + (r[3] ? ", prefers " + r[3] : "")));
+  (D.leads || []).forEach(r => P(r[0], "lead", r[1], "Customer", "Unit " + r[2] + (r[3] ? ", prefers " + r[3] : ""), {unit: r[2], pref: r[3] || "", sentTo: r[4] || ""}));
   (D.prices || []).forEach(r => P(r[0], "price", r[1], r[3], "Unit " + r[2] + ", " + r[4]));
   (D.photos || []).forEach(r => P(r[0], "photo", r[1], r[3], "Unit " + r[2]));
   (D.rooms || []).forEach(r => P(r[0], "room", r[1], r[2], ""));
   (D.diagrams || []).forEach(r => P(r[0], "diagram", r[1], r[2], r[3] + (r[4] ? " by " + r[4] : "")));
   return out.sort((a, b) => b.d - a.d);
+}
+/* Who each hold or contact request was emailed to (Brandon Nov 18 2026). The server does not send recipients with the
+   dashboard data yet, so past leads are matched here from the sent lead emails by store and time (within 2 minutes).
+   Every lead is also sent to Brandon under the Spark Tag Alerts label. If the server ever adds a 5th lead column, it wins. */
+const LEAD_SENT = [
+  ["2026-11-12T14:23:00Z", "Colleyville", "brad@lsmop.com"],
+  ["2026-11-12T15:45:50Z", "Colleyville", "brad@lsmop.com"],
+  ["2026-11-16T20:23:58Z", "Denton", "brad@lsmop.com, josh@sparkpowerequipment.com"]];
+function leadSentTo(r){
+  if (r.sentTo) return r.sentTo;
+  const m = LEAD_SENT.find(([t, st]) => st === r.st && Math.abs(new Date(t) - r.d) < 120000);
+  return m ? m[2] : "";
 }
 /* Period windows: day starts at midnight, week starts Monday, month on the 1st. */
 function start(p, d, back){ const x = new Date(d); x.setHours(0,0,0,0);
@@ -121,8 +139,8 @@ async function load(c){
 }
 function chg(a, b){ if (!b) return a ? `<i class="up">new</i>` : `<i class="flat">same</i>`; const p = Math.round((a - b) / b * 100); return `<i class="${p > 0 ? "up" : p < 0 ? "down" : "flat"}">${p > 0 ? "up " : p < 0 ? "down " : ""}${Math.abs(p)}%</i>`; }
 function count(rows, f){ const m = {}; rows.forEach(r => { const k = f(r); if (k) m[k] = (m[k] || 0) + 1; }); return Object.entries(m).sort((a, b) => b[1] - a[1]); }
-function table(title, rows, head, note){ const max = rows.length ? rows[0][1] : 1;
-  return `<div class="card"><h2>${title}</h2>${rows.length ? `<table><tr><th>${head}</th><th class="n">Count</th></tr>${rows.slice(0, 15).map(([k, v]) => `<tr><td>${esc(k)}<div class="barc" style="width:${Math.max(4, v / max * 100)}%"></div></td><td class="n">${v}</td></tr>`).join("")}</table>` : `<p class="mut">${note || "Nothing in this period yet."}</p>`}</div>`; }
+function table(title, rows, head, note, f){ const max = rows.length ? rows[0][1] : 1;
+  return `<div class="card"><h2>${title}</h2>${rows.length ? `<table><tr><th>${head}</th><th class="n">Count</th></tr>${rows.slice(0, 15).map(([k, v]) => `<tr${f ? ` class="tap" tabindex="0" role="button" data-f="${f}" data-v="${esc(k)}" aria-label="Show ${esc(k)} details"` : ""}><td>${esc(k)}<div class="barc" style="width:${Math.max(4, v / max * 100)}%"></div></td><td class="n">${v}</td></tr>`).join("")}</table>` : `<p class="mut">${note || "Nothing in this period yet."}</p>`}</div>`; }
 function chart(rows){
   const N = per === "day" ? 14 : 12, now = new Date(), B = [];
   for (let i = N - 1; i >= 0; i--) { const a = start(per, now, i), b = i ? start(per, now, i - 1) : new Date(8.64e15); B.push({a, b, c:0, t:0}); }
@@ -148,14 +166,14 @@ function draw(){
       <select id="st" aria-label="Store">${stores.map(s => `<option ${s === store ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
       <button class="ghost" id="rf">Refresh</button><span class="mut">${word[0]}: ${cur.length} interactions, ${chg(cur.length, prev.length)} vs ${word[1]}</span></div>
     ${store === "All stores" || store === "All LSM" || LSM.includes(store) ? rollCard() : ""}
-    <div class="kpis">${KPI.concat(Object.keys(TYPES).filter(t => !KPI.includes(t) && (c(t) || p(t)))).map(t => `<div class="kpi"><b>${c(t)}</b><span>${TYPES[t].n}</span><br>${chg(c(t), p(t))} <span>vs ${word[1]} (${p(t)})</span></div>`).join("")}</div>
+    <div class="kpis">${KPI.concat(Object.keys(TYPES).filter(t => !KPI.includes(t) && (c(t) || p(t)))).map(t => `<div class="kpi tap" tabindex="0" role="button" data-f="type" data-v="${t}"><b>${c(t)}</b><span>${TYPES[t].n}</span><br>${chg(c(t), p(t))} <span>vs ${word[1]} (${p(t)})</span></div>`).join("")}</div>
     ${chart(S)}
     <div class="grid">
       <div class="card"><h2>${word[0]} by type</h2><table><tr><th>Interaction</th><th class="n">${word[0]}</th><th class="n">${word[1][0].toUpperCase() + word[1].slice(1)}</th><th class="n">Change</th></tr>
-        ${Object.keys(TYPES).filter(t => c(t) || p(t)).map(t => `<tr><td><span class="tag" style="background:${TYPES[t].g === "c" ? "var(--red)" : "var(--navy)"}">${TYPES[t].g === "c" ? "Customer" : "Team"}</span> ${TYPES[t].n}</td><td class="n">${c(t)}</td><td class="n">${p(t)}</td><td class="n">${chg(c(t), p(t))}</td></tr>`).join("") || `<tr><td colspan="4" class="mut">Nothing yet.</td></tr>`}</table></div>
-      ${table("By store", count(cur, r => r.st), "Store")}
-      ${table("Team members", count(cur.filter(r => TYPES[r.type].g === "t" && r.who), r => r.who), "Person")}
-      ${table("Customer scans by store", count(cur.filter(r => r.type === "scan"), r => r.st), "Store")}
+        ${Object.keys(TYPES).filter(t => c(t) || p(t)).map(t => `<tr class="tap" tabindex="0" role="button" data-f="type" data-v="${t}" aria-label="Show ${esc(TYPES[t].n)} details"><td><span class="tag" style="background:${TYPES[t].g === "c" ? "var(--red)" : "var(--navy)"}">${TYPES[t].g === "c" ? "Customer" : "Team"}</span> ${TYPES[t].n}</td><td class="n">${c(t)}</td><td class="n">${p(t)}</td><td class="n">${chg(c(t), p(t))}</td></tr>`).join("") || `<tr><td colspan="4" class="mut">Nothing yet.</td></tr>`}</table></div>
+      ${table("By store", count(cur, r => r.st), "Store", "", "st")}
+      ${table("Team members", count(cur.filter(r => TYPES[r.type].g === "t" && r.who), r => r.who), "Person", "", "who")}
+      ${table("Customer scans by store", count(cur.filter(r => r.type === "scan"), r => r.st), "Store", "", "scanst")}
     </div>
     <div class="card feed" style="margin-top:12px"><h2>Latest activity (${word[0].toLowerCase()})</h2>${cur.length ? `<table>${cur.slice(0, 60).map(r => `<tr><td>${r.d.toLocaleString("en-US", {month:"numeric", day:"numeric", hour:"numeric", minute:"2-digit"})}</td><td><span class="tag" style="background:${TYPES[r.type].g === "c" ? "var(--red)" : "var(--navy)"}">${TYPES[r.type].n}</span> ${esc(r.st)}${r.who && r.who !== "Customer" ? ", " + esc(r.who) : ""}${r.what ? `<div class="mut">${esc(r.what)}</div>` : ""}</td></tr>`).join("")}</table>` : `<p class="mut">Nothing yet in this period.</p>`}</div>
     <p class="mut" style="margin-top:12px">Every interaction is also emailed to Brandon within a minute under the Spark Tag Alerts label. Customer names and phone numbers stay in the Leads tab of the Spark Tag Location PINs sheet.</p>`;
@@ -163,6 +181,37 @@ function draw(){
   document.getElementById("st").onchange = e => { store = e.target.value; draw(); };
   app.querySelectorAll("[data-rk]").forEach(b => b.onclick = () => { b.disabled = true; b.textContent = "..."; rollSet(b.dataset.rs, b.dataset.rk, b.dataset.rd); });
   document.getElementById("rf").onclick = () => load(ls.get("sparkcode"));
+  app.querySelectorAll("[data-f]").forEach(el => { const go = () => detail(el.dataset.f, el.dataset.v, cur, prev, word);
+    el.onclick = go; el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }; });
+}
+/* Drill down (Brandon Nov 18 2026): tap a store, a person, an interaction type or a number tile to see every
+   interaction behind it for the period and store picked above: when, what, which store, who, and for a hold or
+   contact request who it was emailed to. Customer names and phone numbers stay in the Leads tab, never here. */
+function detail(f, v, cur, prev, word){
+  const pick = f === "st" ? r => r.st === v : f === "who" ? r => r.who === v && TYPES[r.type].g === "t" : f === "scanst" ? r => r.type === "scan" && r.st === v : r => r.type === v;
+  const rows = cur.filter(pick), before = prev.filter(pick).length;
+  const title = f === "type" ? TYPES[v].n : f === "scanst" ? "Customer tag scans at " + v : v;
+  const sub = f === "st" || f === "scanst" ? "Store" : f === "who" ? "Team member" : TYPES[v].g === "c" ? "Customer interaction" : "Team interaction";
+  const tally = (k, lab) => count(rows, k).map(([a, n]) => `<span>${esc(a)}: <b>${n}</b></span>`).join("");
+  const by = f === "type" ? tally(r => r.st) : tally(r => TYPES[r.type].n);
+  const when = d => d.toLocaleString("en-US", {weekday:"short", month:"numeric", day:"numeric", hour:"numeric", minute:"2-digit"});
+  const item = r => { const lead = r.type === "lead", to = lead ? leadSentTo(r) : "";
+    return `<div class="ev"><span class="tag" style="background:${TYPES[r.type].g === "c" ? "var(--red)" : "var(--navy)"}">${TYPES[r.type].n}</span> <span class="t">${when(r.d)}</span>
+      <dl><dt>Store</dt><dd>${esc(r.st || "Not recorded")}</dd>
+      ${r.who && r.who !== "Customer" ? `<dt>Who</dt><dd>${esc(r.who)}</dd>` : TYPES[r.type].g === "c" ? `<dt>Who</dt><dd>Customer</dd>` : ""}
+      ${lead ? `<dt>Unit</dt><dd>${esc(r.unit)}</dd><dt>Prefers</dt><dd>${esc(r.pref || "Not given")}</dd>
+        <dt>Notified</dt><dd>${to ? esc(to) + "<br>" : `<span class="mut">Store lead email (recipients not logged for this one)</span><br>`}Brandon, Spark Tag Alerts</dd>`
+        : r.what ? `<dt>Detail</dt><dd>${esc(r.what)}</dd>` : ""}</dl></div>`; };
+  const ov = document.createElement("div"); ov.className = "ov";
+  ov.innerHTML = `<div class="pane" role="dialog" aria-modal="true" aria-label="${esc(title)}"><button class="x" id="dx">Close</button>
+    <h2>${esc(title)}</h2><div class="mut">${sub}, ${word[0].toLowerCase()}${store !== "All stores" ? ", " + esc(store) : ""}</div>
+    <div class="sum"><span><b>${rows.length}</b> ${word[0].toLowerCase()}</span><span><b>${before}</b> ${word[1]}</span>${by}</div>
+    ${rows.length ? rows.slice(0, 200).map(item).join("") + (rows.length > 200 ? `<p class="mut">Showing the latest 200 of ${rows.length}.</p>` : "") : `<p class="mut">Nothing in this period.</p>`}
+    ${rows.some(r => r.type === "lead") ? `<p class="mut" style="font-size:13px">Customer names and phone numbers stay in the Leads tab of the Spark Tag Location PINs sheet.</p>` : ""}</div>`;
+  const close = () => { ov.remove(); document.removeEventListener("keydown", esc_); };
+  const esc_ = e => { if (e.key === "Escape") close(); };
+  ov.onclick = e => { if (e.target === ov) close(); };
+  document.body.appendChild(ov); document.getElementById("dx").onclick = close; document.addEventListener("keydown", esc_); document.getElementById("dx").focus();
 }
 ls.get("sparkcode") ? load(ls.get("sparkcode")) : signin();
 </script>
