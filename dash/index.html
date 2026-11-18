@@ -94,8 +94,8 @@ const PEOPLE = {"brad@lsmop.com": "Brad Monthley, GM", "josh@sparkpowerequipment
 const LEADS_URL = "https://docs.google.com/spreadsheets/d/1EmQCa_OYdPNMSKrOI4qF67QK8rnX4aukLiRr51U-K8A/edit#gid=1527665735";
 /* Store diagrams (Brandon Nov 18 2026): when the dashboard runs inside Spark Admin, it borrows Spark Admin's store maps,
    one store at a time. Opened full screen, it links to Spark Admin instead. */
-const HOST = (() => { try { return window.parent !== window && window.parent.mapSvg ? window.parent : null; } catch(e){ return null; } })();
-async function mapHtml(st){ if (!HOST) return `<p class="mut" style="font-size:13px">Open this dashboard inside <a href="/#admin" target="_top">Spark Admin</a> to see the ${esc(st)} diagram.</p>`;
+function host(){ try { const P = window.parent; return P && P !== window && typeof P.mapSvg === 'function' ? P : null; } catch(e){ return null; } }
+async function mapHtml(st){ const HOST = host(); if (!HOST) return `<p class="mut" style="font-size:13px">Open this dashboard inside <a href="/#admin" target="_top">Spark Admin</a> to see the ${esc(st)} diagram.</p>`;
   try { await HOST.mapLoad(st); return `<div class="dmap">${HOST.mapSvg(st)}</div>`; } catch(e){ return `<p class="mut">The ${esc(st)} diagram could not load.</p>`; } }
 /* Period windows: day starts at midnight, week starts Monday, month on the 1st. */
 function start(p, d, back){ const x = new Date(d); x.setHours(0,0,0,0);
