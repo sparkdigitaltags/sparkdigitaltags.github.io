@@ -389,7 +389,8 @@ body.ats.lo4 .lend.koalafi .go,body.ats.lo4 .lend.lto .go{background:#FFF203;col
 .lopick button.on{background:#068B25;color:#FFF203;border-color:#068B25}
 /* Fire Sale stamp on the DT, like the printed tag */
 #app>article.card{position:relative}
-.firestamp{position:absolute;right:10px;top:58px;transform:rotate(-14deg);border:4px double #D7263D;color:#D7263D;font:900 28px/1 "Arial Black",Archivo,sans-serif;letter-spacing:.04em;padding:6px 12px;border-radius:8px;opacity:.82;pointer-events:none;z-index:3;background:rgba(255,255,255,.35);text-transform:uppercase}
+#app [data-sec="price"]{position:relative}
+.firestamp{position:absolute;right:12px;top:10px;transform:rotate(-10deg);border:4px double #D7263D;color:#D7263D;font:900 20px/1 "Arial Black",Archivo,sans-serif;letter-spacing:.04em;padding:5px 10px;border-radius:8px;pointer-events:none;z-index:3;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.35);text-transform:uppercase}
 /* ATS look (Brandon Nov 18 2026): DT colors match the ATS logo and the printed ATS tag. Green #068B25, yellow #FFF203, black. */
 body.lsm.ats{--fire:#068B25}
 body.lsm.ats .brandbar{background:#000;border-bottom:4px solid #068B25}
@@ -2458,7 +2459,8 @@ function atsExtras(u, ats){
   document.querySelectorAll(".lopick,.firestamp").forEach(e => e.remove());
   if (!ats) return;
   const card = document.querySelector("#app > article.card");
-  if (card && u.fire) { const st = document.createElement("div"); st.className = "firestamp"; st.textContent = "Fire Sale"; card.appendChild(st); }
+  const pr = document.querySelector('#app [data-sec="price"]') || card;
+  if (pr && u.fire) { const st = document.createElement("div"); st.className = "firestamp"; st.textContent = "Fire Sale"; pr.appendChild(st); }
   const ap = document.querySelector('#app [data-sec="apply"] h2');
   if (ap) { const p = document.createElement("div"); p.className = "lopick";
     p.innerHTML = "Lender look: " + LOPTS.map(o => `<button type="button" data-o="${o[0]}" class="${o[0] === cur ? "on" : ""}">${o[0]}. ${esc(o[1])}</button>`).join("");
