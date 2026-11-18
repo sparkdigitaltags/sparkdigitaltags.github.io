@@ -356,6 +356,40 @@ body.lsm .tshint{color:#555}
 .save.savebig{display:block;width:100%}.save.savebig b{display:block;line-height:1.02;margin-top:2px}
 body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#121212}
 .viewas{display:table;margin:8px 0 0 auto;z-index:9995;background:#1F2A5A;color:#fff;border-radius:22px;padding:6px 12px;font:700 13px system-ui;box-shadow:0 4px 14px rgba(0,0,0,.3)}.viewas.on{background:#C8102E}.viewas select{margin-left:6px;font:700 13px system-ui;border-radius:12px;padding:3px 6px}
+/* ATS lender card options (Brandon Nov 18 2026): Sheffield green, Terrace yellow, Koalafi black. Four looks to pick from. */
+body.ats .lend.sheffield,body.ats .lend.terrace,body.ats .lend.koalafi,body.ats .lend.lto,body.ats .lend.dcf{transition:none}
+body.ats.lo1 .lend.sheffield{background:#068B25;border-color:#068B25}
+body.ats.lo1 .lend.terrace{background:#FFF203;border-color:#FFF203;color:#000}
+body.ats.lo1 .lend.terrace .sub{color:#222}body.ats.lo1 .lend.terrace .tier{color:#068B25}
+body.ats.lo1 .lend.terrace .go{background:#000;color:#FFF203}
+body.ats.lo1 .lend.koalafi,body.ats.lo1 .lend.lto{background:#000;border-color:#000}
+body.ats.lo2 .lend{background:#fff!important;color:#000;border:3px solid #000;border-left-width:14px}
+body.ats.lo2 .lend .sub{color:#333}
+body.ats.lo2 .lend.sheffield{border-color:#068B25}body.ats.lo2 .lend.sheffield .tier{color:#068B25}body.ats.lo2 .lend.sheffield .go{background:#068B25;color:#fff}
+body.ats.lo2 .lend.terrace{border-color:#E8DA00}body.ats.lo2 .lend.terrace .tier{color:#8A7F00}body.ats.lo2 .lend.terrace .go{background:#FFF203;color:#000;box-shadow:0 0 0 2px #000 inset}
+body.ats.lo2 .lend.koalafi,body.ats.lo2 .lend.lto{border-color:#000}body.ats.lo2 .lend.koalafi .tier,body.ats.lo2 .lend.lto .tier{color:#000}body.ats.lo2 .lend.koalafi .go,body.ats.lo2 .lend.lto .go{background:#000;color:#FFF203}
+body.ats.lo3 .lend{background:#000!important;border:0;padding-top:0;grid-template-columns:1fr auto;overflow:hidden}
+body.ats.lo3 .lend>span:first-child{display:block}
+body.ats.lo3 .lend .tier{display:block;margin:0 -14px 8px;padding:6px 14px;font-size:13px}
+body.ats.lo3 .lend.sheffield .tier{background:#068B25;color:#fff}body.ats.lo3 .lend.sheffield .go{background:#068B25;color:#fff}
+body.ats.lo3 .lend.terrace .tier{background:#FFF203;color:#000}body.ats.lo3 .lend.terrace .go{background:#FFF203;color:#000}
+body.ats.lo3 .lend.koalafi .tier,body.ats.lo3 .lend.lto .tier{background:#3A3A36;color:#fff}body.ats.lo3 .lend.koalafi .go,body.ats.lo3 .lend.lto .go{background:#fff;color:#000}
+body.ats.lo3 .lend .go{align-self:end;margin-bottom:2px}
+body.ats.lo4 .lend{border-radius:18px;border-width:4px}
+body.ats.lo4 .lend .ttl{font-style:italic;font-size:22px;letter-spacing:-.01em}
+body.ats.lo4 .lend .go{border-radius:22px;padding:10px 16px}
+body.ats.lo4 .lend.sheffield{background:linear-gradient(135deg,#0BAA30,#05661B);border-color:#FFF203}
+body.ats.lo4 .lend.sheffield .go{background:#FFF203;color:#000}
+body.ats.lo4 .lend.terrace{background:linear-gradient(135deg,#FFF203,#F2C500);border-color:#068B25;color:#000}
+body.ats.lo4 .lend.terrace .tier{color:#05661B}body.ats.lo4 .lend.terrace .sub{color:#222}body.ats.lo4 .lend.terrace .go{background:#068B25;color:#fff}
+body.ats.lo4 .lend.koalafi,body.ats.lo4 .lend.lto{background:linear-gradient(135deg,#2A2A2A,#000);border-color:#FFF203}
+body.ats.lo4 .lend.koalafi .go,body.ats.lo4 .lend.lto .go{background:#FFF203;color:#000}
+.lopick{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;align-items:center;font:700 12px system-ui}
+.lopick button{border:2px solid #000;background:#fff;color:#000;border-radius:16px;padding:5px 12px;font:800 13px system-ui}
+.lopick button.on{background:#068B25;color:#FFF203;border-color:#068B25}
+/* Fire Sale stamp on the DT, like the printed tag */
+#app>article.card{position:relative}
+.firestamp{position:absolute;right:10px;top:58px;transform:rotate(-14deg);border:4px double #D7263D;color:#D7263D;font:900 28px/1 "Arial Black",Archivo,sans-serif;letter-spacing:.04em;padding:6px 12px;border-radius:8px;opacity:.82;pointer-events:none;z-index:3;background:rgba(255,255,255,.35);text-transform:uppercase}
 /* ATS look (Brandon Nov 18 2026): DT colors match the ATS logo and the printed ATS tag. Green #068B25, yellow #FFF203, black. */
 body.lsm.ats{--fire:#068B25}
 body.lsm.ats .brandbar{background:#000;border-bottom:4px solid #068B25}
@@ -2416,6 +2450,21 @@ function viewAsBar(){
 }
 window.addEventListener("load", viewAsBar); window.addEventListener("hashchange", () => setTimeout(viewAsBar, 50));
 
+/* Approval example extras (Brandon Nov 18 2026): lender card options 1 to 4 and the Fire Sale stamp */
+const LOPTS = [["1","Solid"],["2","Outline"],["3","Header band"],["4","Bold gradient"]];
+function atsExtras(u, ats){
+  const cur = ls.get("sparklendopt") || "1";
+  LOPTS.forEach(o => document.body.classList.toggle("lo" + o[0], !!ats && cur === o[0]));
+  document.querySelectorAll(".lopick,.firestamp").forEach(e => e.remove());
+  if (!ats) return;
+  const card = document.querySelector("#app > article.card");
+  if (card && u.fire) { const st = document.createElement("div"); st.className = "firestamp"; st.textContent = "Fire Sale"; card.appendChild(st); }
+  const ap = document.querySelector('#app [data-sec="apply"] h2');
+  if (ap) { const p = document.createElement("div"); p.className = "lopick";
+    p.innerHTML = "Lender look: " + LOPTS.map(o => `<button type="button" data-o="${o[0]}" class="${o[0] === cur ? "on" : ""}">${o[0]}. ${esc(o[1])}</button>`).join("");
+    p.onclick = e => { const b = e.target.closest("button"); if (!b) return; ls.set("sparklendopt", b.dataset.o); atsExtras(u, true); };
+    ap.after(p); }
+}
 /* Parent company look (Brandon Nov 18 2026): each DBA's DT uses its own logo at the top and its logo colors, matching the printed tag.
    ATS is the first full color theme; it shows on the approval example in every role view until Brandon approves the rollout. */
 const DBA_LOOK = [
@@ -2432,6 +2481,7 @@ function lsmLook(u){
   const ats = !!(L && L.cls === "ats" && exOn);
   const on = ats || !!(L && L.flag && feat(L.flag));
   document.body.classList.toggle("lsm", on); document.body.classList.toggle("ats", ats);
+  atsExtras(u, ats);
   const lg = document.getElementById("logo"), lb = document.querySelector(".brandbar .lbl");
   if (on) { lg.src = L.logo; lg.alt = L.alt; if (lb) lb.innerHTML = `<span class="lsmst">${esc(u.store)}</span><span class="lsmbr">${esc(u.brand)}</span>`; }
   else if (lg.alt !== "Spark Dealer Group") { lg.src = DATA.logo; lg.alt = "Spark Dealer Group"; if (lb) lb.innerHTML = "Digital<br>Price Tag"; }
