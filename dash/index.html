@@ -28,7 +28,7 @@ button.ck{cursor:pointer}.pbar{height:8px;background:#eee;border-radius:4px;over
 .feed td:first-child{white-space:nowrap;color:var(--mut);font-size:13px}
 .mut{color:var(--mut)}.err{color:var(--down)}
 .tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6px;color:#fff}
-tr.tap,.kpi.tap{cursor:pointer}tr.tap:hover td,tr.tap:focus td{background:#faf6f6}.kpi.tap:hover{box-shadow:0 0 0 2px var(--red) inset}tr.tap td:first-child::after{content:" ›";color:#bbb}
+tr.tap,.kpi.tap{cursor:pointer}tr.tap:hover td,tr.tap:focus td{background:#faf6f6}.kpi.tap:hover{box-shadow:0 0 0 2px var(--red) inset}tr.tap td:last-child::after{content:" ›";color:#999;font-weight:700}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;justify-content:center;align-items:flex-start;padding:4vh 10px;z-index:9;overflow-y:auto}
 .pane{background:#fff;border-radius:14px;max-width:720px;width:100%;padding:16px 18px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
 .pane h2{margin:0 0 2px;font-size:18px}.pane .x{float:right;background:#eee;color:var(--ink);padding:6px 12px}
@@ -84,8 +84,9 @@ const LEAD_SENT = [
 function leadSentTo(r){
   if (r.sentTo) return r.sentTo;
   const m = LEAD_SENT.find(([t, st]) => st === r.st && Math.abs(new Date(t) - r.d) < 120000);
-  return m ? m[2] : "";
+  return m ? m[2].split(", ").map(e => PEOPLE[e] ? PEOPLE[e] + " (" + e + ")" : e).join(", ") : "";
 }
+const PEOPLE = {"brad@lsmop.com": "Brad Monthley, GM", "josh@sparkpowerequipment.com": "Josh Anderson"};
 /* Period windows: day starts at midnight, week starts Monday, month on the 1st. */
 function start(p, d, back){ const x = new Date(d); x.setHours(0,0,0,0);
   if (p === "day") x.setDate(x.getDate() - back);
