@@ -355,6 +355,7 @@ body.lsm .tshint{color:#555}
 .tfl{display:block;font-size:11px;color:#BDBBB2;margin-top:3px}
 .save.savebig{display:block;width:100%}.save.savebig b{display:block;line-height:1.02;margin-top:2px}
 body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#121212}
+.viewas{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:9995;background:#1F2A5A;color:#fff;border-radius:22px;padding:6px 12px;font:700 13px system-ui;box-shadow:0 4px 14px rgba(0,0,0,.3)}.viewas.on{background:#C8102E}.viewas select{margin-left:6px;font:700 13px system-ui;border-radius:12px;padding:3px 6px}
 /* ATS look (Brandon Nov 18 2026): DT colors match the ATS logo and the printed ATS tag. Green #068B25, yellow #FFF203, black. */
 body.lsm.ats{--fire:#068B25}
 body.lsm.ats .brandbar{background:#000;border-bottom:4px solid #068B25}
@@ -371,6 +372,11 @@ body.lsm.ats .lists li::marker{color:#068B25}
 body.lsm.ats .lend .tier{color:#FFF203}
 body.lsm.ats{--gold:#FFF203;--gold-deep:#068B25}
 body.lsm.ats #app .card:first-of-type{border:3px solid #068B25}
+body.lsm.ats{background:#000;--bg:#000}
+body.lsm.ats .homebtn,body.lsm.ats .labfab,body.lsm.ats .ldbtn,body.lsm.ats .copy,body.lsm.ats .btbar{background:#FFF203!important;color:#000!important}
+body.lsm.ats .oldban{background:#FFF203;box-shadow:0 0 0 3px #068B25 inset}
+body.lsm.ats .topfind input{border-color:#FFF203}
+body.lsm.ats .lsmst{color:#FFF203}
 @keyframes breathe{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(245,180,0,.0)}50%{transform:scale(1.035);box-shadow:0 0 0 8px rgba(245,180,0,.45)}}
 #lprint.breathe{animation:breathe 2.2s ease-in-out infinite;background:#F5B400!important;color:#121212!important;border-color:#F5B400!important;font-weight:800}
 .tsnote{margin-top:8px;padding:8px 10px;border-radius:10px;background:#FFF6D6;color:#121212;font-size:14px}.tsnote b{display:block}.tsnote span{display:block;color:#555;font-size:13px}.tsnote .copy{margin-top:6px;width:100%}
@@ -653,7 +659,11 @@ let MEM = {};
 const pinKey = st => "sparkpin:" + st;
 const isAll = () => MEM._all || ls.get("sparkall") === "1";
 const getPin = st => isAll() ? "" : (MEM[st] || ls.get(pinKey(st)));
-const getCode = () => MEM._code || ls.get("sparkcode");
+const realCode = () => MEM._code || ls.get("sparkcode");
+/* View as (Brandon Nov 18 2026): an admin can preview the tag as a Customer, ISR, BM, GM, Division Manager or Team member. Nothing about the real sign in changes. */
+const realAdm = () => !!realCode() && ls.get("sparkadm") === "1";
+const viewAs = () => realAdm() ? (ls.get("sparkviewas") || "") : "";
+const getCode = () => viewAs() === "customer" ? null : realCode();
 const signOut = st => { delete MEM[st]; delete MEM._code; delete MEM._all; delete MEM._k; ls.del(pinKey(st)); ls.del("sparkcode"); ls.del("sparkall"); ls.del("sparkk");
   ["sparkrole","sparkadm","sparkfirst","sparkchat"].forEach(k => ls.del(k)); try { SHERPA = null; } catch(e){} ["tledit","tlpanel","coach","shmodal"].forEach(id => document.getElementById(id)?.remove()); };
 const keepKey = r => { if (r && r.k) { MEM._k = r.k; ls.set("sparkk", r.k); } };
@@ -1615,7 +1625,7 @@ function leadThanks(u, biz, name, pref){
 function leadInit(u){
   const box = document.getElementById("leadsec"); if (!box || !LOC_API) return;
   const biz = (u.dba || "LSM Outdoor Power") + " " + u.store;
-  if (getCode()) { box.innerHTML = `<button class="copy copyall" disabled style="opacity:.45;cursor:not-allowed">Hold this unit or have us call you</button><p class="fine" style="margin:0">For customers. Turned off while you are signed in so it can't send store alerts.</p>`; return; }
+  if (realCode()) { box.innerHTML = `<button class="copy copyall" disabled style="opacity:.45;cursor:not-allowed">Hold this unit or have us call you</button><p class="fine" style="margin:0">For customers. Turned off while you are signed in (and in View as) so it can't send store alerts.</p>`; return; }
   const closed = () => { box.innerHTML = `<button class="copy copyall" id="leadopen">Hold this unit or have us call you</button>`;
     document.getElementById("leadopen").onclick = () => { open(); track("step", {store:u.store, unit:u.unit, d:"lead:open"}); }; };
   const open = (msg) => {
@@ -1949,8 +1959,8 @@ function inventory(st0){
    The server blocks profanity. */
 function chatFlag(r){ if (r && "chat" in r) { ls.set("sparkchat", r.chat ? "1" : "0"); ls.set("sparkchatat", String(Date.now())); }
   if (r && r.role) { ls.set("sparkrole", r.role); ls.set("sparkadm", r.adm ? "1" : "0"); if (r.first) ls.set("sparkfirst", r.first); } }
-const myRole = () => getCode() ? (ls.get("sparkrole") || "team") : "customer";
-const isAdm = () => !!getCode() && ls.get("sparkadm") === "1";
+const myRole = () => viewAs() || (getCode() ? (ls.get("sparkrole") || "team") : "customer");
+const isAdm = () => !viewAs() && !!getCode() && ls.get("sparkadm") === "1";
 const meRefresh = force => { if (force) ls.set("sparkchatat", "0"); return chatRefresh(); };
 const chatOn = () => ls.get("sparkchat") === "1" && !!getCode();
 async function chatRefresh(){   // re-check now and then so turning chat on or off for someone takes effect without signing in again
@@ -2395,12 +2405,35 @@ function mowStones(box, u, S){
 
 /* ---- Fire Sale flames (example tag while testing) ---- */
 const isLSM = u => /^LSM/i.test(u.dba || "LSM Outdoor Power");
+/* View as switcher, admins only */
+function viewAsBar(){
+  document.getElementById("viewas")?.remove(); if (!realAdm()) return;
+  const v = viewAs(), opts = [["", "Me (admin)"], ...TL_ROLES.map(r => [r[0], r[1].replace(/s$/, "").replace("Division Manager", "Division Manager")])];
+  const d = document.createElement("div"); d.id = "viewas"; d.className = "viewas" + (v ? " on" : "");
+  d.innerHTML = `<label>View as <select>${opts.map(o => `<option value="${o[0]}"${o[0] === v ? " selected" : ""}>${esc(o[1])}</option>`).join("")}</select></label>`;
+  d.querySelector("select").onchange = e => { const x = e.target.value; if (x) ls.set("sparkviewas", x); else ls.del("sparkviewas"); location.reload(); };
+  document.body.appendChild(d);
+}
+window.addEventListener("load", viewAsBar); window.addEventListener("hashchange", () => setTimeout(viewAsBar, 50));
+
+/* Parent company look (Brandon Nov 18 2026): each DBA's DT uses its own logo at the top and its logo colors, matching the printed tag.
+   ATS is the first full color theme; it shows on the approval example in every role view until Brandon approves the rollout. */
+const DBA_LOOK = [
+  {re: /^ATS/i, cls: "ats", logo: "/m/ats_logo.png", alt: "ATS Outdoors", ex: "atslook"},
+  {re: /^LSM/i, cls: "", logo: "/m/lsm_logo.jpg", alt: "LSM Outdoor Power", flag: "lsmlook"},
+  {re: /Outdoor Turf/i, cls: "", logo: "/m/lotp_logo.png", alt: "Outdoor Turf Products"},
+  {re: /Landscape Supply/i, cls: "", logo: "/m/landscape_supply_logo.png", alt: "Landscape Supply"},
+  {re: /Mowers Inc|MINC/i, cls: "", logo: "/m/mowers_inc_logo.png", alt: "Mowers Inc"},
+  {re: /Taylor/i, cls: "", logo: "/m/taylor_logo.png", alt: "Taylor"}];
+const dbaLook = u => u ? DBA_LOOK.find(x => x.re.test(u.dba || "LSM Outdoor Power")) : null;
 function lsmLook(u){
-  const ats = !!(u && /^ATS/i.test(u.dba || "") && feat("atslook", u));
-  const on = ats || !!(u && isLSM(u) && feat("lsmlook"));
+  const L = dbaLook(u);
+  const exOn = L && L.ex && (((typeof LAB_EX !== "undefined" && LAB_EX[L.ex]) || []).includes(u.id) || feat(L.ex, u) && FLAGS[L.ex] === true);
+  const ats = !!(L && L.cls === "ats" && exOn);
+  const on = ats || !!(L && L.flag && feat(L.flag));
   document.body.classList.toggle("lsm", on); document.body.classList.toggle("ats", ats);
   const lg = document.getElementById("logo"), lb = document.querySelector(".brandbar .lbl");
-  if (on) { lg.src = ats ? "/m/ats_logo.png" : "/m/lsm_logo.jpg"; lg.alt = ats ? "ATS Outdoors" : "LSM Outdoor Power"; if (lb) lb.innerHTML = `<span class="lsmst">${esc(u.store)}</span><span class="lsmbr">${esc(u.brand)}</span>`; }
+  if (on) { lg.src = L.logo; lg.alt = L.alt; if (lb) lb.innerHTML = `<span class="lsmst">${esc(u.store)}</span><span class="lsmbr">${esc(u.brand)}</span>`; }
   else if (lg.alt !== "Spark Dealer Group") { lg.src = DATA.logo; lg.alt = "Spark Dealer Group"; if (lb) lb.innerHTML = "Digital<br>Price Tag"; }
 }
 window.addEventListener("hashchange", () => { if (!byId[decodeURIComponent(location.hash.slice(1))]) lsmLook(null); });
