@@ -3419,6 +3419,8 @@ const LOC_INFO = {}; SPARK_LOCS.forEach(([d, s, L]) => L.forEach(st => LOC_INFO[
 STORES.forEach(st => { if (!LOC_INFO[st]) { const u = DATA.units.find(x => x.store === st); LOC_INFO[st] = {dba:(u && u.dba) || "Spark", state:"TX"}; } });
 const mfg = b => { const k = String(b || "").toLowerCase(); return k === "stihl" ? "STIHL" : k === "echo" ? "ECHO" : String(b || "Other"); };
 let ADM = {q:"", dba:"", state:"", loc:"", mfg:"", fire:""};
+/* Store diagrams on Spark Admin (Brandon Nov 18 2026): one location's diagram at a time. Tap Show map on a location card. */
+let ADM_MAP = "";
 function adminHome(){
   document.title = "Spark Admin";
   const app = document.getElementById("app") || document.body;
@@ -3441,6 +3443,8 @@ function adminHome(){
   const locsAll = Object.entries(LOC_INFO).filter(([st, i]) => (!ADM.dba || i.dba === ADM.dba) && (!ADM.state || i.state === ADM.state) && (!ADM.loc || st === ADM.loc));
   const cards = locsAll.map(([st, i]) => { const mine = units.filter(u => u.store === st), live = STORES.includes(st);
     return `<div class="admcard"><div class="admrow"><b>${esc(st)}</b><span class="admmut">${esc(i.state)}</span></div><div class="admmut">${esc(i.dba)}</div>
+      <button class="admbtn admmapb" data-map="${esc(st)}" style="margin:6px 6px 0 0;border:0;cursor:pointer">${ADM_MAP === st ? "Hide map" : "Show map"}</button>
+      ${ADM_MAP === st ? `<div class="admmap">${mapSvg(st)}</div>` : ""}
       ${live ? `<div class="admnums"><span><b>${mine.length}</b> units</span><span><b>${mine.filter(u => u.fire).length}</b> Fire Sale</span></div><a class="admbtn" href="#store/${slug(st)}">Open store page</a>${tbCount(st) ? `<a class="admbtn" href="#tags/${slug(st)}" style="margin-left:6px">Tags to print (${tbCount(st)})</a>` : ""}` : `<div class="admmut" style="margin-top:8px">${["Mowers Inc","Taylor"].includes(i.dba) ? "Paused (team side frozen; lender QR codes still work)" : "Not on digital tags yet"}</div>`}</div>`; }).join("");
   const list = units.slice(0, 150).map(u => `<li><a href="#${esc(u.id)}">${u.fire ? `<span class="admfire">Fire Sale</span> ` : ""}${esc(u.m + " " + u.name)}</a><small>${esc(u.store)}, unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}</small></li>`).join("");
   app.innerHTML = `${ADMIN_CSS}<div class="adm"><div class="admh"><img src="/m/icon-192.png" alt=""><div><b>Spark Admin</b><small>${all.length} units across ${STORES.length} live locations</small></div></div>
@@ -3460,8 +3464,10 @@ function adminHome(){
   const qi = document.getElementById("admq"); let t; qi.oninput = () => { clearTimeout(t); t = setTimeout(() => { ADM.q = qi.value; adminHome(); const n = document.getElementById("admq"); n.focus(); n.setSelectionRange(n.value.length, n.value.length); }, 300); };
   const x = document.getElementById("admx"); if (x) x.onclick = () => { ADM = {q:"", dba:"", state:"", loc:"", mfg:"", fire:""}; adminHome(); };
   document.getElementById("admout").onclick = e => { e.preventDefault(); signOut(""); adminHome(); };
+  app.querySelectorAll("[data-map]").forEach(b => b.onclick = async () => { const st = b.dataset.map; ADM_MAP = ADM_MAP === st ? "" : st;
+    if (ADM_MAP) { b.textContent = "Loading map..."; await mapLoad(st); } const y = window.scrollY; adminHome(); window.scrollTo(0, y); });
 }
-const ADMIN_CSS = `<style>.adm{max-width:1000px;margin:0 auto;padding:14px;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f}
+const ADMIN_CSS = `<style>.admmap{margin-top:8px;border-radius:10px;overflow:hidden;background:#eee}.admmap svg{width:100%;height:auto;display:block}.adm{max-width:1000px;margin:0 auto;padding:14px;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f}
 .admh{display:flex;gap:12px;align-items:center;background:#121212;color:#fff;margin:-14px -14px 14px;padding:14px;border-bottom:4px solid #F5B400}.admh img{width:44px;height:44px;border-radius:10px}.admh b{display:block;font-size:20px}.admh small{color:#bbb}
 .adm h2{font-size:17px;margin:18px 0 8px;color:#fff}.adm h2 small{color:#bbb}.admmut{color:#666;font-size:13px}.admlinks{margin-bottom:10px}.admlinks a{color:#C8102E;font-weight:700;text-decoration:none}
 .adm input,.adm select,.adm button{font:inherit;font-size:16px}.adm input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ccc;border-radius:10px;margin:0 0 10px;background:#fff;color:#1d1d1f}
