@@ -355,7 +355,7 @@ body.lsm .tshint{color:#555}
 .tfl{display:block;font-size:11px;color:#BDBBB2;margin-top:3px}
 .save.savebig{display:block;width:100%}.save.savebig b{display:block;line-height:1.02;margin-top:2px}
 body.lsm .lend.koalafi,body.lsm .lend.lto{background:#121212;border-color:#121212}
-.viewas{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:9995;background:#1F2A5A;color:#fff;border-radius:22px;padding:6px 12px;font:700 13px system-ui;box-shadow:0 4px 14px rgba(0,0,0,.3)}.viewas.on{background:#C8102E}.viewas select{margin-left:6px;font:700 13px system-ui;border-radius:12px;padding:3px 6px}
+.viewas{position:fixed;right:10px;top:calc(12px + env(safe-area-inset-top));z-index:9995;background:#1F2A5A;color:#fff;border-radius:22px;padding:6px 12px;font:700 13px system-ui;box-shadow:0 4px 14px rgba(0,0,0,.3)}.viewas.on{background:#C8102E}.viewas select{margin-left:6px;font:700 13px system-ui;border-radius:12px;padding:3px 6px}
 /* ATS look (Brandon Nov 18 2026): DT colors match the ATS logo and the printed ATS tag. Green #068B25, yellow #FFF203, black. */
 body.lsm.ats{--fire:#068B25}
 body.lsm.ats .brandbar{background:#000;border-bottom:4px solid #068B25}
@@ -2410,7 +2410,7 @@ function viewAsBar(){
   document.getElementById("viewas")?.remove(); if (!realAdm()) return;
   const v = viewAs(), opts = [["", "Me (admin)"], ...TL_ROLES.map(r => [r[0], r[1].replace(/s$/, "").replace("Division Manager", "Division Manager")])];
   const d = document.createElement("div"); d.id = "viewas"; d.className = "viewas" + (v ? " on" : "");
-  d.innerHTML = `<label>View as <select>${opts.map(o => `<option value="${o[0]}"${o[0] === v ? " selected" : ""}>${esc(o[1])}</option>`).join("")}</select></label>`;
+  d.innerHTML = `<label>View as<select>${opts.map(o => `<option value="${o[0]}"${o[0] === v ? " selected" : ""}>${esc(o[1])}</option>`).join("")}</select></label>`;
   d.querySelector("select").onchange = e => { const x = e.target.value; if (x) ls.set("sparkviewas", x); else ls.del("sparkviewas"); location.reload(); };
   document.body.appendChild(d);
 }
