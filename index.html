@@ -3100,15 +3100,22 @@ async function tagQ(st){
   const opt = (k, list, lab) => `<select data-tf="${k}" aria-label="${lab}"><option value="">${lab}</option>${list.map(([v, t]) => `<option value="${esc(v)}" ${F[k] === v ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
   const row = ({t, x}) => `<li><input type="checkbox" data-u="${esc(t.unit)}" ${sel.has(t.unit) ? "checked" : ""} aria-label="Select ${esc(x.model)}"><a href="#${esc(x.id)}@lprint"><span class="ub">${esc(brAb(x.brand))}</span><span class="um">${esc(x.model || x.name)}</span>${x.fire ? `<span class="ux">Fire Sale</span>` : ""}<span class="tqr">${esc(t.st === "place" ? "Put it on the unit" : tsReason(t))}</span>${x.serial ? `<span class="us">SN ${esc(sn4(x))}</span>` : ""}</a></li>`;
   const printable = [...ch, ...nw];
-  box.innerHTML = `<div class="top3 tq"><div class="t3h">Tags to print</div><div class="t3s">Tap a unit to print one, or check several and print them together. When it's hanging on the unit, tap It's on the unit.${!FLAGS.tagtrack ? " <b>Testing: only you see this.</b>" : ""}</div>
+  box.innerHTML = `<div class="top3 tq"><div class="t3h">Tags to print</div><div class="t3s">Tap a unit to print one, or check several and print them together. When it's hanging on the unit, tap It's on the unit. Already hung one from a Drive printout? Check it and tap Already on the unit.${!FLAGS.tagtrack ? " <b>Testing: only you see this.</b>" : ""}</div>
     <div class="tqbar">${opt("br", brands.map(b => [b, b]), "All brands")}${opt("kind", [["changed", "Changed"], ["new", "New"], ["place", "Not on the unit yet"]], "All tags")}${opt("cat", [["Mower", "Mowers"], ["Handheld", "Handhelds"], ["UTV", "UTVs"], ["Other", "Other"]], "All types")}${opt("fire", [["y", "Fire Sale only"], ["n", "Not Fire Sale"]], "Fire Sale or not")}</div>
-    <div class="tqbar"><button type="button" class="ghost" data-tq="all">${printable.length && printable.every(r => sel.has(r.t.unit)) ? "Clear all" : "Select all " + printable.length}</button><button type="button" class="copy" data-tq="print" ${sel.size ? "" : "disabled"}>Print ${sel.size || ""} selected</button></div><div class="lmsg" id="tqm"></div>
+    <div class="tqbar"><button type="button" class="ghost" data-tq="all">${printable.length && printable.every(r => sel.has(r.t.unit)) ? "Clear all" : "Select all " + printable.length}</button><button type="button" class="ghost" data-tq="hung" ${sel.size ? "" : "disabled"}>Already on the unit${sel.size ? " (" + sel.size + ")" : ""}</button><button type="button" class="copy" data-tq="print" ${sel.size ? "" : "disabled"}>Print ${sel.size || ""} selected</button></div><div class="lmsg" id="tqm"></div>
     ${ch.length ? `<div class="tqh tqch">⚠ Changed tags: print and swap these first (${ch.length})</div><ul class="ulist tqchl">${ch.map(row).join("")}</ul>` : ""}
     ${nw.length ? `<div class="tqh">New tags to print (${nw.length})</div><ul class="ulist">${nw.map(row).join("")}</ul>` : ""}
     ${pl.length ? `<div class="tqh">Printed. Put them on the unit (${pl.length})</div><ul class="ulist">${pl.map(row).join("")}</ul>` : ""}
     ${!rows.length ? `<p class="tqok">Nothing to print for this filter. 👍</p>` : ""}${dn.length ? `<p class="ucount">${dn.length} placed this week</p>` : ""}</div>`;
   box.querySelectorAll("[data-tf]").forEach(s => s.onchange = () => { F[s.dataset.tf] = s.value; tagQ(st); });
   box.querySelectorAll("[data-u]").forEach(c => c.onchange = async () => { c.checked ? sel.add(c.dataset.u) : sel.delete(c.dataset.u); const y = window.scrollY; await tagQ(st); window.scrollTo(0, y); });
+  /* Already on the unit (Brandon Nov 19 2026): tags printed from the Drive folder before the DT tracked printing. Marks them printed and placed in one step. */
+  const hb = box.querySelector('[data-tq="hung"]'); if (hb) hb.onclick = async () => {
+    if (!hb.dataset.arm) { hb.dataset.arm = "1"; hb.textContent = `Tap again: ${sel.size} tag${sel.size === 1 ? " is" : "s are"} already on the unit`; return; }
+    hb.disabled = true; hb.textContent = "Saving...";
+    for (const un of [...sel]) { const r = all.find(t => t.unit === un), pin = getPin(st) || (chatAuth() || {}).pin || "";
+      try { if (!r || r.st !== "place") await api({action:"tagpdf", store:st, unit:un, pin, code:getCode()}); await api({action:"placed", store:st, unit:un, pin, code:getCode()}); } catch(e){} }
+    sel.clear(); delete TS[st]; tagQ(st); };
   box.querySelector('[data-tq="all"]').onclick = () => { const on = printable.length && printable.every(r => sel.has(r.t.unit)); printable.forEach(r => on ? sel.delete(r.t.unit) : sel.add(r.t.unit)); tagQ(st); };
   box.querySelector('[data-tq="print"]').onclick = async () => { const us = [...sel].map(u => DATA.units.find(x => x.store === st && String(x.unit) === u)).filter(Boolean); await bulkPrint(us, document.getElementById("tqm")); sel.clear(); setTimeout(() => tagQ(st), 1500); };
 }
