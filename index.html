@@ -3625,8 +3625,17 @@ const ADMIN_CSS = `<style>.admmap{margin-top:8px;border-radius:10px;overflow:hid
 .admlist{list-style:none;padding:0;margin:0;background:#fff;border-radius:12px}.admlist li{padding:10px 14px;border-bottom:1px solid #eee}.admlist a{color:#1d1d1f;font-weight:600;text-decoration:none;display:block}.admlist small{color:#666}
 .admfire{background:#C8102E;color:#fff;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px}
 </style>`;
+/* Brandon Nov 19 2026: a button on every DT page that goes straight to his Spark Admin dashboard. Admins only. */
+function admBtn(h){
+  let b = document.getElementById("admbtn");
+  if (!isAdm() || /^admin/i.test(h)) { b && b.remove(); return; }
+  if (!b) { b = document.createElement("a"); b.id = "admbtn"; b.href = "#admin"; b.textContent = "My Dashboard";
+    b.style.cssText = "position:fixed;top:10px;right:10px;z-index:60;background:#111;color:#fff;font:600 13px system-ui;padding:8px 12px;border-radius:999px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.3)";
+    document.body.appendChild(b); }
+}
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
+  try { admBtn(h); } catch(e){}
   ["tledit","tlpanel","coach","shmodal"].forEach(id => document.getElementById(id)?.remove());
   if (/^lab$/i.test(h)) { setManifest(""); window.scrollTo(0, 0); return labPage(); }
   if (/^beta$/i.test(h)) { window.scrollTo(0, 0); return betaPage(); }
