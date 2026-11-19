@@ -2192,7 +2192,7 @@ const SHOW = {loc:["#lupd", "Tap Set location, pick where this unit sits, and ta
 /* Soft Launch tour (Brandon Nov 19 2026): live for every ISR until they finish it. Only the 3 soft launch steps.
    Step 1 print and place, step 2 QR hanger spots, step 3 unit location. Finishing marks "slt" for that person. */
 const SLT_LIVE = true;
-const SLT = [["#lprint", "Step 1. Print and place. Tap Print this tag, print it from your phone over the store Wi Fi, and hang it on the matching unit in the showroom or on the lot. Match the unit # and serial first."],
+const SLT = [["#lprint", "Step 1. Print and place. Tap Print this tag, print it from your phone over the store Wi Fi, and hang it on the matching unit in the showroom or on the lot. Match the unit # and serial first. Once it is hanging, tap It's on the unit right under Print this tag. Already hung one from a Drive printout? Go to your store page, check it under Tags to print and tap Already on the unit."],
   ["#lhang", "Step 2. Set where each QR hanger hangs. Tap Update QR Code Hanger Locations, pick a hanger, tap the spot on your showroom map, and tap Save hangers."],
   ["#lupd", "Step 3. Set where every unit sits. Tap Set location, pick the spot and tap Save. Fire Sale units should already be set. Do every other customer facing unit too: walk behinds, zero turns and construction equipment."]];
 const sltWho = () => !!getCode() && myRole() === "isr";
@@ -2204,7 +2204,7 @@ async function sltOffer(S){
   if (!SLT_LIVE || !sltWho() || !S || S.done.slt) return false;
   const k = "sparksltoff" + getCode(), now = new Date(), slot = now.toDateString() + (now.getHours() >= 12 ? " pm" : " am");
   if (ls.get(k) === slot) return false; ls.set(k, slot);
-  sherpaModal(`Soft launch, ${S.first || "team"}: 3 steps`, "1. Print and place every tag in the showroom and on the lot.<br>2. Set where each QR hanger hangs.<br>3. Set where every customer facing unit sits.<br><br>Take the 1 minute tour to see each step on a real tag.", [["Show me", () => sltStart()], ["Later", null]]);
+  sherpaModal(`Soft launch, ${S.first || "team"}: 3 steps`, "1. Print and place every tag in the showroom and on the lot, then tap It's on the unit.<br>2. Set where each QR hanger hangs.<br>3. Set where every customer facing unit sits.<br><br>Take the 1 minute tour to see each step on a real tag.", [["Show me", () => sltStart()], ["Later", null]]);
   return true;
 }
 function sherpaShow(step){
@@ -2220,7 +2220,7 @@ const TOUR = [
   ['[data-sec=apply]', "Customers apply here. Each button opens that lender's secure application for your store."],
   ['[data-sec=leads]', "Hold this unit and Contact me. These requests come straight to your store team."],
   ['#lupd', "Set location tells the whole team where this unit sits right now."],
-  ['#lprint', "Print this tag gives you the paper tag with the real in store price."],
+  ['#lprint', "Print this tag gives you the paper tag with the real in store price. When it breathes, a new or changed tag is ready. Print it, hang it, then tap It's on the unit so the team knows it's done."],
   ['#lhang', "Place the QR hangers on your showroom map. You can also draw your showroom with your finger."],
   ['#lprq', "Need a better number? Request a price change. It goes to your GM."],
   ['#lmodel', "See every Texas Fire Sale unit of this same model."],
@@ -2544,7 +2544,7 @@ function tourFor(u){
     ...(f1 ? [['[data-sec=specs]', `The one thing to show them: ${f1}.${f2 ? " Then: " + f2 + "." : ""}`]] : []),
     ['[data-sec=warranty]', `${/warranty/i.test(u.warranty || "") ? u.warranty : u.warranty + " warranty"}. Say it out loud. It closes deals.`],
     ['#lupd', "Set location tells the whole team where this unit sits right now."],
-    ['#lprint', "Print this tag gives you the paper tag with the real in store price."],
+    ['#lprint', "Print this tag gives you the paper tag with the real in store price. When it breathes, a new or changed tag is ready. Print it, hang it, then tap It's on the unit so the team knows it's done."],
     ['#lhang', "Place the QR hangers on your showroom map, and draw your showroom with your finger."],
     ...(twins ? [['#lmodel', `${twins} more of this model ${twins === 1 ? "is" : "are"} on Fire Sale around Texas. Tap here to see them.`]] : []),
     ['#sharesec', "Post this unit. The caption is written for you and never shows a price, payment or rate."],
@@ -2822,7 +2822,6 @@ function adoptCard(){
 }
 /* Admin to do list (Brandon Nov 15 2026): things to ask Justin and what's still needed to make tests live. Checks save on this phone. */
 const TODO = [
-  ["Price tags: waiting on Brandon", "Approve the Tags to print team preview (sent Nov 19), then Claude turns it on for all stores"],
   ["Ask Justin", "Fire Sale list updates (newest list for all states)"], ["Ask Justin", "Sign the Snap dealer agreements"], ["Ask Justin", "Sheffield new dealer packages"],
   ["Initial payment training", "Snap: confirm whether sales tax is added to the $39 processing fee (ask April San Miguel, 940 432 8921)"], ["Initial payment training", "Acima: no set initial payment (prepaid rent is set per lease). Decide how we teach it"],
   ["Initial payment training", "Terrace, WEF and Synchrony: initial payment or down payment, if any"], ["Initial payment training", "Confirm Koalafi is $49 plus tax"],
