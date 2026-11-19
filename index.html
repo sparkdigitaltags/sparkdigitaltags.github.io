@@ -1585,6 +1585,7 @@ function stonesFor(u){
 }
 function stonesInit(u){
   const box = document.getElementById("stonesec"); if (!box) return;
+  if (!feat("stones")) { box.hidden = true; box.innerHTML = ""; return; }   // Brandon Nov 19 2026 11:35: all Stepping Stones parked for everyone
   const three = true, S = stones3For(u);   // Brandon Nov 19 2026: everyone sees only the 3 Stones; the 7 stones are off for all
   if (feat("mow", u)) { mowStones(box, u, S); box.hidden = false; return; }
   box.innerHTML = three ? `<h2>${esc(label("stones"))}</h2><div class="locmeta"><b>Bargain, Bank, Buy.</b> Three stones: how it stacks up, how they'll pay, why today.</div>`
@@ -2268,7 +2269,7 @@ const LAB_EX = {atslook:["weatherford-32889-44146c"], flames:["farmersbranch-109
 const ADMIN_ONLY = ["flames", "mow", "scene"];   // Brandon Nov 14 2026: nobody else sees the flames, the mower stones or the mower scenes, even if a flag is set
 /* Saved for later (Brandon Nov 14 2026): the OPE scenes, the mower Stepping Stones and the avatar are kept but switched off,
    even for Brandon. The scenes are scrapped (Brandon Nov 14 2026); the training uses a simple checklist. Lab preview on this phone only. */
-const PARKED = ["scene", "mow", "avatar", "quiz"];   // Nov 19 2026: quizzes off for everyone
+const PARKED = ["scene", "mow", "avatar", "quiz", "stones"];   // Nov 19 2026: quizzes off for everyone
 const parkPreview = () => isAdm() && ls.get("sparkparkprev") === "1";
 function feat(k, u){ if (PARKED.includes(k) && !parkPreview()) return false; if (FLAGS[k] !== true && typeof isBT === "function" && isBT()) return BT_FEATS.includes(k); if (ADMIN_ONLY.includes(k) && !isAdm()) return false; if (FLAGS[k] === true) return true; if (pilotOn(k)) return true; if (!isAdm()) return false; const ex = LAB_EX[k]; return ex ? !!(u && ex.includes(u.id)) : true; }
 const tourMode = () => isAdm() && ls.get("sparktourmode") === "1";
