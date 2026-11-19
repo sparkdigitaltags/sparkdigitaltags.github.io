@@ -2154,9 +2154,9 @@ function climbCard(S){
   return `<div class="climb" id="tlclimb"><div class="climbh">${esc(label("first5"))}${rnd} <b class="climbn">${head}</b><span>${esc(pep)}</span></div>
     <div class="climbbar"><i style="width:${Math.round((R.done ? 1 : n / all) * 100)}%"></i></div>
     <ol>${L.map(([k, t]) => `<li class="${S.done[k] ? "ok" : next && next[0] === k ? "nx" : ""}">${S.done[k] ? "✓" : "○"} ${esc(t)}${!S.done[k] && next && next[0] === k ? ` <button type="button" class="climbgo" data-show="${k}">Show me how</button>` : ""}</li>`).join("")}</ol>
-    ${feat("training") ? `<button type="button" class="ghost climbtour" data-tour="1">New Location Tour</button>` : ""}${feat("isrtour") ? `<button type="button" class="ghost climbtour" data-hunt="1">New ISR Tour</button>` : ""}</div>`;
+    ${SLT_LIVE && (sltWho() || isAdm()) ? `<button type="button" class="ghost climbtour" data-slt="1">Soft launch: 3 steps</button>` : ""}${feat("training") ? `<button type="button" class="ghost climbtour" data-tour="1">New Location Tour</button>` : ""}${feat("isrtour") ? `<button type="button" class="ghost climbtour" data-hunt="1">New ISR Tour</button>` : ""}</div>`;
 }
-function wireClimb(root){ root.querySelectorAll("[data-av]").forEach(b => b.onclick = () => avatarMaker()); root.querySelectorAll("[data-hunt]").forEach(b => b.onclick = () => huntStart()); root.querySelectorAll("[data-show]").forEach(b => b.onclick = () => sherpaShow(b.dataset.show)); root.querySelectorAll("[data-tour]").forEach(b => b.onclick = () => tourStart()); }
+function wireClimb(root){ root.querySelectorAll("[data-av]").forEach(b => b.onclick = () => avatarMaker()); root.querySelectorAll("[data-hunt]").forEach(b => b.onclick = () => huntStart()); root.querySelectorAll("[data-show]").forEach(b => b.onclick = () => sherpaShow(b.dataset.show)); root.querySelectorAll("[data-tour]").forEach(b => b.onclick = () => tourStart()); root.querySelectorAll("[data-slt]").forEach(b => b.onclick = () => sltStart()); }
 function sherpaModal(title, body, btns){
   document.getElementById("shmodal")?.remove();
   const d = document.createElement("div"); d.id = "shmodal"; d.className = "shmodal";
@@ -2166,6 +2166,7 @@ function sherpaModal(title, body, btns){
 async function sherpaGreet(){
   if (document.getElementById("shmodal") || document.getElementById("coach")) return;
   const S = await sherpaLoad(); if (!S) return;
+  if (await sltOffer(S)) return;
   const now = new Date(), slot = now.toDateString() + (now.getHours() >= 12 ? " pm" : " am"), key = "sparkslot" + getCode() + (tourMode() ? "tm" + (sessionStorage.getItem("sparktmsess") || (sessionStorage.setItem("sparktmsess", String(Date.now())), sessionStorage.getItem("sparktmsess"))) : "");
   if (feat("training") && !S.done.welcome) { sherpaMark("welcome"); ls.set(key, slot);
     return sherpaModal(`Welcome to Spark Digital Tags, ${S.first || "team"}!`, `This app is your guide to the digital tags. Take the 1 minute tour to see how a digital tag works for you and your customers. The tour is always here when you come back to any tag: just tap <b>Take the tour</b>.`, [["Take the tour", () => tourStart()], ["Later", null]]); }
@@ -2180,6 +2181,24 @@ function sherpaUnit(){
 }
 const SHOW = {loc:["#lupd", "Tap Set location, pick where this unit sits, and tap Save."], print:["#lprint", "Tap Print this tag. Use Print in the tab that opens."],
   hanger:["#lhang", "Tap here, pick a hanger, tap where it hangs on the showroom, and tap Save hangers."], post:["#sharesec", "Pick where to post. The caption is written for you and never shows a price."]};
+/* Soft Launch tour (Brandon Nov 19 2026): live for every ISR until they finish it. Only the 3 soft launch steps.
+   Step 1 print and place, step 2 QR hanger spots, step 3 unit location. Finishing marks "slt" for that person. */
+const SLT_LIVE = true;
+const SLT = [["#lprint", "Step 1. Print and place. Tap Print this tag, print it from your phone over the store Wi Fi, and hang it on the matching unit in the showroom or on the lot. Match the unit # and serial first."],
+  ["#lhang", "Step 2. Set where each QR hanger hangs. Tap Update QR Code Hanger Locations, pick a hanger, tap the spot on your showroom map, and tap Save hangers."],
+  ["#lupd", "Step 3. Set where every unit sits. Tap Set location, pick the spot and tap Save. Fire Sale units should already be set. Do every other customer facing unit too: walk behinds, zero turns and construction equipment."]];
+const sltWho = () => !!getCode() && myRole() === "isr";
+function sltStart(){
+  if (!document.getElementById("locsec") || document.getElementById("locsec").hidden || !document.getElementById("lupd")) { sessionStorage.setItem("sparkslt", "1"); location.hash = sherpaUnit(); return; }
+  coach(SLT, () => { sherpaMark("slt"); sherpaModal("Soft launch steps done!", "You know all 3 steps. Now do them for every tag, hanger and unit in your store.", [["Got it", null]]); });
+}
+async function sltOffer(S){
+  if (!SLT_LIVE || !sltWho() || !S || S.done.slt) return false;
+  const k = "sparksltoff" + getCode(), now = new Date(), slot = now.toDateString() + (now.getHours() >= 12 ? " pm" : " am");
+  if (ls.get(k) === slot) return false; ls.set(k, slot);
+  sherpaModal(`Soft launch, ${S.first || "team"}: 3 steps`, "1. Print and place every tag in the showroom and on the lot.<br>2. Set where each QR hanger hangs.<br>3. Set where every customer facing unit sits.<br><br>Take the 1 minute tour to see each step on a real tag.", [["Show me", () => sltStart()], ["Later", null]]);
+  return true;
+}
 function sherpaShow(step){
   if (step === "find") { const cur = byId[decodeURIComponent(location.hash.slice(1))], st = cur ? cur.store : (STORES.find(x => getPin(x)) || "Keller");
     if (!document.getElementById("shq")) { sessionStorage.setItem("sparkshow", "find"); location.hash = "store/" + slug(st); return; }
@@ -2223,6 +2242,7 @@ async function sherpaTag(){
   const S = await sherpaLoad(); if (!S || !document.getElementById("locsec")) return;
   document.getElementById("tlclimb")?.remove(); box.insertAdjacentHTML("beforeend", climbCard(S)); wireClimb(box);
   const t = sessionStorage.getItem("sparktour"), sh = sessionStorage.getItem("sparkshow");
+  if (sessionStorage.getItem("sparkslt")) { sessionStorage.removeItem("sparkslt"); setTimeout(() => sltStart(), 600); return; }
   if (t) { sessionStorage.removeItem("sparktour"); setTimeout(() => coach(tourFor(byId[decodeURIComponent(location.hash.slice(1))]), () => sherpaMark("tour")), 600); return; }
   if (sh && sh !== "find") { sessionStorage.removeItem("sparkshow"); setTimeout(() => sherpaShow(sh), 600); return; }
   sherpaGreet();
