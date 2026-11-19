@@ -1589,6 +1589,7 @@ function stonesInit(u){
   if (feat("mow", u)) { mowStones(box, u, S); box.hidden = false; return; }
   box.innerHTML = three ? `<h2>${esc(label("stones"))}</h2><div class="locmeta"><b>Bargain, Bank, Buy.</b> Three stones: how it stacks up, how they'll pay, why today.${!FLAGS.stones3 ? " <b>Testing: only you see the 3 stones.</b>" : ""}</div>`
     : `<h2>${esc(label("stones"))}</h2><div class="locmeta">Brand, Build, Bill, Bargain, Brag, Bank, Buy. Walk the tag top to bottom.</div>`;
+  box.innerHTML += `<div class="locmeta"><b>Step 0, tag check:</b> before you walk it, make sure the paper tag is hanging on this unit. See PRINT THIS TAG above? Print it, hang it, then tap IT'S ON THE UNIT so your store's list stays right.</div>`;
   box.innerHTML += `<ol class="stones">${S.map(([k, say, why]) => `<li><b>${k}</b><span>${esc(say)}</span><small>${esc(why)}</small></li>`).join("")}</ol>`;
   box.hidden = false;
 }
