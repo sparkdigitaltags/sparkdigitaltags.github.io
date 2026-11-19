@@ -1605,20 +1605,20 @@ const PHOTO_UP_ON = true, PHOTO_MAX = 3;
 function galInit(u){
   const box = document.getElementById("gal"), up = document.getElementById("galup"); if (!box) return;
   const pics = u.photo ? [{src:u.photo, note:"Manufacturer photo. Unit on display may vary."}] : [];
-  let i = 0, canDel = false;
+  let i = 0, canDel = false, mine = [];
   const draw = () => {
     if (!pics.length) { box.hidden = true; return; }
     box.hidden = false; const p = pics[i];
     box.innerHTML = `<img src="${p.src}" alt="${esc(u.brand)} ${esc(u.model)}, photo ${i + 1} of ${pics.length}"><small>${esc(p.note)}</small>` +
-      (canDel && p.id ? `<button class="galdel" id="galdel" type="button">Remove this photo</button>` : "") +
+      ((canDel || mine.includes(p.id)) && p.id ? `<button class="galdel" id="galdel" type="button">${!canDel ? "Remove my photo" : "Remove this photo"}</button>` : "") +
       (pics.length > 1 ? `<div class="galnav"><button class="galb" data-d="-1" aria-label="Previous photo">&#8249;</button><span>${pics.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("")}</span><button class="galb" data-d="1" aria-label="Next photo">&#8250;</button></div>` : "");
     box.querySelectorAll(".galb").forEach(b => b.onclick = () => { i = (i + Number(b.dataset.d) + pics.length) % pics.length; draw(); });
-    const del = document.getElementById("galdel");   // GMs, branch managers and Brandon only; the manufacturer photo has no button
+    const del = document.getElementById("galdel");   // GMs, branch managers and Brandon any photo; everyone else only photos they uploaded (Nov 19 2026); the manufacturer photo has no button
     if (del) del.onclick = async () => {
       if (!del.dataset.sure) { del.dataset.sure = 1; del.textContent = "Tap again to remove it for everyone"; return; }
       del.disabled = true; del.textContent = "Removing...";
       try { const r = await api({action:"delphoto", store:u.store, unit:u.unit, id:p.id, pin:getPin(u.store) || "", code:getCode()});
-        if (r.ok) { i = 0; load(); } else { del.textContent = r.error === "role" ? "Only a GM or branch manager can remove photos." : "Could not remove it. Try again."; }
+        if (r.ok) { i = 0; load(); } else { del.textContent = r.error === "role" ? "You can only remove photos you took. Ask your branch manager." : "Could not remove it. Try again."; }
       } catch(e){ del.textContent = "Could not connect. Try again."; }
     };
   };
@@ -1630,7 +1630,7 @@ function galInit(u){
   if (!PHOTO_UP_ON || !LOC_API) return;
   const load = async () => { try { const me = getCode() && (isAll() || getPin(u.store)) ? {pin:getPin(u.store) || "", code:getCode()} : {};
       const r = await api(Object.assign({action:"photos", store:u.store, unit:u.unit}, me));
-      if (r.ok && Array.isArray(r.ids)) { canDel = !!r.del; pics.splice(u.photo ? 1 : 0); r.ids.forEach(id => pics.push({id, src:"https://lh3.googleusercontent.com/d/" + encodeURIComponent(id) + "=w1000", note:"Photo of this unit, taken in store by our team."})); if (i >= pics.length) i = 0; draw(); }
+      if (r.ok && Array.isArray(r.ids)) { canDel = !!r.del; mine = Array.isArray(r.mine) ? r.mine : []; pics.splice(u.photo ? 1 : 0); r.ids.forEach(id => pics.push({id, src:"https://lh3.googleusercontent.com/d/" + encodeURIComponent(id) + "=w1000", note:"Photo of this unit, taken in store by our team."})); if (i >= pics.length) i = 0; draw(); }
     } catch(e){} };
   load();
   const signed = !!(getCode() && (isAll() || getPin(u.store)));
