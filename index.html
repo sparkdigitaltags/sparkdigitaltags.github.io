@@ -1431,11 +1431,11 @@ async function printTag(u){
   await tbLoad;
   if (TB[u.id]) {   // Nov 17 2026: open this unit's own tag PDF (front and back) straight from the DT, never bounce back
     if (!getKey()) { if (w) w.close(); m.textContent = "Your phone needs a fresh sign in to print. Tap Sign out below, sign back in, then tap Print this tag."; return; }
-    try {
-      const url = URL.createObjectURL(new Blob([await tbBytes(u.id)], {type:"application/pdf"}));
-      try { if (w && !w.closed) w.location.href = url; } catch(e){}
-      m.innerHTML = `<a class="copy" style="display:inline-block;margin:6px 0" href="${url}" target="_blank" rel="noopener">Open the tag PDF</a><br>Tag opened. Use Print in that tab. Print double sided, flip on the long edge.`;
-      markPrinted([u.id]); sparkDo("print", u); delete TS[u.store]; setTimeout(() => printGlow(u), 2500); return;
+    try {   // Nov 19 2026 (Kayde, Denton): same format as Fire Sale singles: letter sheet, front top left, unit pic and DT QR back, double sided long edge
+      await tbBytes(u.id);
+      await sheetPrint([u.id], m, w);
+      api({action:"tagpdf", store:u.store, unit:u.unit, pin:getPin(u.store) || "", code:getCode()}).then(() => { delete TS[u.store]; printGlow(u); }).catch(() => {});
+      sparkDo("print", u); delete TS[u.store]; setTimeout(() => printGlow(u), 2500); return;
     } catch(e){
       try { if (w && !w.closed) w.document.body.innerHTML = '<p style="font:16px system-ui;padding:20px">That tag could not open. Go back to the DT tab for help.</p>'; } catch(_){}
       m.textContent = "That tag could not open on this phone. Sign out, sign back in and try again. If it still fails, tell Brandon the unit number."; return;
@@ -1585,9 +1585,9 @@ function stonesFor(u){
 }
 function stonesInit(u){
   const box = document.getElementById("stonesec"); if (!box) return;
-  const three = feat("stones3", u), S = three ? stones3For(u) : stonesFor(u);
+  const three = true, S = stones3For(u);   // Brandon Nov 19 2026: everyone sees only the 3 Stones; the 7 stones are off for all
   if (feat("mow", u)) { mowStones(box, u, S); box.hidden = false; return; }
-  box.innerHTML = three ? `<h2>${esc(label("stones"))}</h2><div class="locmeta"><b>Bargain, Bank, Buy.</b> Three stones: how it stacks up, how they'll pay, why today.${!FLAGS.stones3 ? " <b>Testing: only you see the 3 stones.</b>" : ""}</div>`
+  box.innerHTML = three ? `<h2>${esc(label("stones"))}</h2><div class="locmeta"><b>Bargain, Bank, Buy.</b> Three stones: how it stacks up, how they'll pay, why today.</div>`
     : `<h2>${esc(label("stones"))}</h2><div class="locmeta">Brand, Build, Bill, Bargain, Brag, Bank, Buy. Walk the tag top to bottom.</div>`;
   box.innerHTML += `<div class="locmeta"><b>Step 0, tag check:</b> before you walk it, make sure the paper tag is hanging on this unit. See PRINT THIS TAG above? Print it, hang it, then tap IT'S ON THE UNIT so your store's list stays right.</div>`;
   box.innerHTML += `<ol class="stones">${S.map(([k, say, why]) => `<li><b>${k}</b><span>${esc(say)}</span><small>${esc(why)}</small></li>`).join("")}</ol>`;
@@ -2268,7 +2268,7 @@ const LAB_EX = {atslook:["weatherford-32889-44146c"], flames:["farmersbranch-109
 const ADMIN_ONLY = ["flames", "mow", "scene"];   // Brandon Nov 14 2026: nobody else sees the flames, the mower stones or the mower scenes, even if a flag is set
 /* Saved for later (Brandon Nov 14 2026): the OPE scenes, the mower Stepping Stones and the avatar are kept but switched off,
    even for Brandon. The scenes are scrapped (Brandon Nov 14 2026); the training uses a simple checklist. Lab preview on this phone only. */
-const PARKED = ["scene", "mow", "avatar"];
+const PARKED = ["scene", "mow", "avatar", "quiz"];   // Nov 19 2026: quizzes off for everyone
 const parkPreview = () => isAdm() && ls.get("sparkparkprev") === "1";
 function feat(k, u){ if (PARKED.includes(k) && !parkPreview()) return false; if (FLAGS[k] !== true && typeof isBT === "function" && isBT()) return BT_FEATS.includes(k); if (ADMIN_ONLY.includes(k) && !isAdm()) return false; if (FLAGS[k] === true) return true; if (pilotOn(k)) return true; if (!isAdm()) return false; const ex = LAB_EX[k]; return ex ? !!(u && ex.includes(u.id)) : true; }
 const tourMode = () => isAdm() && ls.get("sparktourmode") === "1";
@@ -2712,7 +2712,7 @@ const sparkS = (h) => `<img src="${SPARK_S}" alt="Spark" class="sparks" style="h
 const HANDHELD = ["saw", "blower", "trimmer", "hedge"];
 const isHandheld = u => HANDHELD.includes(utype(u));
 /* Beta Testers: customer view only, plus the customer facing Lab tests. No team access, ever. */
-const BT_FEATS = ["compare", "quiz", "lenders", "savebig", "ladder"];
+const BT_FEATS = ["compare", "lenders", "savebig", "ladder"];
 const btGet = () => { try { return JSON.parse(ls.get("sparkbt") || "null"); } catch(e){ return null; } };
 const isBT = () => !!btGet() && !getCode();
 function betaPage(){
