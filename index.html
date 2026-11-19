@@ -521,7 +521,7 @@ function tag(u){
   // Monthly payment leads the price box (Brandon Nov 10 2026). Reg Z: the $0 down, term and APR sit right under it, same color, readable size.
   const payHero = !u.maphide && !u.lease && !!u.pay && !!u.term;
   const fields = [["Unit", u.unit], ["Model", u.model], ["Serial", u.serial], ["Price", u.maphide ? "Price Too Low to Display Online" : u.now.replace("$","")]];
-  const all = [`Store: ${u.dba || "LSM"} ${u.store}`, `Unit: ${u.unit}`, `Make: ${u.brand}`, `Model: ${u.model}`, `Serial: ${u.serial}`, `Desc: ${u.name}`, u.was ? `MSRP: ${u.was}` : "", `Now: ${u.maphide ? "Price Too Low to Display Online" : u.now}${u.fire ? " FIRE SALE" : ""}`].filter(Boolean).join("\n");
+  const all = [`Store: ${u.dba || "LSM"} ${u.store}`, `Unit: ${u.unit}`, `Make: ${u.brand}`, `Model: ${u.model}`, `Serial: ${u.serial}`, `Desc: ${u.name}`, u.was ? `${u.fire ? "Was" : "MSRP"}: ${u.was}` : "", `Now: ${u.maphide ? "Price Too Low to Display Online" : u.now}${u.fire ? " FIRE SALE" : ""}`].filter(Boolean).join("\n");
   app.innerHTML = `
   <article class="card">
     <div class="hero" data-sec="title">
@@ -534,7 +534,7 @@ function tag(u){
       <div id="galup"></div>
     </div>
     <div class="price" data-sec="price">
-      ${u.maphide ? `<div class="row"><span class="was">${u.fire ? "Fire Sale" : "Sale"}</span></div><div class="now hidep">Price Too Low to Display Online</div>` : `${(!payHero || u.was || u.save) ? `<div class="row">${u.was ? `<span class="was">MSRP <s>${u.was}</s></span>` : (payHero ? "<span></span>" : `<span class="was">${u.fire ? "Fire Sale price" : "Price"}</span>`)}${u.save ? `<span class="save">You save <b>${u.save}</b></span>` : ""}</div>` : ""}
+      ${u.maphide ? `<div class="row"><span class="was">${u.fire ? "Fire Sale" : "Sale"}</span></div><div class="now hidep">Price Too Low to Display Online</div>` : `${(!payHero || u.was || u.save) ? `<div class="row">${u.was ? `<span class="was">${u.fire ? "Was" : "MSRP"} <s>${u.was}</s></span>` : (payHero ? "<span></span>" : `<span class="was">${u.fire ? "Fire Sale price" : "Price"}</span>`)}${u.save ? `<span class="save">You save <b>${u.save}</b></span>` : ""}</div>` : ""}
       ${payHero ? `<div class="mo"><span class="mol">As low as</span><span class="moa">${u.pay}<small>/mo</small></span></div>
       <div class="moterms">$0 down for ${u.term} months at ${u.apr}% APR${u.promo_end ? ", promo expires " + u.promo_end : ""}. Sheffield Financial, on approved credit.</div>
       <div class="row nowsm"><span class="was">${u.fire ? "Fire Sale price" : "Price"}</span><span class="now sm">${u.now}</span></div>` : `<div class="now">${u.now}</div>`}`}
@@ -789,7 +789,7 @@ function locShow(u, r){
     const el = document.createElement("div"); el.className = "tprice";
     el.innerHTML = `<div class="tlbl">Team price. In store only. Never post, text or screenshot this price.</div>
       <div class="tnow">${esc(tp.now)}</div>
-      <div class="tmeta">${tp.was ? "MSRP " + esc(tp.was) + " &middot; You save " + esc(tp.save) + "<br>" : ""}${u.lease ? "Lease to own: give the customer the Koalafi terms at the counter." : "$0 down, " + esc(tp.pay) + "/mo for " + esc(u.term) + " months at " + esc(u.apr) + "% APR" + (u.promo_end ? ", expires " + esc(u.promo_end) : "") + ", on approved credit."}</div>`;
+      <div class="tmeta">${tp.was ? (u.fire ? "Was " : "MSRP ") + esc(tp.was) + " &middot; You save " + esc(tp.save) + "<br>" : ""}${u.lease ? "Lease to own: give the customer the Koalafi terms at the counter." : "$0 down, " + esc(tp.pay) + "/mo for " + esc(u.term) + " months at " + esc(u.apr) + "% APR" + (u.promo_end ? ", expires " + esc(u.promo_end) : "") + ", on approved credit."}</div>`;
     box.insertBefore(el, box.children[1]);
     // Copy buttons above stay the customer version. Team details only go out through "Copy for a team member" (Nov 9 2026).
     teamGuard(el, r, u);
