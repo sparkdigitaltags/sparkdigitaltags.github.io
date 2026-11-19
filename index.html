@@ -124,7 +124,7 @@ li::marker{color:var(--gold-deep)}
 .top3 .spl{display:block;font-size:13px;color:var(--muted);margin-top:2px}.top3 .spl b{color:var(--ink)}
 .prqmap{font-size:14px;color:var(--muted)}.prqmap.low{color:#b42318;font-weight:700}
 .prqf{display:grid;gap:6px;margin-top:8px}.prqf label{font-weight:700;font-size:15px}.prqin{display:flex;align-items:center;gap:6px;font-size:22px;font-weight:700}.prqin input{flex:1;min-width:0;font:inherit;padding:10px;border-radius:8px;border:2px solid var(--line)}.prqf textarea{font:inherit;font-size:16px;padding:10px;border-radius:8px;border:2px solid var(--line)}
-.galdel{margin-top:8px;font:600 13px/1.2 inherit;color:#A11829;background:#fff;border:1.5px solid #A11829;border-radius:8px;padding:8px 12px;cursor:pointer}.galdel:disabled{opacity:.6}
+.prbtn{display:block;text-align:center;margin:4px 0 12px;font-size:18px;padding:14px;background:#121212;color:#fff}.pvtray{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.pvtray div{position:relative;width:88px;height:88px}.pvtray img{width:88px;height:88px;object-fit:cover;border-radius:8px;border:1px solid #ccc}.pvtray button{position:absolute;top:-6px;right:-6px;width:26px;height:26px;border-radius:50%;border:0;background:#A11829;color:#fff;font:700 14px/26px system-ui;cursor:pointer}.galdel{margin-top:8px;font:600 13px/1.2 inherit;color:#A11829;background:#fff;border:1.5px solid #A11829;border-radius:8px;padding:8px 12px;cursor:pointer}.galdel:disabled{opacity:.6}
 .stones{margin:6px 0 0;padding-left:22px}.stones li{margin:0 0 10px}.stones b{display:block;color:#C8102E}.stones span{display:block}.stones small{display:block;opacity:.7}
 .t3s{font-size:12px;opacity:.8;margin:-2px 0 6px}
 .hphoto{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}.hphoto h3{margin:0 0 4px;font-size:17px}
@@ -1637,9 +1637,9 @@ function galInit(u){
   if (!signed) { up.innerHTML = ""; return; }
   up.innerHTML = `<label class="copy copyall galadd">Add photos of this unit<input type="file" accept="image/*" capture="environment" multiple hidden id="galfile"></label>
     <p class="fine" style="margin:4px 0 0">Up to ${PHOTO_MAX} photos. Shoot the unit only, no people or license plates. Customers will see these.</p><div class="lmsg" id="galmsg"></div>`;
-  document.getElementById("galfile").onchange = async e => {
-    const files = [...e.target.files].slice(0, PHOTO_MAX), m = document.getElementById("galmsg"); if (!files.length) return;
-    let ok = 0;
+  let tray = [];   // Nov 19 2026 (Kayde): check each photo before it saves; remove a bad one with the X
+  const send = async (files) => {
+    const m = document.getElementById("galmsg"); let ok = 0;
     for (const f of files) {
       m.textContent = `Saving photo ${ok + 1} of ${files.length}...`;
       try {
@@ -1651,7 +1651,20 @@ function galInit(u){
       } catch(err){ m.textContent = "Could not save the photo. Check your signal and try again."; }
     }
     if (ok) { m.textContent = `Saved ${ok} photo${ok > 1 ? "s" : ""}. Thanks!`; load(); }
-    e.target.value = "";
+  };
+  const paintTray = () => { const m = document.getElementById("galmsg");
+    if (!tray.length) { m.innerHTML = ""; return; }
+    m.innerHTML = `<b>Check your photos.</b> Tap the X on any you don't want. Nothing saves until you tap Save.<div class="pvtray">${tray.map((f, k) => `<div><img src="${f.url}" alt="Photo ${k + 1}"><button type="button" data-x="${k}" aria-label="Remove photo ${k + 1}">×</button></div>`).join("")}</div>
+      <button type="button" class="copy" id="galsave">Save ${tray.length} photo${tray.length > 1 ? "s" : ""}</button> <button type="button" class="ghost" id="galclr">Start over</button>`;
+    m.querySelectorAll("[data-x]").forEach(b => b.onclick = () => { URL.revokeObjectURL(tray[+b.dataset.x].url); tray.splice(+b.dataset.x, 1); paintTray(); });
+    document.getElementById("galclr").onclick = () => { tray.forEach(f => URL.revokeObjectURL(f.url)); tray = []; paintTray(); };
+    document.getElementById("galsave").onclick = async () => { const fs = tray.map(f => f.f); tray.forEach(f => URL.revokeObjectURL(f.url)); tray = []; await send(fs); };
+  };
+  document.getElementById("galfile").onchange = async e => {
+    const files = [...e.target.files]; e.target.value = ""; if (!files.length) return;
+    if (!feat("photoprev")) { await send(files.slice(0, PHOTO_MAX)); return; }
+    files.forEach(f => { if (tray.length < PHOTO_MAX) tray.push({f, url:URL.createObjectURL(f)}); });
+    paintTray();
   };
 }
 
@@ -2262,7 +2275,7 @@ async function sherpaTag(){
    phones (admin codes), and tag features show only on their example tag. */
 let FLAGS = (() => { try { return JSON.parse(ls.get("sparkflags") || "{}") || {}; } catch(e){ return {}; } })();
 /* Pilot (Brandon Nov 17 2026): Kayde at Denton gets the team Lab tools live before the rest of the team. */
-const PILOT = [{store:"Denton", first:"kayde", feats:["sheet4","hangprint","tagreq","tagtrack","today","topsearch","blockers","mpkit","a2hs","masshome"]}];
+const PILOT = [{store:"Denton", first:"kayde", feats:["sheet4","hangprint","tagreq","tagtrack","today","topsearch","blockers","mpkit","a2hs","masshome","printbtn","photoprev"]}];
 function pilotOn(k){ if (!getCode() || typeof isBT === "function" && isBT()) return false; const f = String(ls.get("sparkfirst") || "").trim().toLowerCase();
   return PILOT.some(p => p.first === f && p.feats.includes(k) && !!getPin(p.store)); }
 const LAB_EX = {atslook:["weatherford-32889-44146c"], flames:["farmersbranch-109225-fce43e"], mow:["farmersbranch-109225-fce43e"], stone3:["farmersbranch-109122-4ef97e","farmersbranch-109225-fce43e"]};
@@ -2622,6 +2635,8 @@ function labPills(){
 /* Brandon Nov 16 2026: signed in team members print their store's QR Pegboard Hangers (PB01 to PB10) from any tag. Lab first. */
 const HANG_PDF = ["burleson","colleyville","denton","farmersbranch","keller","lewisville","renfro","gatesville","springtown","tyler","weatherford","waco","sarasota"];
 const LAB_TESTS = [
+  ["printbtn", "Print tags button (team)", "A big black Print tags button at the top of every store page jumps to the Tags to print list: filter by brand, check several or Select all, print them together. Live for Kayde (Denton) now.", "#store/denton"],
+  ["photoprev", "Check photos before they save (team)", "After taking unit photos, the team sees them first with an X on each. Nothing saves until they tap Save, so a bad shot never reaches customers. Live for Kayde (Denton) now.", "#denton-85361-e2c164"],
   ["masshome", "Home many units at once", "On the store page, Home many units opens the store map. Tap the spot, check every unit that is there (filter by last 4 or brand, or Check all shown), then tap Home. Live for Kayde (Denton) now.", "#homing/denton"],
   ["a2hs", "Add the DT to the home screen", "On the store home page, signed in team members get a yellow bar: one tap install on Android, the 2 steps on iPhone. Live for Kayde (Denton) now.", "#store/denton"],
   ["mapedit2", "Store map: remove, drag and turn", "In Edit store map labels, Floor, Lot, Warehouse and Shop can be removed like any other label. Drag a label to move it, and tap a label for Turn left and Turn right.", "#denton-85361-e2c164@locsec"],
@@ -3149,7 +3164,10 @@ async function tagQ(st){
       try { if (!r || r.st !== "place") await api({action:"tagpdf", store:st, unit:un, pin, code:getCode()}); await api({action:"placed", store:st, unit:un, pin, code:getCode()}); } catch(e){} }
     sel.clear(); delete TS[st]; tagQ(st); };
   box.querySelector('[data-tq="all"]').onclick = () => { const on = printable.length && printable.every(r => sel.has(r.t.unit)); printable.forEach(r => on ? sel.delete(r.t.unit) : sel.add(r.t.unit)); tagQ(st); };
-  box.querySelector('[data-tq="print"]').onclick = async () => { const us = [...sel].map(u => DATA.units.find(x => x.store === st && String(x.unit) === u)).filter(Boolean); await bulkPrint(us, document.getElementById("tqm")); sel.clear(); setTimeout(() => tagQ(st), 1500); };
+  box.querySelector('[data-tq="print"]').onclick = async () => { const us = [...sel].map(u => DATA.units.find(x => x.store === st && String(x.unit) === u)).filter(Boolean); const tm = document.getElementById("tqm"); await tbLoad; const tb = us.filter(x => TB[x.id] && getKey()), rest = us.filter(x => !(TB[x.id] && getKey()));   // Nov 19 2026 (Kayde): bulk matches single, front plus unit pic and DT QR back
+    if (tb.length) { await sheetPrint(tb.map(x => x.id), tm); tb.forEach(x => api({action:"tagpdf", store:x.store, unit:x.unit, pin:getPin(x.store) || "", code:getCode()}).catch(() => {})); }
+    if (rest.length) { const m2 = document.createElement("div"); m2.className = "lmsg"; tm.after(m2); await bulkPrint(rest, tb.length ? m2 : tm); }
+    sel.clear(); setTimeout(() => tagQ(st), 1500); };
 }
 
 /* Bounty blockers: an exceptionally old unit that has to sell before other stores can claim bounties on that model. */
@@ -3505,7 +3523,7 @@ function storeHome(st){
   chatRefresh().then(on => { const cb = document.getElementById("shchat"); if (cb) cb.innerHTML = on ? chatBtn() : ""; });
   sherpaLoad().then(S => { const c = document.getElementById("shclimb"); if (!S || !c) return; c.innerHTML = climbCard(S); wireClimb(c);
     if (sessionStorage.getItem("sparkshow") === "find") { sessionStorage.removeItem("sparkshow"); setTimeout(() => sherpaShow("find"), 400); } else sherpaGreet(); });
-  box.innerHTML = `<div id="shchat">${chatBtn()}</div><h2 style="margin-top:4px">Find any unit</h2>${finderHtml("sh")}
+  box.innerHTML = `<div id="shchat">${chatBtn()}</div>${feat("printbtn") ? `<a class="copy copyall prbtn" href="#store/${slug(st)}@tagq">🖨 Print tags</a>` : ""}<h2 style="margin-top:4px">Find any unit</h2>${finderHtml("sh")}
     <a class="copy copyall" href="#inventory/${slug(st)}" style="display:block;text-align:center;margin-top:8px">Inventory</a>${feat("masshome") ? `<a class="copy copyall" href="#homing/${slug(st)}" style="display:block;text-align:center;margin-top:8px;background:#1F2A5A;color:#fff">Home many units</a>` : ""}
     <p class="fine" id="snote" style="margin:6px 0 14px">Searches every unit at every Spark store on the digital tags. Your store comes first.</p>
     <div id="shclimb"></div>
