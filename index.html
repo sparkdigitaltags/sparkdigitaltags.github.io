@@ -3222,7 +3222,7 @@ async function tagQ(st){
   const F = box._F || (box._F = {br:"", kind:"", cat:"", fire:"", show:""}), sel = box._S || (box._S = new Set()), every = F.show === "all";   // Nov 20 2026 (Richard, Lewisville): Every tag lets him reprint any tag, Fire Sale or regular
   const kind = t => t.st === "place" ? "place" : tsChanged(t) ? "changed" : "new";
   const cat = x => isStand(x) ? "Stander" : utype(x) === "mower" ? "Zero turn" : utype(x) === "walk" ? "Walk behind" : utype(x) === "rider" ? "Rider" : isHandheld(x) ? "Handheld" : utype(x) === "utv" ? "UTV" : "Other";
-  const base = every ? DATA.units.filter(x => x.store === st && (TB[x.id] || all.some(t => t.unit === String(x.unit)))).sort((a, b) => (a.brand + a.model).localeCompare(b.brand + b.model)).map(x => ({t:all.find(t => t.unit === String(x.unit)) || {unit:String(x.unit), st:"done"}, x}))
+  const base = every ? DATA.units.filter(x => x.store === st).sort((a, b) => (a.brand + a.model).localeCompare(b.brand + b.model)).map(x => ({t:all.find(t => t.unit === String(x.unit)) || {unit:String(x.unit), st:"done"}, x}))
     : all.map(t => ({t, x:U(t)})).filter(r => r.x && r.t.st !== "done");
   const rows = base.filter(r => (!F.br || r.x.brand.toLowerCase() === F.br.toLowerCase()) && (every || !F.kind || kind(r.t) === F.kind) && (!F.cat || cat(r.x) === F.cat) && (!F.fire || (F.fire === "y") === !!r.x.fire));
   const ch = rows.filter(r => kind(r.t) === "changed"), nw = rows.filter(r => kind(r.t) === "new"), pl = rows.filter(r => kind(r.t) === "place"), dn = all.filter(t => t.st === "done");
