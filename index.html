@@ -97,7 +97,7 @@ li::marker{color:var(--gold-deep)}
 .locmeta{font-size:12px;color:var(--muted)}
 .locmap{background:#E3DCCF;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
 .locmap svg{display:block;width:100%;height:auto}
-.skin{display:none!important}html:not([data-sk]) .sk-photo,html[data-sk=photo] .sk-photo,html[data-sk=zones] .sk-zones,html[data-sk=draw] .sk-draw,html[data-sk=tiles] .sk-tiles,html[data-sk=btns] svg.sk-btns{display:block!important}html[data-sk=btns] div.skbtns{display:flex!important}
+html.jumping #app{visibility:hidden}.skin{display:none!important}html:not([data-sk]) .sk-photo,html[data-sk=photo] .sk-photo,html[data-sk=zones] .sk-zones,html[data-sk=draw] .sk-draw,html[data-sk=tiles] .sk-tiles,html[data-sk=btns] svg.sk-btns{display:block!important}html[data-sk=btns] div.skbtns{display:flex!important}
 .skbar{display:flex;gap:4px;margin:0 0 8px;overflow-x:auto}.skbar button{flex:1 1 0;min-width:58px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:700 12px/1.1 var(--display,inherit);cursor:pointer}.skbar button span{font-size:20px;line-height:1}.skbar button[aria-pressed=true]{border-color:#C8102E;background:#C8102E;color:#fff}
 .skhint{font-weight:700;font-size:13px;color:#C8102E;margin:-4px 0 8px;animation:skp 1.6s ease-in-out 3}@keyframes skp{50%{opacity:.35}}
 .skbtns{flex-wrap:wrap;gap:6px;margin-top:8px}.skbtns button{flex:1 1 40%;border:0;color:#fff;font-weight:800;font-size:16px;padding:14px 8px;border-radius:10px;cursor:pointer;opacity:.88}.skbtns button.on{outline:4px solid #111;opacity:1}
@@ -591,7 +591,7 @@ const SID = Math.random().toString(36).slice(2,10);
 const DEV = (() => { try { let d = localStorage.getItem("sparkdev"); if (!d) { d = (Math.random().toString(36).slice(2) + Date.now().toString(36) + Math.random().toString(36).slice(2)).slice(0, 24); localStorage.setItem("sparkdev", d); } return d; } catch(e){ return ""; } })();
 const UA = (() => { const a = navigator.userAgent || ""; const os = /iPhone/.test(a) ? "iPhone" : /iPad/.test(a) ? "iPad" : /Android/.test(a) ? ((a.match(/Android[^;]*;\s*([^;)]+)/) || [])[1] || "Android") : /Windows/.test(a) ? "Windows PC" : /Mac/.test(a) ? "Mac" : "Other";
   const br = /SamsungBrowser/.test(a) ? "Samsung Internet" : /CriOS|Chrome/.test(a) ? "Chrome" : /FxiOS|Firefox/.test(a) ? "Firefox" : /Safari/.test(a) ? "Safari" : "Browser"; return (os + " " + br).slice(0, 60); })();
-function track(t, o){ try { if (!LOC_API) return; const p = Object.assign({action:"ev", t, sid:SID, dev:DEV, ua:UA}, o||{});
+function track(t, o){ try { if (!LOC_API) return; const p = Object.assign({action:"ev", t, ss:SID, dev:DEV, ua:UA}, o||{});   /* Nov 20 2026: ss, not sid. Google dropped GET requests carrying sid, so most events never saved */
     try { if (!p.code && typeof getCode === "function" && getCode()) { const a = chatAuth(); if (a) { p.code = getCode(); p.pin = a.pin; if (!p.store) p.store = a.store; } } } catch(e){}   /* team events say who (Nov 17 2026) */
     fetch(LOC_API + "?" + new URLSearchParams(p), {mode:"no-cors", keepalive:true}); } catch(e){} }
 const LOC_API = "https://script.google.com/macros/s/AKfycbxcj7HnpGxRFSILwbOjYf-9j11h1KSAHLnhmYvpJvZ6g2sukb_9ldyFG-rN2LoWCZfA/exec";
@@ -3097,10 +3097,17 @@ function a2hsBar(){
   b.querySelector(".x").onclick = () => { sessionStorage.setItem("a2hs_x", "1"); b.remove(); };
 }
 /* Jump links: #page@sectionid opens the page and scrolls to that exact section, with a flash. */
-function jumpFix(){ if (!location.hash.includes("@")) return false; const [h, a] = location.hash.split("@"); sessionStorage.setItem("jump", a); history.replaceState(null, "", h || "#"); return true; }
-function jumpGo(){ const a = sessionStorage.getItem("jump"); if (!a) return; let n = 0;
-  const t = setInterval(() => { const el = document.getElementById(a) || document.querySelector(`[data-sec="${a}"]`); if (el && el.offsetHeight > 30 && n > 6) { clearInterval(t); sessionStorage.removeItem("jump");
-      el.scrollIntoView({behavior:"smooth", block:"center"}); setTimeout(() => el.scrollIntoView({behavior:"smooth", block:"center"}), 1200); el.classList.add("jumpflash"); setTimeout(() => el.classList.remove("jumpflash"), 2600); } else if (++n > 110) { clearInterval(t); sessionStorage.removeItem("jump"); } }, 150); }
+function jumpFix(){ if (!location.hash.includes("@")) return false; const [h, a] = location.hash.split("@"); sessionStorage.setItem("jump", a); history.replaceState(null, "", h || "#");
+  document.documentElement.classList.add("jumping"); return true; }   // Nov 20 2026 (Brandon): land right on the spot. The page stays hidden until it is there, no visible scroll.
+function jumpGo(){ const a = sessionStorage.getItem("jump"); const show = () => document.documentElement.classList.remove("jumping"); if (!a) return show(); let n = 0;
+  const go = el => { const y = el.getBoundingClientRect().top + window.scrollY - Math.max(70, (window.innerHeight - Math.min(el.offsetHeight, window.innerHeight)) / 2);
+    window.scrollTo({top: Math.max(0, y), behavior: "instant"}); };
+  const t = setInterval(() => { const el = document.getElementById(a) || document.querySelector(`[data-sec="${a}"]`);
+    if (el && el.offsetHeight > 30) { clearInterval(t); sessionStorage.removeItem("jump"); go(el); show();
+      let moved = false; const stop = () => { moved = true; }; window.addEventListener("touchstart", stop, {once:true, passive:true}); window.addEventListener("wheel", stop, {once:true, passive:true});
+      [250, 700].forEach(ms => setTimeout(() => { if (!moved) go(el); }, ms));   // keep it in place while late parts of the page load
+      el.classList.add("jumpflash"); setTimeout(() => el.classList.remove("jumpflash"), 2600); }
+    else if (++n > 80) { clearInterval(t); sessionStorage.removeItem("jump"); show(); } }, 40); }
 window.addEventListener("hashchange", () => { if (jumpFix()) route(); setTimeout(jumpGo, 60); });
 /* Zoom on every location diagram map: + and − buttons, drag to move. */
 const ZOOM_STORES = ["Denton"];   // Brandon Nov 17 2026: Denton gets map zoom for placing labels and units, before the rest
@@ -3682,6 +3689,7 @@ function adminHome(){
   const list = units.slice(0, 150).map(u => `<li><a href="#${esc(u.id)}">${u.fire ? `<span class="admfire">Fire Sale</span> ` : ""}${esc(u.m + " " + u.name)}</a><small>${esc(u.store)}, unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}</small></li>`).join("");
   app.innerHTML = `${ADMIN_CSS}<div class="adm"><div class="admh"><img src="/m/icon-192.png" alt=""><div><b>Spark Admin</b><small>${all.length} units across ${STORES.length} live locations</small></div></div>
     <div class="admlinks"><a href="#brief"><b>Brandon's Brief ›</b></a> &nbsp; <a href="#team">Team activity ›</a> &nbsp; <a href="#admin@admdash">Activity dashboard ›</a> &nbsp; <a href="#tags/denton">Tags to print ›</a> &nbsp; <a href="#lenders">Spark Lenders ›</a> &nbsp; <a href="#inventory">Inventory ›</a>${isAdm() ? ` &nbsp; <a href="#lab">Lab ›</a>` : ""}${chatOn() ? ` &nbsp; <a href="#chat">Team chat ›</a>` : ""}</div><div id="todo"></div><div id="blk"></div>
+    <section id="admkid" class="kid"><p class="admmut">Loading who is using the DTs...</p></section>
     <input id="admq" type="search" placeholder="Search brand, model, unit or serial" value="${esc(ADM.q)}">
     <div class="admf">${opts("dba", Object.values(LOC_INFO).map(i => i.dba), "All brands (DBA)")}${opts("state", Object.values(LOC_INFO).map(i => i.state), "All states")}
       ${opts("loc", Object.keys(LOC_INFO).filter(st => (!ADM.dba || LOC_INFO[st].dba === ADM.dba) && (!ADM.state || LOC_INFO[st].state === ADM.state)), "All locations")}
@@ -3693,6 +3701,7 @@ function adminHome(){
     <h2>Locations</h2><div class="admgrid">${cards || `<p class="admmut">No locations match.</p>`}</div>
     <h2>Units ${units.length > 150 ? `<small class="admmut">(first 150 of ${units.length}, narrow the filters)</small>` : ""}</h2><ul class="admlist">${list || `<li class="admmut">No units match.</li>`}</ul>
     <p class="admmut" style="margin:18px 0;color:#bbb">Add this page to your home screen for the Spark Admin app. Signed in with all store access. <a href="#" id="admout">Sign out</a></p></div>`;
+  kidCard();
   app.querySelectorAll("select[data-k]").forEach(el => el.onchange = () => { ADM[el.dataset.k] = el.value; if (el.dataset.k === "dba" || el.dataset.k === "state") ADM.loc = ""; adminHome(); });
   const qi = document.getElementById("admq"); let t; qi.oninput = () => { clearTimeout(t); t = setTimeout(() => { ADM.q = qi.value; adminHome(); const n = document.getElementById("admq"); n.focus(); n.setSelectionRange(n.value.length, n.value.length); }, 300); };
   const x = document.getElementById("admx"); if (x) x.onclick = () => { ADM = {q:"", dba:"", state:"", loc:"", mfg:"", fire:""}; adminHome(); };
@@ -3700,7 +3709,51 @@ function adminHome(){
   app.querySelectorAll("[data-map]").forEach(b => b.onclick = async () => { const st = b.dataset.map; ADM_MAP = ADM_MAP === st ? "" : st;
     if (ADM_MAP) { b.textContent = "Loading map..."; await mapLoad(st); } const y = window.scrollY; adminHome(); window.scrollTo(0, y); });
 }
-const ADMIN_CSS = `<style>.admmap{margin-top:8px;border-radius:10px;overflow:hidden;background:#eee}.admmap svg{width:100%;height:auto;display:block}.adm{max-width:1000px;margin:0 auto;padding:14px;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f}
+
+/* Who's using the DTs (Brandon Nov 20 2026): a 3rd grade picture of team use on My Dashboard. Every signed in team member counts,
+   whatever their role. A visit is one person on the DT in one hour. Data: action "activity" (Events, Log, Shares, Tag and Price Requests). */
+const KID_DO = [["move","📍","Put units on the map","moving units on the store map"],["print","🖨️","Printed tags","printing tags"],["scan","📱","Opened a tag","opening tags"],
+  ["find","🔍","Found a unit","finding units by serial"],["share","📣","Posted a unit","posting units on social"],["req","🙋","Asked for help","asking for tags and prices"],["signin","🔑","Signed in","signing in"]];
+let KID_CACHE = null;
+async function kidCard(){
+  const box = document.getElementById("admkid"); if (!box) return;
+  let r = KID_CACHE && Date.now() - KID_CACHE.at < 120000 ? KID_CACHE.r : null;
+  if (!r) { try { const a = chatAuth(); r = await api({action:"activity", store:a.store, pin:a.pin, code:getCode(), days:14}); KID_CACHE = {at:Date.now(), r}; } catch(e){} }
+  if (!document.getElementById("admkid")) return;
+  if (!r || !r.ok) { box.innerHTML = `<p class="admmut">Could not load who is using the DTs. Pull down to try again.</p>`; return; }
+  const rows = r.rows.filter(x => x[3] && !["test", "beta", "dwell"].includes(x[1]) && !/^TEST/i.test(String(x[5] || "")) && !/^(Built|Requested|Denied|Approved)/.test(x[3]));
+  const dk = t => new Date(t).toDateString(), days = [];
+  for (let i = 13; i >= 0; i--) days.push(new Date(Date.now() - i * 86400000));
+  const visit = {}; rows.forEach(x => { visit[x[3] + "|" + new Date(x[0]).toDateString() + "|" + new Date(x[0]).getHours()] = x; });
+  const V = Object.keys(visit), perDay = days.map(d => ({d, n:V.filter(k => k.split("|")[1] === d.toDateString()).length, p:new Set(V.filter(k => k.split("|")[1] === d.toDateString()).map(k => k.split("|")[0])).size}));
+  const wk = Date.now() - 7 * 86400000, rw = rows.filter(x => x[0] >= wk), vw = V.filter(k => visit[k][0] >= wk), people = new Set(rw.map(x => x[3]));
+  const kind = x => ["tagreq", "pricereq"].includes(x[1]) ? "req" : x[1];
+  const cnt = {}; rw.forEach(x => { cnt[kind(x)] = (cnt[kind(x)] || 0) + 1; });
+  const acts = KID_DO.filter(a => cnt[a[0]]).sort((a, b) => cnt[b[0]] - cnt[a[0]]), topN = Math.max(1, ...acts.map(a => cnt[a[0]]));
+  const per = {}; rw.forEach(x => { const p = per[x[3]] = per[x[3]] || {n:x[3], v:new Set(), k:{}}; p.v.add(new Date(x[0]).toDateString() + new Date(x[0]).getHours()); p.k[kind(x)] = (p.k[kind(x)] || 0) + 1; });
+  const stars = Object.values(per).sort((a, b) => b.v.size - a.v.size).slice(0, 3), medal = ["🥇", "🥈", "🥉"];
+  const top = Math.max(1, ...perDay.map(x => x.n)), today = new Date().toDateString(), wd = d => d.toLocaleDateString("en-US", {weekday:"short"}).slice(0, 2);
+  const best = acts[0], first = s => s.split(" ")[0];
+  const say = !rw.length ? "Nobody has used the DTs yet this week. 😴" : `${people.size === 1 ? "1 person" : people.size + " people"} used the DTs ${vw.length} ${vw.length === 1 ? "time" : "times"} this week.`;
+  box.innerHTML = `<div class="kidh">🙋 Who's using the DTs?</div>
+    <div class="kidbig"><div><b>${people.size}</b><span>👥 people</span></div><div><b>${vw.length}</b><span>🔁 visits</span></div><div><b>${rw.length}</b><span>✅ things done</span></div></div>
+    <p class="kidsay">${esc(say)}</p>
+    <div class="kidlab">📅 Visits each day <small>(last 2 weeks)</small></div>
+    <div class="kidbars">${perDay.map(x => `<div class="${x.d.toDateString() === today ? "tdy" : ""}" title="${x.d.toLocaleDateString()}: ${x.n} visits by ${x.p} people"><small>${x.n || ""}</small><i style="height:${Math.max(x.n ? 6 : 2, Math.round(x.n / top * 100))}%"></i><span>${x.d.toDateString() === today ? "Today" : wd(x.d)}</span></div>`).join("")}</div>
+    <div class="kidlab">🧰 What they did this week</div>
+    ${acts.length ? `<div class="kiddo">${acts.map(a => `<div><span class="kie">${a[1]}</span><span class="kin">${a[2]}</span><span class="kib"><i style="width:${Math.max(4, Math.round(cnt[a[0]] / topN * 100))}%"></i></span><b>${cnt[a[0]]}</b></div>`).join("")}</div>
+      <p class="kidsay">👉 The team spends the most time ${best[3]}.</p>` : `<p class="admmut">Nothing yet this week.</p>`}
+    ${stars.length ? `<div class="kidlab">⭐ Top helpers this week</div><div class="kidstars">${stars.map((p, i) => { const k = KID_DO.filter(a => p.k[a[0]]).sort((a, b) => p.k[b[0]] - p.k[a[0]])[0];
+      return `<div><span>${medal[i]}</span><b>${esc(first(p.n))}</b><small>${p.v.size} ${p.v.size === 1 ? "visit" : "visits"}${k ? `, mostly ${k[1]}` : ""}</small></div>`; }).join("")}</div>` : ""}
+    <p class="admmut" style="margin:8px 0 0"><a href="#team">See every detail ›</a> &nbsp; A visit is one person on the DT in one hour.</p>`;
+}
+const ADMIN_CSS = `<style>.kid{background:#fff;color:#1d1d1f;border-radius:16px;padding:14px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,.08)}.kidh{font-size:22px;font-weight:800;margin-bottom:8px}
+.kidbig{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.kidbig div{background:#f4f1ec;border-radius:12px;padding:10px 4px;text-align:center}.kidbig b{display:block;font-size:34px;line-height:1;color:#C8102E}.kidbig span{font-size:13px;font-weight:700}
+.kidsay{font-size:17px;font-weight:700;margin:10px 0}.kidlab{font-size:16px;font-weight:800;margin:14px 0 6px}.kidlab small{font-weight:600;color:#888}
+.kidbars{display:flex;align-items:flex-end;gap:3px;height:130px;padding-top:16px}.kidbars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}.kidbars i{display:block;width:100%;background:#4C7BD9;border-radius:6px 6px 2px 2px}.kidbars .tdy i{background:#C8102E}.kidbars small{font-size:11px;font-weight:800;margin-bottom:2px}.kidbars span{font-size:10px;color:#777;margin-top:3px}.kidbars .tdy span{color:#C8102E;font-weight:800}
+.kiddo div{display:grid;grid-template-columns:30px 1fr 34%;grid-template-areas:"e n b" "e g g";align-items:center;gap:2px 6px;margin:6px 0}.kiddo .kie{grid-area:e;font-size:24px}.kiddo .kin{grid-area:n;font-weight:700;font-size:15px}.kiddo b{grid-area:b;text-align:right;font-size:18px}.kiddo .kib{grid-area:g;height:12px;background:#eee;border-radius:6px;overflow:hidden}.kiddo .kib i{display:block;height:100%;background:#2E9E5B;border-radius:6px}
+.kidstars{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.kidstars div{background:#fff8e1;border-radius:12px;padding:8px;text-align:center}.kidstars span{font-size:28px;display:block}.kidstars b{display:block;font-size:16px}.kidstars small{font-size:12px;color:#555}
+.admmap{margin-top:8px;border-radius:10px;overflow:hidden;background:#eee}.admmap svg{width:100%;height:auto;display:block}.adm{max-width:1000px;margin:0 auto;padding:14px;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1d1d1f}
 .admh{display:flex;gap:12px;align-items:center;background:#121212;color:#fff;margin:-14px -14px 14px;padding:14px;border-bottom:4px solid #F5B400}.admh img{width:44px;height:44px;border-radius:10px}.admh b{display:block;font-size:20px}.admh small{color:#bbb}
 .adm h2{font-size:17px;margin:18px 0 8px;color:#fff}.adm h2 small{color:#bbb}.admmut{color:#666;font-size:13px}.admlinks{margin-bottom:10px}.admlinks a{color:#C8102E;font-weight:700;text-decoration:none}
 .adm input,.adm select,.adm button{font:inherit;font-size:16px}.adm input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #ccc;border-radius:10px;margin:0 0 10px;background:#fff;color:#1d1d1f}
