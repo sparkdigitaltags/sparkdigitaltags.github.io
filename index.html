@@ -2346,7 +2346,8 @@ async function sherpaTag(){
    phones (admin codes), and tag features show only on their example tag. */
 let FLAGS = (() => { try { return JSON.parse(ls.get("sparkflags") || "{}") || {}; } catch(e){ return {}; } })();
 /* Pilot (Brandon Nov 17 2026): Kayde at Denton gets the team Lab tools live before the rest of the team. */
-const PILOT = [{store:"Denton", first:"kayde", feats:["sheet4","hangprint","tagreq","tagtrack","today","topsearch","blockers","mpkit","a2hs","masshome","printbtn","photoprev"]}];
+const PILOT = [{store:"Denton", first:"kayde", feats:["sheet4","hangprint","tagreq","tagtrack","today","topsearch","blockers","mpkit","a2hs","masshome","printbtn","photoprev"]},
+  {store:"Lewisville", first:"richard", feats:["tagtrack","sheet4","printbtn"]}];   // Nov 20 2026 (Brandon): Richard picks Fire Sale or regular tags and prints the ones he wants
 function pilotOn(k){ if (!getCode() || typeof isBT === "function" && isBT()) return false; const f = String(ls.get("sparkfirst") || "").trim().toLowerCase();
   return PILOT.some(p => p.first === f && p.feats.includes(k) && !!getPin(p.store)); }
 const LAB_EX = {atslook:["weatherford-32889-44146c"], flames:["farmersbranch-109225-fce43e"], mow:["farmersbranch-109225-fce43e"], stone3:["farmersbranch-109122-4ef97e","farmersbranch-109225-fce43e"]};
@@ -3217,21 +3218,26 @@ async function tagQ(st){
   if (!feat("tagtrack") || !getCode() || !(isAll() || getPin(st))) { box.innerHTML = ""; return; }
   if (!box.innerHTML) box.innerHTML = `<div class="top3 tq"><div class="t3h">Tags to print</div><div class="t3s">Loading...</div></div>`;
   const all = (await tagStat(st, true)).filter(t => !tqHide(st, t)), U = t => DATA.units.find(x => x.store === st && String(x.unit) === t.unit);
-  const F = box._F || (box._F = {br:"", kind:"", cat:"", fire:""}), sel = box._S || (box._S = new Set());
+  try { await tbLoad; } catch(e){}
+  const F = box._F || (box._F = {br:"", kind:"", cat:"", fire:"", show:""}), sel = box._S || (box._S = new Set()), every = F.show === "all";   // Nov 20 2026 (Richard, Lewisville): Every tag lets him reprint any tag, Fire Sale or regular
   const kind = t => t.st === "place" ? "place" : tsChanged(t) ? "changed" : "new";
-  const cat = x => isHandheld(x) ? "Handheld" : MOWTYPES.includes(utype(x)) ? "Mower" : utype(x) === "utv" ? "UTV" : "Other";
-  const rows = all.map(t => ({t, x:U(t)})).filter(r => r.x && r.t.st !== "done" && (!F.br || r.x.brand.toLowerCase() === F.br.toLowerCase()) && (!F.kind || kind(r.t) === F.kind) && (!F.cat || cat(r.x) === F.cat) && (!F.fire || (F.fire === "y") === !!r.x.fire));
+  const cat = x => isStand(x) ? "Stander" : utype(x) === "mower" ? "Zero turn" : utype(x) === "walk" ? "Walk behind" : utype(x) === "rider" ? "Rider" : isHandheld(x) ? "Handheld" : utype(x) === "utv" ? "UTV" : "Other";
+  const base = every ? DATA.units.filter(x => x.store === st && (TB[x.id] || all.some(t => t.unit === String(x.unit)))).sort((a, b) => (a.brand + a.model).localeCompare(b.brand + b.model)).map(x => ({t:all.find(t => t.unit === String(x.unit)) || {unit:String(x.unit), st:"done"}, x}))
+    : all.map(t => ({t, x:U(t)})).filter(r => r.x && r.t.st !== "done");
+  const rows = base.filter(r => (!F.br || r.x.brand.toLowerCase() === F.br.toLowerCase()) && (every || !F.kind || kind(r.t) === F.kind) && (!F.cat || cat(r.x) === F.cat) && (!F.fire || (F.fire === "y") === !!r.x.fire));
   const ch = rows.filter(r => kind(r.t) === "changed"), nw = rows.filter(r => kind(r.t) === "new"), pl = rows.filter(r => kind(r.t) === "place"), dn = all.filter(t => t.st === "done");
-  const brands = [...new Map(all.map(U).filter(Boolean).map(x => [x.brand.toLowerCase(), x.brand])).values()].sort();
+  const brands = [...new Map(base.map(r => r.x).map(x => [x.brand.toLowerCase(), x.brand])).values()].sort();
+  const cats = ["Zero turn", "Stander", "Walk behind", "Rider", "Handheld", "UTV", "Other"].filter(c => base.some(r => cat(r.x) === c));
   const opt = (k, list, lab) => `<select data-tf="${k}" aria-label="${lab}"><option value="">${lab}</option>${list.map(([v, t]) => `<option value="${esc(v)}" ${F[k] === v ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
-  const row = ({t, x}) => `<li><input type="checkbox" data-u="${esc(t.unit)}" ${sel.has(t.unit) ? "checked" : ""} aria-label="Select ${esc(x.model)}"><a href="#${esc(x.id)}@lprint"><span class="ub">${esc(brAb(x.brand))}</span><span class="um">${esc(x.model || x.name)}</span>${x.fire ? `<span class="ux">Fire Sale</span>` : ""}<span class="tqr">${esc(t.st === "place" ? "Put it on the unit" : tsReason(t))}</span>${x.serial ? `<span class="us">SN ${esc(sn4(x))}</span>` : ""}</a></li>`;
-  const printable = [...ch, ...nw];
+  const row = ({t, x}) => `<li><input type="checkbox" data-u="${esc(t.unit)}" ${sel.has(t.unit) ? "checked" : ""} aria-label="Select ${esc(x.model)}"><a href="#${esc(x.id)}@lprint"><span class="ub">${esc(brAb(x.brand))}</span><span class="um">${esc(x.model || x.name)}</span>${x.fire ? `<span class="ux">Fire Sale</span>` : ""}<span class="tqr">${esc(every ? cat(x) : t.st === "place" ? "Put it on the unit" : tsReason(t))}</span>${x.serial ? `<span class="us">SN ${esc(sn4(x))}</span>` : ""}</a></li>`;
+  const printable = every ? rows : [...ch, ...nw];
   box.innerHTML = `<div class="top3 tq"><div class="t3h">Tags to print</div><div class="t3s">Tap a unit to print one, or check several and print them together. When it's hanging on the unit, tap It's on the unit. Already hung one from a Drive printout? Check it and tap Already on the unit.${!FLAGS.tagtrack ? " <b>Testing: only you see this.</b>" : ""}</div>
-    <div class="tqbar">${opt("br", brands.map(b => [b, b]), "All brands")}${opt("kind", [["changed", "Changed"], ["new", "New"], ["place", "Not on the unit yet"]], "All tags")}${opt("cat", [["Mower", "Mowers"], ["Handheld", "Handhelds"], ["UTV", "UTVs"], ["Other", "Other"]], "All types")}${opt("fire", [["y", "Fire Sale only"], ["n", "Not Fire Sale"]], "Fire Sale or not")}</div>
+    <div class="tqbar">${opt("show", [["all", "Every tag (reprint any)"]], "Need to print")}${opt("fire", [["y", "Fire Sale tags"], ["n", "Regular tags"]], "Fire Sale and regular")}${opt("br", brands.map(b => [b, b]), "All brands")}${opt("cat", cats.map(c => [c, c]), "All types")}${every ? "" : opt("kind", [["changed", "Changed"], ["new", "New"], ["place", "Not on the unit yet"]], "All tags")}</div>
     <div class="tqbar"><button type="button" class="ghost" data-tq="all">${printable.length && printable.every(r => sel.has(r.t.unit)) ? "Clear all" : "Select all " + printable.length}</button><button type="button" class="ghost" data-tq="hung" ${sel.size ? "" : "disabled"}>Already on the unit${sel.size ? " (" + sel.size + ")" : ""}</button><button type="button" class="copy" data-tq="print" ${sel.size ? "" : "disabled"}>Print ${sel.size || ""} selected</button></div><div class="lmsg" id="tqm"></div>
-    ${ch.length ? `<div class="tqh tqch">⚠ Changed tags: print and swap these first (${ch.length})</div><ul class="ulist tqchl">${ch.map(row).join("")}</ul>` : ""}
-    ${nw.length ? `<div class="tqh">New tags to print (${nw.length})</div><ul class="ulist">${nw.map(row).join("")}</ul>` : ""}
-    ${pl.length ? `<div class="tqh">Printed. Put them on the unit (${pl.length})</div><ul class="ulist">${pl.map(row).join("")}</ul>` : ""}
+    ${every ? `<div class="tqh">Every tag (${rows.length})</div><ul class="ulist">${rows.map(row).join("")}</ul>` : ""}
+    ${!every && ch.length ? `<div class="tqh tqch">⚠ Changed tags: print and swap these first (${ch.length})</div><ul class="ulist tqchl">${ch.map(row).join("")}</ul>` : ""}
+    ${!every && nw.length ? `<div class="tqh">New tags to print (${nw.length})</div><ul class="ulist">${nw.map(row).join("")}</ul>` : ""}
+    ${!every && pl.length ? `<div class="tqh">Printed. Put them on the unit (${pl.length})</div><ul class="ulist">${pl.map(row).join("")}</ul>` : ""}
     ${!rows.length ? `<p class="tqok">Nothing to print for this filter. 👍</p>` : ""}${dn.length ? `<p class="ucount">${dn.length} placed this week</p>` : ""}</div>`;
   box.querySelectorAll("[data-tf]").forEach(s => s.onchange = () => { F[s.dataset.tf] = s.value; tagQ(st); });
   box.querySelectorAll("[data-u]").forEach(c => c.onchange = async () => { c.checked ? sel.add(c.dataset.u) : sel.delete(c.dataset.u); const y = window.scrollY; await tagQ(st); window.scrollTo(0, y); });
