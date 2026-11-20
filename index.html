@@ -683,6 +683,38 @@ const GENERIC = { bg: `<rect width="860" height="1010" fill="${G}"/><rect x="0" 
 const MAPFRAME = { Denton: { to: (x, y) => [100 - x, 79.3 - 1.319 * y], from: (X, Y) => [100 - X, (79.3 - Y) / 1.319] },
   /* Keller (Brandon Nov 20 2026): his aerial photo. Labels stay saved in the old drawing's numbers; this turns them onto the photo and back. */
   Keller: { to: (x, y) => [0.73222 * x + 8.6003, 0.92668 * y - 0.98413], from: (X, Y) => [(X - 8.6003) / 0.73222, (Y + 0.98413) / 0.92668] } };
+/* LSM aerials (Brandon Nov 20 2026): every LSM store map is now its real aerial photo. Labels and every saved unit location stay saved
+   in the old drawing's numbers; k turns them onto the photo (X = a x + b y + c, Y = d x + e y + f) and back. The old drawing stays as the Drawing view. */
+const PHOTOMAP = {
+  "Colleyville": {img: "aer/colleyville.jpg", vb: [739, 787], k: [0.73235, -0.74703, 50.78143, 0.64407, 0.6761, -15.88153]},
+  "Lewisville": {img: "aer/lewisville.jpg", vb: [397, 443], k: [0.74817, -0.0, 12.82989, 0.0, 0.77499, 11.42037]},
+  "Farmers Branch": {img: "aer/farmers-branch.jpg", vb: [359, 250], k: [0.7201, 7e-05, 14.11909, 0.00577, 0.59488, 20.04955]},
+  "Burleson": {img: "aer/burleson.jpg", vb: [458, 554], k: [0.73639, 0.04547, 10.97327, 0.01646, 0.80381, 9.02607]},
+  "Renfro": {img: "aer/renfro.jpg", vb: [338, 566], k: [0.70482, 0.00035, 14.90123, 0.03623, 0.78559, 9.00636]} };
+Object.entries(PHOTOMAP).forEach(([st, p]) => { const d = LAYOUTS[st]; if (!d) return; const [a, b, c, e, f, g] = p.k, det = a * f - b * e;
+  d.drawBg = d.bg; d.drawVb = d.vb || [860, 1010]; d.k = p.k;
+  d.bg = `<rect width="${p.vb[0]}" height="${p.vb[1]}" fill="#cfdcbf"/><image href="${p.img}" width="${p.vb[0]}" height="${p.vb[1]}"/>`; d.vb = p.vb;
+  MAPFRAME[st] = { to: (x, y) => [a * x + b * y + c, e * x + f * y + g], from: (X, Y) => [(f * (X - c) - b * (Y - g)) / det, (a * (Y - g) - e * (X - c)) / det] }; });
+/* Skins for photo maps without hand drawn skins: Colors and Buttons boxes sit around each label, Tiles are big buttons where each label is,
+   Drawing is the store's old drawing laid onto the photo so every label lands in the same spot. */
+function autoSkin(store, lay){ const d = LAYOUTS[store]; if (!d || !d.drawBg) return null; const [VW, VH] = lay.vb, [LW, LH] = d.drawVb, [a, b, c, e, f, g] = d.k;
+  const P = lay.labels.map(([k, n, x, y]) => { const [X, Y] = toView(store, x, y); return [k, n, X * VW / 100, Y * VH / 100]; });
+  const cl = (v, lo, hi) => Math.min(hi, Math.max(lo, v)), zones = {}, tiles = {};
+  P.forEach(([k, n, X, Y], i) => { let dn = Infinity; P.forEach((q, j) => { if (j !== i) dn = Math.min(dn, Math.hypot(q[2] - X, q[3] - Y)); }); if (!isFinite(dn)) dn = VW / 3;
+    const hw = cl(dn * 0.62, VW * 0.07, VW * 0.2), hh = cl(dn * 0.45, VH * 0.05, VH * 0.16);
+    zones[k] = [cl(X - hw, 0, VW), cl(Y - hh, 0, VH), cl(X + hw, 0, VW), cl(Y + hh, 0, VH)];
+    const w = cl(dn * 0.95, VW * 0.18, VW * 0.42), h = cl(w * 0.5, VH * 0.07, VH * 0.18);
+    tiles[k] = [cl(X - w / 2, 0, VW - w), cl(Y - h / 2, 0, VH - h), w, h]; });
+  const T = Object.values(tiles), gap = VW * 0.012;   // nudge tiles apart so none cover another
+  for (let it = 0; it < 60; it++) { let moved = false;
+    for (let i = 0; i < T.length; i++) for (let j = i + 1; j < T.length; j++) { const p = T[i], q = T[j];
+      const ox = Math.min(p[0] + p[2], q[0] + q[2]) - Math.max(p[0], q[0]) + gap, oy = Math.min(p[1] + p[3], q[1] + q[3]) - Math.max(p[1], q[1]) + gap;
+      if (ox <= 0 || oy <= 0) continue; moved = true;
+      if (ox < oy) { const sx = (p[0] + p[2] / 2 <= q[0] + q[2] / 2 ? -1 : 1) * ox / 2; p[0] = cl(p[0] + sx, 0, VW - p[2]); q[0] = cl(q[0] - sx, 0, VW - q[2]); }
+      else { const sy = (p[1] + p[3] / 2 <= q[1] + q[3] / 2 ? -1 : 1) * oy / 2; p[1] = cl(p[1] + sy, 0, VH - p[3]); q[1] = cl(q[1] - sy, 0, VH - q[3]); } }
+    if (!moved) break; }
+  const m = [a * VW / LW, e * VH / LW, b * VW / LH, f * VH / LH, c * VW / 100, g * VH / 100].map(v => Math.round(v * 1e5) / 1e5).join(" ");
+  return { zones, tiles, road: "", draw: `<rect width="${VW}" height="${VH}" fill="#e3dccf"/><g transform="matrix(${m})">${d.drawBg}</g>` }; }
 /* Map skins (Brandon Nov 20 2026): each team member picks how the store map looks: Photo, Colors, Drawing, Tiles, Buttons.
    Only the background changes. Labels and every saved unit location stay exactly the same. Zones and tiles are in the photo's pixels. */
 const SKINS = { Keller: {
@@ -712,13 +744,13 @@ function mapSvg(store, sel, opt){
   const pins = lay.labels.map(([k,n,x0,y0,rt,sz]) => { const [x,y]=toView(store,x0,y0), m=Math.min(2.4,Math.max(0.5,Number(sz)||1)), X=x*VW/100, Y=y*VH/100, on=k===sel, nm=edit||lay.labels.length<=8, t=nm?n:k, fs=(nm?(on?30:25):(on?24:19))*Z*m, w=Math.max(44*Z*m, t.length*fs*0.56+26*Z*m), h=fs*1.75;
     return `<g class="zp" data-z="${esc(k)}" data-x="${X}" data-y="${Y}"${Number(rt) ? ` transform="rotate(${Number(rt)} ${X} ${Y})"` : ""}><rect x="${X-w/2}" y="${Y-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="${on?"#C8102E":"#6d6662"}" stroke="#fff" stroke-width="${3*Z}" opacity="${sel&&!on?.8:1}"/><text x="${X}" y="${Y+fs*0.36}" text-anchor="middle" ${_F} font-size="${fs}" fill="#fff">${esc(t)}</text></g>`; }).join("");
   const aria = `${esc(store)} store map${sel?", "+esc(zname(store,sel))+" highlighted":""}`;
-  const SK = SKINS[store]; if (!SK || edit || !LAYOUTS[store]) return `<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${aria}">${lay.bg}${pins}</svg>`;
+  const SK = SKINS[store] || autoSkin(store, lay); if (!SK || edit || !LAYOUTS[store]) return `<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${aria}">${lay.bg}${pins}</svg>`;
   document.documentElement.dataset.sk = skGet();
   const col = k => { const i = lay.labels.findIndex(a => a[0] === k); return SK_COL[(i < 0 ? 0 : i) % SK_COL.length]; };
-  const box = (k, op, sw) => { const z = SK.zones[k]; return z ? `<rect x="${z[0]}" y="${z[1]}" width="${z[2]-z[0]}" height="${z[3]-z[1]}" fill="${op ? col(k) : "none"}" fill-opacity="${op}" stroke="${op ? "#fff" : col(k)}" stroke-width="${sw}"/>` : ""; };
+  const Z2 = VW / 1652; const box = (k, op, sw) => { sw *= Z2; const z = SK.zones[k]; return z ? `<rect x="${z[0]}" y="${z[1]}" width="${z[2]-z[0]}" height="${z[3]-z[1]}" fill="${op ? col(k) : "none"}" fill-opacity="${op}" stroke="${op ? "#fff" : col(k)}" stroke-width="${sw}"/>` : ""; };
   const zs = (op, sw) => lay.labels.map(([k]) => box(k, op, sw)).join("");
-  const tiles = lay.labels.map(([k, n]) => { const t = SK.tiles[k], on = k === sel; if (!t) return ""; const [x, y, w, h] = t, tall = h > w * 1.6, fs = Math.min(86, w / Math.max(4, n.length) * 1.5), ft = Math.min(86, h / Math.max(4, n.length) * 1.4);
-    return `<g class="zp" data-z="${esc(k)}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="34" fill="${col(k)}" stroke="${on ? "#111" : "#fff"}" stroke-width="${on ? 18 : 10}"/><text x="${x+w/2}" y="${y+h/2+(tall ? ft : fs)*0.35}" text-anchor="middle" font-family="Arial" font-weight="800" font-size="${tall ? ft : fs}" fill="#fff"${tall ? ` transform="rotate(-90 ${x+w/2} ${y+h/2})"` : ""}>${esc(n)}</text></g>`; }).join("");
+  const tiles = lay.labels.map(([k, n]) => { const t = SK.tiles[k], on = k === sel; if (!t) return ""; const [x, y, w, h] = t, tall = h > w * 1.6, fs = Math.min(86 * Z2, w / Math.max(4, n.length) * 1.5), ft = Math.min(86 * Z2, h / Math.max(4, n.length) * 1.4);
+    return `<g class="zp" data-z="${esc(k)}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${34 * Z2}" fill="${col(k)}" stroke="${on ? "#111" : "#fff"}" stroke-width="${(on ? 18 : 10) * Z2}"/><text x="${x+w/2}" y="${y+h/2+(tall ? ft : fs)*0.35}" text-anchor="middle" font-family="Arial" font-weight="800" font-size="${tall ? ft : fs}" fill="#fff"${tall ? ` transform="rotate(-90 ${x+w/2} ${y+h/2})"` : ""}>${esc(n)}</text></g>`; }).join("");
   const loose = pins.split("</g>").filter(p => p && lay.labels.some(([k]) => !SK.tiles[k] && p.includes(`data-z="${esc(k)}"`))).map(p => p + "</g>").join("");   // labels the team adds later still show
   const sv = (k, inner) => `<svg class="skin sk-${k}" viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${aria}">${inner}</svg>`;
   const cur = skGet(), hint = !ls.get("sparkskhint") ? `<div class="skhint">New: pick how your map looks</div>` : "";
