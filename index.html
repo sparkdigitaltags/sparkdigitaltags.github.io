@@ -2925,6 +2925,7 @@ function jaskHtml(){
       ${SPARK_LOCS.map(([d, stt, L]) => `<div class="fine" style="margin:6px 0 2px;color:#555">${esc(d)} ${esc(stt)}</div><div class="jchips">${L.map(x => `<label class="jchip${J[l + "|" + x] ? " on" : ""}"><input type="checkbox" data-ja="${esc(l + "|" + x)}" ${J[l + "|" + x] ? "checked" : ""}>${esc(x)}</label>`).join("")}</div>`).join("")}</details>`; }).join("")}`;
 }
 function adminTodo(){
+  try { kidCard(); } catch(e){}
   const box = document.getElementById("todo"); if (!box) return;
   let done = {}; try { done = JSON.parse(ls.get("sparktodo") || "{}"); } catch(e){}
   const groups = [...new Set(TODO.map(t => t[0]))];
