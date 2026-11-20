@@ -1979,6 +1979,10 @@ function finderHtml(k, ph){
     <label class="copy copyall" style="display:block;text-align:center;cursor:pointer;margin:0">Upload serial photo<input type="file" accept="image/*" id="${k}u" hidden></label></div>
     <div class="lmsg" id="${k}m"></div><ul class="ulist" id="${k}r" hidden></ul><p class="ucount" id="${k}n"></p></div>`;
 }
+/* Nov 20 2026 (Brandon): every unit search counts toward the Side Quest (store page finder, top search bar, Enter key or tap). */
+function findDone(qv, st){ if (!getCode()) return; const a = chatAuth() || {}, st0 = st || myStore() || a.store || (STORES.find(x => getPin(x)) || "Keller");
+  track("find", {store:st0, pin:getPin(st0) || a.pin || "", code:getCode(), d:"sn " + String(qv || "").trim().slice(-4)});
+  if (SHERPA) SHERPA.done.find = SHERPA.done.find || new Date().toISOString(); sparkDo("find", null); try { if (typeof refreshClimb === "function") refreshClimb(); } catch(e){} }
 /* base: the list shown before anyone types (or null for nothing). */
 function wireFinder(k, st, base, pool, tall){
   const q = document.getElementById(k + "q"), R = document.getElementById(k + "r"), N = document.getElementById(k + "n"), M = document.getElementById(k + "m");
@@ -1989,8 +1993,8 @@ function wireFinder(k, st, base, pool, tall){
     R.hidden = false; R.innerHTML = hit.slice(0, 400).map(u => urow(u, st)).join("") || `<li class="none">No unit matches. Check the last 4 of the serial, or try a photo of the serial plate.</li>`;
     const ex = tn.length >= 4 ? hit.filter(u => snN(u).endsWith(tn.toLowerCase())) : [];
     N.textContent = ex.length === 1 ? "Serial match. Tap it to open the digital tag." : hit.length ? hit.length + " found" + (hit.length > 5 ? ", scroll for more" : "") : ""; };
-  R.addEventListener("click", e => { const a = e.target.closest("a"); if (a && q.value.trim()) { const st0 = st || (STORES.find(x => getPin(x)) || "Keller"); if (getCode()) { track("find", {store:st0, pin:getPin(st0) || "", code:getCode(), d:"sn " + q.value.trim().slice(-4)}); if (SHERPA) SHERPA.done.find = SHERPA.done.find || new Date().toISOString(); sparkDo("find", null); } } });
-  q.oninput = paint; q.onkeydown = e => { if (e.key === "Enter") { const a = R.querySelector("a"); if (a && q.value.trim()) location.hash = a.getAttribute("href").slice(1); } };
+  R.addEventListener("click", e => { const a = e.target.closest("a"); if (a && q.value.trim()) findDone(q.value, st); });
+  q.oninput = paint; q.onkeydown = e => { if (e.key === "Enter") { const a = R.querySelector("a"); if (a && q.value.trim()) { findDone(q.value, st); location.hash = a.getAttribute("href").slice(1); } } };
   [k + "c", k + "u"].forEach(id => document.getElementById(id).onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) serialScan(f, st || "", M, R); });
   paint(); return paint;
 }
@@ -3335,8 +3339,8 @@ function topFind(){
   const q = b.querySelector("input"), R = b.querySelector("ul");
   q.oninput = () => { const t = q.value.trim(); if (!t) { R.hidden = true; return; } const st = myStore(), hit = unitSearch(t, st);
     R.hidden = false; R.innerHTML = hit.slice(0, 200).map(u => urow(u, st)).join("") || `<li class="none">No unit matches.</li>`; };
-  q.onkeydown = e => { if (e.key === "Enter") { const a = R.querySelector("a"); if (a) location.hash = a.getAttribute("href").slice(1); } };
-  R.addEventListener("click", e => { if (e.target.closest("a")) setTimeout(() => { q.value = ""; R.hidden = true; q.blur(); }, 50); });
+  q.onkeydown = e => { if (e.key === "Enter") { const a = R.querySelector("a"); if (a) { findDone(q.value, myStore()); location.hash = a.getAttribute("href").slice(1); } } };
+  R.addEventListener("click", e => { if (e.target.closest("a")) { if (q.value.trim()) findDone(q.value, myStore()); setTimeout(() => { q.value = ""; R.hidden = true; q.blur(); }, 50); } });
 }
 window.addEventListener("hashchange", () => setTimeout(topFind, 50));
 
