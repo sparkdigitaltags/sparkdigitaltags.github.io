@@ -1748,8 +1748,9 @@ function leadThanks(u, biz, name, pref){
 function leadInit(u){
   const box = document.getElementById("leadsec"); if (!box || !LOC_API) return;
   const biz = (u.dba || "LSM Outdoor Power") + " " + u.store;
-  if (realCode()) { box.innerHTML = `<button class="copy copyall" disabled style="opacity:.45;cursor:not-allowed">Hold this unit or have us call you</button><p class="fine" style="margin:0">For customers. Turned off while you are signed in (and in View as) so it can't send store alerts.</p>`; return; }
-  const closed = () => { box.innerHTML = `<button class="copy copyall" id="leadopen">Hold this unit or have us call you</button>`;
+  const tst = realAdm() && viewAs() === "customer";   // Brandon Nov 20 2026: his own customer view can send a hold, marked TEST and sent only to him
+  if (realCode() && !tst) { box.innerHTML = `<button class="copy copyall" disabled style="opacity:.45;cursor:not-allowed">Hold this unit or have us call you</button><p class="fine" style="margin:0">For customers. Turned off while you are signed in (and in View as) so it can't send store alerts.</p>`; return; }
+  const closed = () => { box.innerHTML = `<button class="copy copyall" id="leadopen">Hold this unit or have us call you</button>${tst ? `<p class="fine" style="margin:0">TEST: your hold goes only to you, not the store.</p>` : ""}`;
     document.getElementById("leadopen").onclick = () => { open(); track("step", {store:u.store, unit:u.unit, d:"lead:open"}); }; };
   const open = (msg) => {
     box.innerHTML = `<h2>Interested in this one?</h2>
@@ -1773,7 +1774,7 @@ function leadInit(u){
       if (pref === "Email" && !email) { m.textContent = "Add your email so we can reach you that way."; return; }
       if (!document.getElementById("lc").checked) { m.textContent = "Please check the box so we're allowed to contact you."; return; }
       m.textContent = "Sending...";
-      try { const r = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"lead", store:u.store, unit:u.unit, model:(u.brand + " " + u.model).trim(), biz, name, phone, email, pref, consent:"1", sid:SID}).toString()}).then(x => x.json());   // POST keeps the customer's details out of the web address
+      try { const r = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams({action:"lead", store:u.store, unit:u.unit, model:(u.brand + " " + u.model).trim(), biz, name, phone, email, pref, consent:"1", sid:SID, test:tst ? "1" : "", tcode:tst ? realCode() : ""}).toString()}).then(x => x.json());   // POST keeps the customer's details out of the web address
         if (r.ok) box.innerHTML = LEAD_THANKS[u.store] ? leadThanks(u, biz, name, pref)
           : `<h2>Got it, thanks ${esc(name.split(" ")[0])}</h2><p class="fine" style="margin:0">The ${esc(u.store)} team will reach out soon about this unit.</p>`;
         else m.textContent = r.error === "busy" ? "We're getting a lot of requests. Please ask any team member or call the store." : "That didn't go through. Please check your info and try again.";
