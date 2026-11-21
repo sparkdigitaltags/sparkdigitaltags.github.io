@@ -696,12 +696,27 @@ const PHOTOMAP = {
   "Weatherford": {img: "aer/weatherford.jpg", vb: [280, 565], k: [1, 0, 0, 0, 1, 0]},
   "Springtown": {img: "aer/springtown.jpg", vb: [490, 558], k: [1, 0, 0, 0, 1, 0]},
   "Tyler": {img: "aer/tyler.jpg", vb: [510, 420], k: [1, 0, 0, 0, 1, 0]},
-  "Gatesville": {img: "aer/gatesville.jpg", vb: [570, 420], k: [1, 0, 0, 0, 1, 0]} };
+  "Gatesville": {img: "aer/gatesville.jpg", vb: [570, 420], k: [1, 0, 0, 0, 1, 0]},
+  /* MINC aerials (Brandon Nov 21 2026), same way as ATS */
+  "Tampa": {img: "aer/tampa.jpg", vb: [255, 450], k: [1, 0, 0, 0, 1, 0]},
+  "Belleview": {img: "aer/belleview.jpg", vb: [420, 300], k: [1, 0, 0, 0, 1, 0]},
+  "Bradenton": {img: "aer/bradenton.jpg", vb: [400, 310], k: [1, 0, 0, 0, 1, 0]},
+  "Sarasota": {img: "aer/sarasota.jpg", vb: [240, 360], k: [1, 0, 0, 0, 1, 0]},
+  "Lakeland": {img: "aer/lakeland.jpg", vb: [350, 305], k: [1, 0, 0, 0, 1, 0]},
+  "Naples": {img: "aer/naples.jpg", vb: [187, 185], k: [1, 0, 0, 0, 1, 0]},
+  "Lake Hamilton": {img: "aer/lake-hamilton.jpg", vb: [305, 295], k: [1, 0, 0, 0, 1, 0]} };
 const ATS_START = {
   "Weatherford": [["F1","Floor",41,34],["L1","Lot",60,68],["WH1","Warehouse",41,45],["SHOP","Shop",38,57]],
   "Springtown": [["F1","Floor",42,16],["L1","Lot",35,40],["WH1","Warehouse",30,84],["SHOP","Shop",59,88]],
   "Tyler": [["F1","Floor",47,45],["L1","Lot",30,38],["WH1","Warehouse",75,70],["SHOP","Shop",60,53]],
-  "Gatesville": [["F1","Floor",46,57],["L1","Lot",30,40],["WH1","Warehouse",39,77],["SHOP","Shop",63,56]] };
+  "Gatesville": [["F1","Floor",46,57],["L1","Lot",30,40],["WH1","Warehouse",39,77],["SHOP","Shop",63,56]],
+  "Tampa": [["F1","Floor",35,22],["L1","Lot",55,80],["WH1","Warehouse",65,50],["SHOP","Shop",68,17]],
+  "Belleview": [["F1","Floor",45,55],["L1","Lot",82,35],["WH1","Warehouse",55,40],["SHOP","Shop",62,62]],
+  "Bradenton": [["F1","Floor",48,22],["L1","Lot",40,42],["WH1","Warehouse",78,63],["SHOP","Shop",49,70]],
+  "Sarasota": [["F1","Floor",60,22],["L1","Lot",55,68],["WH1","Warehouse",60,45],["SHOP","Shop",28,45]],
+  "Lakeland": [["F1","Floor",40,25],["L1","Lot",55,40],["WH1","Warehouse",40,72],["SHOP","Shop",40,48]],
+  "Naples": [["F1","Floor",35,55],["L1","Lot",60,30],["WH1","Warehouse",55,66],["SHOP","Shop",75,85]],
+  "Lake Hamilton": [["F1","Floor",40,77],["L1","Lot",40,35],["WH1","Warehouse",15,18],["SHOP","Shop",65,52]] };
 Object.entries(ATS_START).forEach(([st, L]) => { if (!LAYOUTS[st]) LAYOUTS[st] = {bg: GENERIC.bg, vb: [860, 1010], labels: L}; });
 Object.entries(PHOTOMAP).forEach(([st, p]) => { const d = LAYOUTS[st]; if (!d) return; const [a, b, c, e, f, g] = p.k, det = a * f - b * e;
   d.drawBg = d.bg; d.drawVb = d.vb || [860, 1010]; d.k = p.k;
