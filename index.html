@@ -690,7 +690,19 @@ const PHOTOMAP = {
   "Lewisville": {img: "aer/lewisville.jpg", vb: [397, 443], k: [0.74817, -0.0, 12.82989, 0.0, 0.77499, 11.42037]},
   "Farmers Branch": {img: "aer/farmers-branch.jpg", vb: [359, 250], k: [0.7201, 7e-05, 14.11909, 0.00577, 0.59488, 20.04955]},
   "Burleson": {img: "aer/burleson.jpg", vb: [458, 554], k: [0.73639, 0.04547, 10.97327, 0.01646, 0.80381, 9.02607]},
-  "Renfro": {img: "aer/renfro.jpg", vb: [338, 566], k: [0.70482, 0.00035, 14.90123, 0.03623, 0.78559, 9.00636]} };
+  "Renfro": {img: "aer/renfro.jpg", vb: [338, 566], k: [0.70482, 0.00035, 14.90123, 0.03623, 0.78559, 9.00636]},
+  /* ATS aerials (Brandon Nov 21 2026): no drawing yet, so labels are saved straight onto the photo (k is 1 to 1).
+     The four starting labels sit on the real floor, lot, warehouse and shop; the team can drag them. */
+  "Weatherford": {img: "aer/weatherford.jpg", vb: [280, 565], k: [1, 0, 0, 0, 1, 0]},
+  "Springtown": {img: "aer/springtown.jpg", vb: [490, 558], k: [1, 0, 0, 0, 1, 0]},
+  "Tyler": {img: "aer/tyler.jpg", vb: [510, 420], k: [1, 0, 0, 0, 1, 0]},
+  "Gatesville": {img: "aer/gatesville.jpg", vb: [570, 420], k: [1, 0, 0, 0, 1, 0]} };
+const ATS_START = {
+  "Weatherford": [["F1","Floor",41,34],["L1","Lot",60,68],["WH1","Warehouse",41,45],["SHOP","Shop",38,57]],
+  "Springtown": [["F1","Floor",42,16],["L1","Lot",35,40],["WH1","Warehouse",30,84],["SHOP","Shop",59,88]],
+  "Tyler": [["F1","Floor",47,45],["L1","Lot",30,38],["WH1","Warehouse",75,70],["SHOP","Shop",60,53]],
+  "Gatesville": [["F1","Floor",46,57],["L1","Lot",30,40],["WH1","Warehouse",39,77],["SHOP","Shop",63,56]] };
+Object.entries(ATS_START).forEach(([st, L]) => { if (!LAYOUTS[st]) LAYOUTS[st] = {bg: GENERIC.bg, vb: [860, 1010], labels: L}; });
 Object.entries(PHOTOMAP).forEach(([st, p]) => { const d = LAYOUTS[st]; if (!d) return; const [a, b, c, e, f, g] = p.k, det = a * f - b * e;
   d.drawBg = d.bg; d.drawVb = d.vb || [860, 1010]; d.k = p.k;
   d.bg = `<rect width="${p.vb[0]}" height="${p.vb[1]}" fill="#cfdcbf"/><image href="${p.img}" width="${p.vb[0]}" height="${p.vb[1]}"/>`; d.vb = p.vb;
