@@ -704,7 +704,12 @@ const PHOTOMAP = {
   "Sarasota": {img: "aer/sarasota.jpg", vb: [240, 360], k: [1, 0, 0, 0, 1, 0]},
   "Lakeland": {img: "aer/lakeland.jpg", vb: [350, 305], k: [1, 0, 0, 0, 1, 0]},
   "Naples": {img: "aer/naples.jpg", vb: [187, 185], k: [1, 0, 0, 0, 1, 0]},
-  "Lake Hamilton": {img: "aer/lake-hamilton.jpg", vb: [305, 295], k: [1, 0, 0, 0, 1, 0]} };
+  "Lake Hamilton": {img: "aer/lake-hamilton.jpg", vb: [305, 295], k: [1, 0, 0, 0, 1, 0]},
+  /* GA and LOTP aerials (Brandon Nov 21 2026), same way as ATS */
+  "Louisville": {img: "aer/louisville.jpg", vb: [400, 580], k: [1, 0, 0, 0, 1, 0]},
+  "Shelbyville": {img: "aer/shelbyville.jpg", vb: [480, 390], k: [1, 0, 0, 0, 1, 0]},
+  "Augusta": {img: "aer/augusta.jpg", vb: [480, 330], k: [1, 0, 0, 0, 1, 0]},
+  "Waynesboro": {img: "aer/waynesboro.jpg", vb: [440, 400], k: [1, 0, 0, 0, 1, 0]} };
 const ATS_START = {
   "Weatherford": [["F1","Floor",41,34],["L1","Lot",60,68],["WH1","Warehouse",41,45],["SHOP","Shop",38,57]],
   "Springtown": [["F1","Floor",42,16],["L1","Lot",35,40],["WH1","Warehouse",30,84],["SHOP","Shop",59,88]],
@@ -716,7 +721,11 @@ const ATS_START = {
   "Sarasota": [["F1","Floor",60,22],["L1","Lot",55,68],["WH1","Warehouse",60,45],["SHOP","Shop",28,45]],
   "Lakeland": [["F1","Floor",40,25],["L1","Lot",55,40],["WH1","Warehouse",40,72],["SHOP","Shop",40,48]],
   "Naples": [["F1","Floor",35,55],["L1","Lot",60,30],["WH1","Warehouse",55,66],["SHOP","Shop",75,85]],
-  "Lake Hamilton": [["F1","Floor",40,77],["L1","Lot",40,35],["WH1","Warehouse",15,18],["SHOP","Shop",65,52]] };
+  "Lake Hamilton": [["F1","Floor",40,77],["L1","Lot",40,35],["WH1","Warehouse",15,18],["SHOP","Shop",65,52]],
+  "Louisville": [["F1","Floor",55,40],["L1","Lot",17,40],["WH1","Warehouse",55,75],["SHOP","Shop",85,30]],
+  "Shelbyville": [["F1","Floor",28,55],["L1","Lot",40,20],["WH1","Warehouse",40,80],["SHOP","Shop",50,55]],
+  "Augusta": [["F1","Floor",63,30],["L1","Lot",30,35],["WH1","Warehouse",63,62],["SHOP","Shop",38,68]],
+  "Waynesboro": [["F1","Floor",45,48],["L1","Lot",30,25],["WH1","Warehouse",72,22],["SHOP","Shop",63,57]] };
 Object.entries(ATS_START).forEach(([st, L]) => { if (!LAYOUTS[st]) LAYOUTS[st] = {bg: GENERIC.bg, vb: [860, 1010], labels: L}; });
 Object.entries(PHOTOMAP).forEach(([st, p]) => { const d = LAYOUTS[st]; if (!d) return; const [a, b, c, e, f, g] = p.k, det = a * f - b * e;
   d.drawBg = d.bg; d.drawVb = d.vb || [860, 1010]; d.k = p.k;
