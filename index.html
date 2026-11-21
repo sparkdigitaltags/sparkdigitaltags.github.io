@@ -726,7 +726,7 @@ const ATS_START = {
   "Shelbyville": [["F1","Floor",28,55],["L1","Lot",40,20],["WH1","Warehouse",40,80],["SHOP","Shop",50,55]],
   "Augusta": [["F1","Floor",63,30],["L1","Lot",30,35],["WH1","Warehouse",63,62],["SHOP","Shop",38,68]],
   "Waynesboro": [["F1","Floor",45,48],["L1","Lot",30,25],["WH1","Warehouse",72,22],["SHOP","Shop",63,57]] };
-Object.entries(ATS_START).forEach(([st, L]) => { if (!LAYOUTS[st]) LAYOUTS[st] = {bg: GENERIC.bg, vb: [860, 1010], labels: L}; });
+Object.entries(ATS_START).forEach(([st, L]) => { if (!LAYOUTS[st]) LAYOUTS[st] = {bg: GENERIC.bg, vb: [860, 1010], labels: L}; else LAYOUTS[st].labels = L; });   // stores with an older drawing get the labels placed on the photo too (same four codes, so every unit keeps its spot)
 Object.entries(PHOTOMAP).forEach(([st, p]) => { const d = LAYOUTS[st]; if (!d) return; const [a, b, c, e, f, g] = p.k, det = a * f - b * e;
   d.drawBg = d.bg; d.drawVb = d.vb || [860, 1010]; d.k = p.k;
   d.bg = `<rect width="${p.vb[0]}" height="${p.vb[1]}" fill="#cfdcbf"/><image href="${p.img}" width="${p.vb[0]}" height="${p.vb[1]}"/>`; d.vb = p.vb;
