@@ -1243,7 +1243,28 @@ const STORE_ROOMS = {
     {k:"honda", t:"box", n:"HONDA AND BATTERY MOWERS", x:540, y:420, w:200, h:56, f:"#E6DCCB", s:14},
     {k:"blow", t:"box", n:"STIHL BLOWER WALL", x:776, y:330, w:56, h:240, f:"#D9CBB4", s:17, r:-90},
     {k:"door", t:"door", n:"FRONT DOORS", x:40, y:588, w:150, h:22, s:18},
-    {k:"win1", t:"window", n:"WINDOWS", x:220, y:593, w:520, h:12, s:15}]
+    {k:"win1", t:"window", n:"WINDOWS", x:220, y:593, w:520, h:12, s:15}],
+  /* Gatesville (Brandon Nov 23 2026, from 3 showroom photos): STIHL gondola down the middle, ECHO on the left,
+     belts and oil on the right wall, parts counter in back, sales counter up front by the shop door. */
+  Gatesville: [
+    {k:"backrm", t:"door", n:"TO BACK ROOM", x:150, y:16, w:150, h:16, s:15},
+    {k:"boxes", t:"box", n:"BOXED STIHL AND ECHO", x:330, y:34, w:200, h:44, f:"#E6DCCB", s:14},
+    {k:"parts", t:"box", n:"PARTS COUNTER", x:580, y:40, w:200, h:62, f:"#BFAE92", s:18},
+    {k:"belts1", t:"text", n:"BELTS ON BACK WALL", x:580, y:110, w:200, h:20, s:13},
+    {k:"echo", t:"box", n:"ECHO WALL", x:32, y:90, w:58, h:230, f:"#D9CBB4", s:17, r:-90},
+    {k:"shop", t:"door", n:"", x:16, y:340, w:16, h:100, s:15},
+    {k:"shopt", t:"text", n:"TO SHOP", x:40, y:380, w:80, h:20, s:15},
+    {k:"echorack", t:"box", n:"ECHO RACK", x:250, y:150, w:70, h:120, f:"#D9CBB4", s:15, r:-90},
+    {k:"gond", t:"box", n:"STIHL GONDOLA", x:390, y:140, w:80, h:300, f:"#F3B58A", s:18, r:-90},
+    {k:"trim", t:"text", n:"TRIMMERS", x:330, y:300, w:50, h:20, s:13},
+    {k:"saws", t:"text", n:"SAWS AND BLOWERS", x:480, y:300, w:120, h:20, s:13},
+    {k:"endcap", t:"box", n:"OIL ENDCAP", x:380, y:440, w:100, h:40, f:"#E6DCCB", s:14},
+    {k:"sales", t:"box", n:"SALES COUNTER", x:60, y:470, w:230, h:66, f:"#BFAE92", s:18},
+    {k:"keys", t:"text", n:"KEY BOARD", x:40, y:560, w:70, h:20, s:12},
+    {k:"wall", t:"box", n:"BELTS, OIL AND BATTERY MOWERS", x:776, y:130, w:56, h:330, f:"#D9CBB4", s:15, r:-90},
+    {k:"win2", t:"window", n:"", x:832, y:470, w:12, h:110, s:15},
+    {k:"wint", t:"text", n:"WINDOWS", x:730, y:515, w:90, h:20, s:15},
+    {k:"door", t:"door", n:"FRONT DOOR", x:420, y:588, w:150, h:22, s:18}]
 };
 function roomOf(store){ return ROOMS[store] || STORE_ROOMS[store] || LAYOUT_BASE; }
 /* Edit handles on the box being edited (Brandon Nov 14 2026): X top right cancels the edits to that box, the circle arrow top left
