@@ -3843,7 +3843,7 @@ async function kidCard(){
   if (!r) { try { const a = chatAuth(); r = await api({action:"activity", store:a.store, pin:a.pin, code:getCode(), days:14}); KID_CACHE = {at:Date.now(), r}; } catch(e){} }
   if (!document.getElementById("admkid")) return;
   if (!r || !r.ok) { box.innerHTML = `<p class="admmut">Could not load who is using the DTs. Pull down to try again.</p>`; return; }
-  const rows = r.rows.filter(x => x[3] && !["test", "beta", "dwell"].includes(x[1]) && !/^TEST/i.test(String(x[5] || "")) && !/^(Built|Requested|Denied|Approved)/.test(x[3]));
+  const rows = r.rows.filter(x => x[3] && !/^Feature /.test(String(x[4] || "")) && !["test", "beta", "dwell"].includes(x[1]) && !/^TEST/i.test(String(x[5] || "")) && !/^(Built|Requested|Denied|Approved)/.test(x[3]));
   const dk = t => new Date(t).toDateString(), days = [];
   for (let i = 13; i >= 0; i--) days.push(new Date(Date.now() - i * 86400000));
   const visit = {}; rows.forEach(x => { visit[x[3] + "|" + new Date(x[0]).toDateString() + "|" + new Date(x[0]).getHours()] = x; });
