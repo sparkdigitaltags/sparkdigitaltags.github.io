@@ -3348,6 +3348,7 @@ function bfSelects(F, onCh, locLabel){
 function bfWire(box, F, re){ box.querySelectorAll("[data-bf]").forEach(s => s.onchange = () => { F[s.dataset.bf] = s.value; re(); }); }
 function blockersAdmin(){
   const box = document.getElementById("blk"); if (!box) return;
+  box.innerHTML = ""; box.hidden = true; return;   // Brandon Nov 25 2026: Bounty Blockers off his page (stores still see Move First!)
   if (!feat("blockers")) { box.innerHTML = ""; return; }
   const L = blockerList(BF).slice(0, 5);
   const gm = st => { const mine = blockerList({}).filter(b => b.o.store === st); return mine.length ? `${st}: Move First! Each one is keeping other stores from claiming Bounties (in stock per the ${AGING.asof} aging report).\n` + mine.map(b => `- ${b.o.brand} ${b.o.model}, unit ${b.o.unit}, ${b.a1} days. Holding back ${b.held.length} unit${b.held.length === 1 ? "" : "s"} at ${b.stores.join(", ")}.`).join("\n") : ""; };
@@ -3857,19 +3858,52 @@ async function kidCard(){
   const best = acts[0], first = s => s.split(" ")[0];
   const say = !rw.length ? "Nobody has used the DTs yet this week. 😴" : `${people.size === 1 ? "1 person" : people.size + " people"} used the DTs ${vw.length} ${vw.length === 1 ? "time" : "times"} this week.`;
   box.innerHTML = `<div class="kidh">🙋 Who's using the DTs?</div>
-    <div class="kidbig"><div><b>${people.size}</b><span>👥 people</span></div><div><b>${vw.length}</b><span>🔁 visits</span></div><div><b>${rw.length}</b><span>✅ things done</span></div></div>
+    <div class="kidbig"><button type="button" data-kd="people"><b>${people.size}</b><span>👥 people</span></button><button type="button" data-kd="visits"><b>${vw.length}</b><span>🔁 visits</span></button><button type="button" data-kd="done"><b>${rw.length}</b><span>✅ things done</span></button></div>
     <p class="kidsay">${esc(say)}</p>
     <div class="kidlab">📅 Visits each day <small>(last 2 weeks)</small></div>
-    <div class="kidbars">${perDay.map(x => `<div class="${x.d.toDateString() === today ? "tdy" : ""}" title="${x.d.toLocaleDateString()}: ${x.n} visits by ${x.p} people"><small>${x.n || ""}</small><i style="height:${Math.max(x.n ? 6 : 2, Math.round(x.n / top * 100))}%"></i><span>${x.d.toDateString() === today ? "Today" : wd(x.d)}</span></div>`).join("")}</div>
+    <div class="kidbars">${perDay.map(x => `<div role="button" tabindex="0" data-kd="day:${x.d.toDateString()}" class="${x.d.toDateString() === today ? "tdy" : ""}" title="${x.d.toLocaleDateString()}: ${x.n} visits by ${x.p} people" aria-label="${x.d.toLocaleDateString()}: ${x.n} visits. Tap for details"><small>${x.n || ""}</small><i style="height:${Math.max(x.n ? 6 : 2, Math.round(x.n / top * 100))}%"></i><span>${x.d.toDateString() === today ? "Today" : wd(x.d)}</span></div>`).join("")}</div>
     <div class="kidlab">🧰 What they did this week</div>
-    ${acts.length ? `<div class="kiddo">${acts.map(a => `<div><span class="kie">${a[1]}</span><span class="kin">${a[2]}</span><span class="kib"><i style="width:${Math.max(4, Math.round(cnt[a[0]] / topN * 100))}%"></i></span><b>${cnt[a[0]]}</b></div>`).join("")}</div>
+    ${acts.length ? `<div class="kiddo">${acts.map(a => `<div role="button" tabindex="0" data-kd="act:${a[0]}"><span class="kie">${a[1]}</span><span class="kin">${a[2]}</span><span class="kib"><i style="width:${Math.max(4, Math.round(cnt[a[0]] / topN * 100))}%"></i></span><b>${cnt[a[0]]}</b></div>`).join("")}</div>
       <p class="kidsay">👉 The team spends the most time ${best[3]}.</p>` : `<p class="admmut">Nothing yet this week.</p>`}
     ${stars.length ? `<div class="kidlab">⭐ Top helpers this week</div><div class="kidstars">${stars.map((p, i) => { const k = KID_DO.filter(a => p.k[a[0]]).sort((a, b) => p.k[b[0]] - p.k[a[0]])[0];
-      return `<div><span>${medal[i]}</span><b>${esc(first(p.n))}</b><small>${p.v.size} ${p.v.size === 1 ? "visit" : "visits"}${k ? `, mostly ${k[1]}` : ""}</small></div>`; }).join("")}</div>` : ""}
+      return `<div role="button" tabindex="0" data-kd="person:${esc(p.n)}"><span>${medal[i]}</span><b>${esc(first(p.n))}</b><small>${p.v.size} ${p.v.size === 1 ? "visit" : "visits"}${k ? `, mostly ${k[1]}` : ""}</small></div>`; }).join("")}</div>` : ""}
     <p class="admmut" style="margin:8px 0 0"><a href="#team">See every detail ›</a> &nbsp; A visit is one person on the DT in one hour.</p>`;
+  KID_CTX = {rows, rw, visit, days};
+  box.querySelectorAll("[data-kd]").forEach(el => { const go = () => kidDetail(el.dataset.kd); el.onclick = go; el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }; });
+}
+/* Drill down (Brandon Nov 25 2026): every number on Who's using the DTs opens its own detailed breakdown. */
+let KID_CTX = null;
+function kidDetail(k){
+  const box = document.getElementById("admkid"); if (!box || !KID_CTX) return;
+  const {rows, rw} = KID_CTX, wk = Date.now() - 7 * 86400000;
+  const nm = t => (KID_DO.find(a => a[0] === t) || [t, "•", ACT_NAMES[t] || t])[2];
+  const kind = x => ["tagreq", "pricereq"].includes(x[1]) ? "req" : x[1];
+  const when = t => new Date(t).toLocaleString("en-US", {weekday:"short", month:"numeric", day:"numeric", hour:"numeric", minute:"2-digit"});
+  const hr = t => new Date(t).toLocaleString("en-US", {weekday:"short", month:"numeric", day:"numeric", hour:"numeric"});
+  const line = x => `<li><b>${esc(x[3])}</b> ${esc(nm(kind(x)))}${x[4] ? `, unit ${esc(x[4])}` : ""}${x[1] === "move" && x[5] ? ` <span class="ux">${esc(x[5])}</span>` : ""}<br><span class="ux">${esc(x[2] || "")} · ${esc(when(x[0]))}</span></li>`;
+  const tally = (L, f) => { const m = {}; L.forEach(x => { const v = f(x) || "Unknown"; m[v] = (m[v] || 0) + 1; }); return Object.entries(m).sort((a, b) => b[1] - a[1]); };
+  const bars = (T, link) => { const top = Math.max(1, ...T.map(t => t[1])); return `<div class="kiddo">${T.map(([n, c]) => `<div ${link ? `role="button" tabindex="0" data-kd="${link}:${esc(n)}"` : ""}><span class="kie"></span><span class="kin">${esc(link === "act" ? nm(n) : n)}</span><span class="kib"><i style="width:${Math.max(4, Math.round(c / top * 100))}%"></i></span><b>${c}</b></div>`).join("")}</div>`; };
+  const visits = L => { const m = {}; L.forEach(x => { const key = x[3] + "|" + new Date(x[0]).toDateString() + "|" + new Date(x[0]).getHours(); (m[key] = m[key] || []).push(x); }); return Object.values(m).sort((a, b) => b[0][0] - a[0][0]); };
+  const vlist = V => `<ul class="tmfeed">${V.map(v => `<li role="button" tabindex="0" data-kd="person:${esc(v[0][3])}"><b>${esc(v[0][3])}</b> at ${esc(v[0][2] || "")}<br><span class="ux">${esc(hr(v[0][0]))} · ${v.length} ${v.length === 1 ? "thing" : "things"}: ${esc([...new Set(v.map(x => nm(kind(x))))].join(", "))}</span></li>`).join("") || "<li>None.</li>"}</ul>`;
+  let h = "", t = "";
+  if (k === "people") { t = "👥 People this week";
+    const P = {}; rw.forEach(x => { const p = P[x[3]] = P[x[3]] || {n:x[3], st:new Set(), n2:0, v:new Set(), last:0}; p.st.add(x[2]); p.n2++; p.v.add(new Date(x[0]).toDateString() + new Date(x[0]).getHours()); p.last = Math.max(p.last, x[0]); });
+    h = `<ul class="tmfeed">${Object.values(P).sort((a, b) => b.v.size - a.v.size).map(p => `<li role="button" tabindex="0" data-kd="person:${esc(p.n)}"><b>${esc(p.n)}</b> · ${esc([...p.st].filter(Boolean).join(", "))}<br><span class="ux">${p.v.size} visits · ${p.n2} things done · last seen ${esc(when(p.last))}</span></li>`).join("")}</ul>`; }
+  else if (k === "visits") { t = "🔁 Visits this week"; h = `<p class="kidsay" style="font-size:14px">Each visit is one person on the DT in one hour. Tap a name to see everything they did.</p>` + vlist(visits(rw)); }
+  else if (k === "done") { t = "✅ Things done this week"; h = `<div class="kidlab">By kind</div>` + bars(tally(rw, kind), "act") + `<div class="kidlab">By store</div>` + bars(tally(rw, x => x[2])) + `<div class="kidlab">Newest first</div><ul class="tmfeed">${rw.slice().sort((a, b) => b[0] - a[0]).slice(0, 100).map(line).join("")}</ul>`; }
+  else if (k.startsWith("day:")) { const d = k.slice(4), L = rows.filter(x => new Date(x[0]).toDateString() === d); t = "📅 " + new Date(d).toLocaleDateString("en-US", {weekday:"long", month:"long", day:"numeric"});
+    h = `<p class="kidsay" style="font-size:15px">${visits(L).length} visits by ${new Set(L.map(x => x[3])).size} people, ${L.length} things done.</p><div class="kidlab">What they did</div>` + bars(tally(L, kind), "act") + `<div class="kidlab">Visits</div>` + vlist(visits(L)); }
+  else if (k.startsWith("act:")) { const a = k.slice(4), L = rw.filter(x => kind(x) === a); t = (KID_DO.find(z => z[0] === a) || ["", "•"])[1] + " " + nm(a) + " this week";
+    h = `<div class="kidlab">Who</div>` + bars(tally(L, x => x[3]), "person") + `<div class="kidlab">Where</div>` + bars(tally(L, x => x[2])) + `<div class="kidlab">Every one, newest first</div><ul class="tmfeed">${L.slice().sort((a, b) => b[0] - a[0]).map(line).join("") || "<li>None.</li>"}</ul>`; }
+  else if (k.startsWith("person:")) { const p = k.slice(7), L = rows.filter(x => x[3] === p), W = L.filter(x => x[0] >= wk); t = "🙋 " + p;
+    h = `<p class="kidsay" style="font-size:15px">This week: ${visits(W).length} visits, ${W.length} things done at ${esc([...new Set(W.map(x => x[2]).filter(Boolean))].join(", ") || "no store")}.</p><div class="kidlab">What they did this week</div>` + bars(tally(W, kind), "act") + `<div class="kidlab">Last 2 weeks, newest first</div><ul class="tmfeed">${L.slice().sort((a, b) => b[0] - a[0]).slice(0, 100).map(line).join("")}</ul>`; }
+  box.innerHTML = `<button type="button" class="kidback">‹ Back to Who's using the DTs</button><div class="kidh" style="margin-top:8px">${esc(t)}</div>${h}`;
+  box.querySelector(".kidback").onclick = () => kidCard();
+  box.querySelectorAll("[data-kd]").forEach(el => { const go = () => kidDetail(el.dataset.kd); el.onclick = go; el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }; });
+  box.scrollIntoView({block:"start", behavior:"smooth"});
 }
 const ADMIN_CSS = `<style>.kid{background:#fff;color:#1d1d1f;border-radius:16px;padding:14px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,.08)}.kidh{font-size:22px;font-weight:800;margin-bottom:8px}
-.kidbig{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.kidbig div{background:#f4f1ec;border-radius:12px;padding:10px 4px;text-align:center}.kidbig b{display:block;font-size:34px;line-height:1;color:#C8102E}.kidbig span{font-size:13px;font-weight:700}
+.kidbig{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.kidbig div,.kidbig button{background:#f4f1ec;border-radius:12px;padding:10px 4px;text-align:center;border:0;font:inherit;color:inherit;cursor:pointer;display:block;width:100%}.kidbig button:active{background:#e8e2d8}.kidbig span{display:block}[data-kd]{cursor:pointer}.kiddo [data-kd]:hover,.kidbars [data-kd]:hover{opacity:.8}.kidback{background:#121212;color:#F5B400;border:0;border-radius:10px;padding:10px 14px;font-weight:800;font-size:14px}#admkid .tmfeed{list-style:none;padding:0;margin:6px 0}#admkid .tmfeed li{padding:8px 0;border-bottom:1px solid #eee}.kidbig b{display:block;font-size:34px;line-height:1;color:#C8102E}.kidbig span{font-size:13px;font-weight:700}
 .kidsay{font-size:17px;font-weight:700;margin:10px 0}.kidlab{font-size:16px;font-weight:800;margin:14px 0 6px}.kidlab small{font-weight:600;color:#888}
 .kidbars{display:flex;align-items:flex-end;gap:3px;height:130px;padding-top:16px}.kidbars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}.kidbars i{display:block;width:100%;background:#4C7BD9;border-radius:6px 6px 2px 2px}.kidbars .tdy i{background:#C8102E}.kidbars small{font-size:11px;font-weight:800;margin-bottom:2px}.kidbars span{font-size:10px;color:#777;margin-top:3px}.kidbars .tdy span{color:#C8102E;font-weight:800}
 .kiddo div{display:grid;grid-template-columns:30px 1fr 34%;grid-template-areas:"e n b" "e g g";align-items:center;gap:2px 6px;margin:6px 0}.kiddo .kie{grid-area:e;font-size:24px}.kiddo .kin{grid-area:n;font-weight:700;font-size:15px}.kiddo b{grid-area:b;text-align:right;font-size:18px}.kiddo .kib{grid-area:g;height:12px;background:#eee;border-radius:6px;overflow:hidden}.kiddo .kib i{display:block;height:100%;background:#2E9E5B;border-radius:6px}
