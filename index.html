@@ -1966,7 +1966,7 @@ function shareInit(u, name){
   const step = (d) => { if (d !== "open" && !started) step("open"); if (d === "open") { if (started) return; started = true; } else sparkDo("post", u); track("step", {store:u.store, unit:u.unit, d, pin:getPin(u.store)||"", code:getCode()}); };
   try { api({action:"top", store:u.store, pin:getPin(u.store), code:getCode()}).then(r => { if (r && r.ok) { recent = r.units; draw(); } }).catch(()=>{}); } catch(_){}
   const rotated = () => {          // a unit drops off after a post until the store makes 5 other posts
-    const list = (TOP3[u.store] || []).filter(i => byId[i]);
+    const list = (TOP3[u.store] || []).filter(i => byId[i] && isOldestTX(byId[i]));   // Brandon Nov 25 2026: never tell the team to sell or post a unit first unless it is the oldest of its model in Texas
     if (!recent) return list.slice(0, 3);
     return list.filter(i => { const k = recent.lastIndexOf(String(byId[i].unit)); return k < 0 || (recent.length - 1 - k) >= 5; }).slice(0, 3);
   };
@@ -3652,7 +3652,7 @@ function storeHome(st){
   const dba = (units[0] && units[0].dba) || STORE_DBA[st] || "LSM Outdoor Power";
   const signed = !!(getCode() && (isAll() || getPin(st)));
   const li = u => `<li><a href="#${esc(u.id)}">${esc(u.brand + " " + u.name)}</a><small> Unit ${esc(u.unit)}${u.serial ? ", SN " + esc(String(u.serial).slice(-4)) : ""}${u.store !== st ? ", at " + esc(u.store) : ""}${u.fire && FIRE_AGE[u.id] ? ", " + FIRE_AGE[u.id] + " days" : ""}</small></li>`;
-  const top = (TOP3[st] || []).filter(i => byId[i]).slice(0, 3).map(i => byId[i]);
+  const top = (TOP3[st] || []).filter(i => byId[i] && isOldestTX(byId[i])).slice(0, 3).map(i => byId[i]);   // oldest in Texas only (Brandon Nov 25 2026)
   const fire = units.filter(u => u.fire);
   app.innerHTML = `<article class="card"><div class="sect">
     <h2>Welcome to Spark Digital Tags</h2>
