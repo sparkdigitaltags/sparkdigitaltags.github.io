@@ -177,6 +177,8 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .mtog{display:flex;gap:6px;margin:10px 0 0}.mtog button{flex:1;padding:9px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:14px}.mtog button[disabled]{background:var(--line);color:var(--muted);border-color:var(--line);cursor:not-allowed}.mtog button small{display:block;font-size:11px;font-weight:500}.mtog button[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
 .vbox{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 0}.vbtn{display:block;text-align:center;padding:12px 6px;border-radius:10px;background:#111;color:#fff;font-weight:800;font-size:14px;cursor:pointer}.vbtn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line)}.vtip{margin:6px 0 0}
 .mkf{margin:12px 0 0;padding:10px;border:1px solid var(--line);border-radius:10px}.mkr{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.mkr:first-of-type{border-top:0}.mkr small{display:block;font-size:11px;color:var(--muted)}.mkr .copy{width:auto;padding:6px 12px;margin:0}
+.a2g{display:block;color:inherit;font-weight:700;text-decoration:underline;margin-top:6px}.a2ok{position:fixed;left:12px;right:12px;bottom:18px;z-index:99;background:#1a7f37;color:#fff;font-weight:700;text-align:center;border-radius:12px;padding:14px;font-size:16px}
+.pstcyc .ghost{font-family:Arial,Helvetica,sans-serif;text-decoration:none}
 .sbtn.st{background:#F37A1F}
 .pstcyc{display:flex;gap:8px;align-items:center;margin:4px 0 6px}.pstcyc select{flex:1;padding:10px;border:1px solid #ccc;border-radius:10px;font-size:16px;background:#fff;color:#1d1d1f}.pstcyc .ghost{min-width:44px;text-align:center;font-size:22px;padding:6px 10px}
 .pstc{border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0}.psth{display:flex;gap:10px;align-items:center;margin-bottom:8px}.psth b{display:block}.psth small{color:var(--muted);font-size:12px}
@@ -2158,7 +2160,7 @@ function inventory(st0){
    The server blocks profanity. */
 function chatFlag(r){ if (r && "chat" in r) { ls.set("sparkchat", r.chat ? "1" : "0"); ls.set("sparkchatat", String(Date.now())); }
   if (r && r.role) { ls.set("sparkrole", r.role); ls.set("sparkadm", r.adm ? "1" : "0"); if (r.first) ls.set("sparkfirst", r.first); } }
-const myRole = () => viewAs() || (getCode() ? (ls.get("sparkrole") || "team") : "customer");
+const myRole = () => { const v = viewAs(); return v === "justin" ? "team" : v || (getCode() ? (ls.get("sparkrole") || "team") : "customer"); };   // Justin view: all store team view plus post approvals, no admin tools
 const isAdm = () => !viewAs() && !!getCode() && ls.get("sparkadm") === "1";
 const meRefresh = force => { if (force) ls.set("sparkchatat", "0"); return chatRefresh(); };
 const chatOn = () => ls.get("sparkchat") === "1" && !!getCode();
@@ -2628,7 +2630,7 @@ const isLSM = u => /^LSM/i.test(u.dba || "LSM Outdoor Power");
 /* View as switcher, admins only */
 function viewAsBar(){
   document.getElementById("viewas")?.remove(); if (!realAdm()) return;
-  const v = viewAs(), opts = [["", "Me (admin)"], ...TL_ROLES.map(r => [r[0], r[1].replace(/s$/, "").replace("Division Manager", "Division Manager")])];
+  const v = viewAs(), opts = [["", "Me (admin)"], ["justin", "Justin (CSO, approves posts)"], ...TL_ROLES.map(r => [r[0], r[1].replace(/s$/, "").replace("Division Manager", "Division Manager")])];
   const d = document.createElement("div"); d.id = "viewas"; d.className = "viewas" + (v ? " on" : "");
   d.innerHTML = `<label>View as<select>${opts.map(o => `<option value="${o[0]}"${o[0] === v ? " selected" : ""}>${esc(o[1])}</option>`).join("")}</select></label>`;
   d.querySelector("select").onchange = e => { const x = e.target.value; if (x) ls.set("sparkviewas", x); else ls.del("sparkviewas"); location.reload(); };
@@ -3196,7 +3198,7 @@ function a2hsBar(){
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1), crios = /CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);
   b.innerHTML = `<b>Put the DT on your home screen</b>` + (A2HS_EVT ? `<button type="button" class="go">Add it</button>`
     : ios ? `<span>1. Tap the <b>Share</b> button <span aria-hidden="true">⬆︎</span> (a square with an arrow pointing up). ${crios ? "It is at the top right, next to the web address." : "In Safari it is on the bar at the bottom of the screen."}<br>2. Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.<br>3. Open the new icon and sign in to your store one time.</span>`
-    : `<span>Tap the <b>⋮</b> menu, then <b>Add to Home screen</b> or <b>Install app</b>.</span>`) + `<button type="button" class="x" aria-label="Hide">✕</button>`;
+    : `<span>Tap the <b>⋮</b> menu, then <b>Add to Home screen</b> or <b>Install app</b>.</span>`) + `<a class="a2g" href="/m/guide/DT_Home_Screen_Guide_${ios ? "iPhone" : "Android"}.png" target="_blank" rel="noopener">See the picture guide</a><button type="button" class="x" aria-label="Hide">✕</button>`;
   const g = b.querySelector(".go"); if (g) g.onclick = async () => { const e = A2HS_EVT; A2HS_EVT = null; e.prompt(); const r = await e.userChoice.catch(() => ({})); track("a2hs", {o: r.outcome || ""}); a2hsBar(); };
   b.querySelector(".x").onclick = () => { sessionStorage.setItem("a2hs_x", "1"); b.remove(); };
 }
@@ -3752,6 +3754,17 @@ function setManifest(st){
   if (mf && mf.getAttribute("href") !== href) mf.setAttribute("href", href);
   const t = document.getElementById("amt"); if (t) t.setAttribute("content", st ? (st.length <= 7 ? st + " Tags" : st) : "Spark Tags");
 }
+/* Home screen confirmation (Brandon Nov 25 2026): the first time someone opens the DT from its home screen icon and is signed in,
+   Brandon gets an email naming who, which store and which phone, and the person sees "You're all set". Once per phone. */
+function a2hsDone(){ try {
+  if (!isStandalone() || !getCode() || viewAs() || ls.get("sparkinst")) return;
+  ls.set("sparkinst", String(Date.now()));
+  const ua = navigator.userAgent, dev = /iphone|ipad|ipod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? "iPhone" : /android/i.test(ua) ? "Android" : "Computer";
+  const st = ls.get("sparkhome") || (STORES.find(x => getPin(x))) || (chatAuth() || {}).store || "";
+  track("homescreen", {store: st, d: dev});
+  const t = document.createElement("div"); t.className = "a2ok"; t.setAttribute("role", "status"); t.textContent = "✓ You're all set. The DT is on your home screen."; document.body.appendChild(t); setTimeout(() => t.remove(), 6000);
+} catch(e){} }
+window.addEventListener("hashchange", () => setTimeout(a2hsDone, 800)); setTimeout(a2hsDone, 2500);
 window.addEventListener("appinstalled", () => { const st = /^#admin$/i.test(location.hash) ? "Admin" : (/^#store\/(.+)$/i.exec(location.hash) || [])[1] || ""; track("install", {store: st, d: "home screen"}); });
 
 /* Spark Admin (Brandon Nov 14 2026): sparkdigitaltags.github.io/#admin . One home screen app for all access leaders:
