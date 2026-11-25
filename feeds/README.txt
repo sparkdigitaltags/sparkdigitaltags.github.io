@@ -1,4 +1,4 @@
-Meta Commerce Manager scheduled feed URLs. Built 2026-11-25T13:03:59.851Z
+Meta Commerce Manager scheduled feed URLs. Built 2026-11-25T13:05:24.868Z
 https://sparkdigitaltags.github.io/feeds/meta_ATS_Outdoors.csv  (239 units)
 https://sparkdigitaltags.github.io/feeds/meta_ATS_Outdoors__Gatesville.csv  (56 units)
 https://sparkdigitaltags.github.io/feeds/meta_ATS_Outdoors__Springtown.csv  (54 units)
