@@ -179,6 +179,7 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .mkf{margin:12px 0 0;padding:10px;border:1px solid var(--line);border-radius:10px}.mkr{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.mkr:first-of-type{border-top:0}.mkr small{display:block;font-size:11px;color:var(--muted)}.mkr .copy{width:auto;padding:6px 12px;margin:0}
 .a2g{display:block;color:inherit;font-weight:700;text-decoration:underline;margin-top:6px}.a2ok{position:fixed;left:12px;right:12px;bottom:18px;z-index:99;background:#1a7f37;color:#fff;font-weight:700;text-align:center;border-radius:12px;padding:14px;font-size:16px}
 .pstcyc .ghost{font-family:Arial,Helvetica,sans-serif;text-decoration:none}
+.stg .stgs{display:flex;gap:10px;margin:8px 0;align-items:flex-start}.stgn{flex:0 0 30px;height:30px;border-radius:50%;background:#F5B400;color:#121212;font-weight:800;display:flex;align-items:center;justify-content:center}.stgs p{margin:2px 0 0;font-size:14px}.stgmod{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}.stgbox{background:#1e1e1e;color:#fff;max-height:88vh;overflow:auto;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:16px;position:relative}.stgbox .x{position:absolute;right:10px;top:10px;background:#333;color:#fff;border:0;border-radius:50%;width:36px;height:36px;font-size:16px}
 .sbtn.st{background:#F37A1F}
 .pstcyc{display:flex;gap:8px;align-items:center;margin:4px 0 6px}.pstcyc select{flex:1;padding:10px;border:1px solid #ccc;border-radius:10px;font-size:16px;background:#fff;color:#1d1d1f}.pstcyc .ghost{min-width:44px;text-align:center;font-size:22px;padding:6px 10px}
 .pstc{border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0}.psth{display:flex;gap:10px;align-items:center;margin-bottom:8px}.psth b{display:block}.psth small{color:var(--muted);font-size:12px}
@@ -3671,6 +3672,7 @@ function storeHome(st){
       if (viewAs() === "customer") ls.set("sparkviewas", "");
       m.textContent = "Checking...";
       try { const r = await api({action:"check", store:st, pin, code});
+        if (r.ok && sessionStorage.getItem("sparkstart")) { sessionStorage.removeItem("sparkstart"); setTimeout(() => { location.hash = "start"; }, 600); }   // back to the start page walkthrough
         if (r.ok) { keepKey(r); chatFlag(r); MEM._code = code; ls.set("sparkcode", code); if (r.all) { MEM._all = true; ls.set("sparkall", "1"); } else { MEM[st] = pin; ls.set(pinKey(st), pin); (r.stores||[]).forEach(x => { MEM[x] = pin; ls.set(pinKey(x), pin); }); } track("signin", {store:st, pin, code, d:"storehome"}); sessionStorage.setItem("sparksignchk", "1"); storeHome(st); }
         else m.textContent = ERRMSG(r.error);
       } catch(err){ m.textContent = "Could not connect. Check your signal and try again."; } };
@@ -3932,7 +3934,7 @@ function admBtn(h){
    A store team member opens a ready made post (picture and caption), sends it to Justin for approval, Justin sees exactly how it
    will look on Facebook and approves it or rejects it with notes, and the store can then post ONLY the approved picture and caption.
    Pilot: Burleson. Turn on more stores by adding them to POST_ON. Backend: postlist, postsubmit, postdecide, postdone in Code.gs. */
-const POST_ON = ["Burleson"];
+const POST_ON = ["Burleson", "Colleyville", "Denton", "Farmers Branch", "Keller", "Lewisville", "Renfro"];   // all LSM stores (Brandon Nov 25 2026); other DBAs next
 const LSM_POST = ["Burleson", "Colleyville", "Denton", "Farmers Branch", "Keller", "Lewisville", "Renfro"];
 const POST_ADDR = {"Farmers Branch":["13860 N Stemmons Fwy, Farmers Branch","(972) 466 9093"], Keller:["483 N Main St, Keller","(817) 431 3341"], Burleson:["100 Syble Jean Dr, Burleson","(817) 478 3005"],
   Renfro:["625 E Renfro St, Burleson","(817) 295 5800"], Denton:["8425 W University Dr, Denton","(940) 293 2167"], Colleyville:["3801 Colleyville Blvd, Colleyville","(817) 281 7252"], Lewisville:["985 State Hwy 121 #511, Lewisville","(972) 436 9410"]};
@@ -4103,6 +4105,52 @@ function postStoreCard(st){            // store page: the STIHL button and, for 
     ${appr ? `<a class="sbtn fb" href="#approve" style="text-decoration:none;margin-top:8px"><span>Approve posts<small>All LSM stores</small></span></a>` : ""}</div>`;
 }
 
+
+/* Start page (Brandon Nov 25 2026): one link to text a leader. It shows how to put the DT on the home screen, then once it is
+   opened from the icon and signed in, approvers get the Facebook post approval walkthrough. sparkdigitaltags.github.io/#start */
+const APPR_STEPS = [
+  ["📩", "You get a heads up", "When a store sends a Facebook post, you get an email and an orange bar at the top of the DT: posts waiting for your approval."],
+  ["👆", "Tap the bar or Approve posts", "It opens your Approve posts page. Every LSM store's posts are in one list."],
+  ["◀ ▶", "Switch stores", "Use the arrows or the store picker at the top to see one store at a time. All LSM stores shows everything."],
+  ["👀", "See the real post", "You see the picture and caption exactly how they will look on the store's Facebook page."],
+  ["✅", "Approve", "Tap Approve. The store gets a notice and can post only what you approved. They cannot change it."],
+  ["✏️", "Or reject with notes", "Type what to fix, then tap Reject with notes. The store sees your notes, fixes it and sends it again."]];
+function apprGuideHtml(){
+  return `<div class="stg"><h2 style="margin:0 0 6px">How post approvals work</h2><p class="fine" style="margin:0 0 10px">Takes 10 seconds a post.</p>
+    ${APPR_STEPS.map((x, i) => `<div class="stgs"><span class="stgn">${i + 1}</span><div><b>${x[0]} ${esc(x[1])}</b><p>${esc(x[2])}</p></div></div>`).join("")}
+    <img src="/m/guide/approve.jpg" alt="The Approve posts screen with a Burleson post and the Approve button" style="width:100%;border-radius:12px;margin:8px 0">
+    <a class="copy copyall" href="#approve" style="display:block;text-align:center;margin-top:8px">Open Approve posts</a></div>`;
+}
+function startPage(){
+  document.title = "Get started | Spark Digital Tags";
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  const mf = document.getElementById("mf"); if (mf) mf.setAttribute("href", "/m/start.webmanifest");
+  if (!isStandalone()) {
+    const inApp = /FBAN|FBAV|Instagram|Line\/|GSA\//.test(navigator.userAgent);
+    app.innerHTML = `<article class="card"><div class="sect"><h2>Step 1: Put the DT on your home screen</h2>
+      ${ios && inApp ? `<p class="lmsg">Open this page in Safari first: tap the compass or the ••• menu, then Open in Safari.</p>` : ""}
+      <p style="font-size:17px">${ios ? "In <b>Safari</b>: tap the <b>Share</b> button at the bottom, scroll down, tap <b>Add to Home Screen</b>, then <b>Add</b>." : "In <b>Chrome</b>: tap the <b>⋮</b> menu at the top right, then <b>Add to Home screen</b> or <b>Install app</b>."}</p>
+      <p style="font-size:17px"><b>Step 2:</b> Close this page. Open the new <b>Spark</b> icon on your home screen. It brings you right back here for the last step.</p>
+      <img src="/m/guide/DT_Home_Screen_Guide_${ios ? "iPhone" : "Android"}.png" alt="Picture guide for adding the DT to your home screen" style="width:100%;border-radius:12px;margin-top:8px"></div></article>`;
+    return;
+  }
+  if (!getCode()) {
+    app.innerHTML = `<article class="card"><div class="sect"><h2>Step 3: Sign in one time</h2><p style="font-size:17px">Tap any of your stores. Enter that store's PIN (its street number) and the last 4 of your cell. You stay signed in on this icon.</p>
+      <div style="display:grid;gap:8px;margin-top:10px">${LSM_POST.map(x => `<a class="copy copyall" href="#store/${slug(x)}" style="display:block;text-align:center" onclick="sessionStorage.setItem('sparkstart','1')">${esc(x)}</a>`).join("")}</div></div></article>`;
+    return;
+  }
+  app.innerHTML = `<article class="card"><div class="sect"><h2>✓ You're all set</h2><p style="font-size:17px">The DT is on your home screen and you're signed in.</p>${ls.get("sparkpostappr") === "1" ? apprGuideHtml() : `<a class="copy copyall" href="#stores" style="display:block;text-align:center">Pick your store</a>`}</div></article>`;
+  ls.set("sparkapprguide", "1");
+}
+/* Approvers who open the DT from the home screen icon see the walkthrough once, wherever they land after signing in. */
+function apprGuideOnce(){
+  try { if (!isStandalone() || ls.get("sparkpostappr") !== "1" || ls.get("sparkapprguide") || /^#(start|approve)/i.test(location.hash) || document.getElementById("stgmod")) return;
+    ls.set("sparkapprguide", "1");
+    const d = document.createElement("div"); d.id = "stgmod"; d.className = "stgmod"; d.setAttribute("role", "dialog"); d.setAttribute("aria-label", "How post approvals work");
+    d.innerHTML = `<div class="stgbox"><button type="button" class="x" aria-label="Close">✕</button>${apprGuideHtml()}</div>`;
+    document.body.appendChild(d); d.querySelector(".x").onclick = () => d.remove(); d.querySelector('a[href="#approve"]').addEventListener("click", () => d.remove());
+  } catch(e){} }
+window.addEventListener("hashchange", () => setTimeout(apprGuideOnce, 2500)); setTimeout(apprGuideOnce, 4000);
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
   try { admBtn(h); } catch(e){}
@@ -4115,6 +4163,7 @@ function route(){
   { const mh = /^homing\/(.+)$/i.exec(h); if (mh) { window.scrollTo(0, 0); const st = STORES.find(x => slug(x) === slug(mh[1])); if (st) return massHome(st); } }
   if (/^today$/i.test(h)) { window.scrollTo(0, 0); return todayPage(); }
   { const pm = /^post\/(.+)$/i.exec(h); if (pm) { window.scrollTo(0, 0); const st = STORES.find(x => slug(x) === slug(pm[1])); if (st) return postPage(st); } }
+  if (/^start$/i.test(h)) { window.scrollTo(0, 0); return startPage(); }
   if (/^approve$/i.test(h)) { setManifest(""); window.scrollTo(0, 0); return approvePage(); }
   { const ch = /^chat(?:\/(.+))?$/i.exec(h); if (ch) { setManifest(""); window.scrollTo(0, 0); return ch[1] ? chatRoom(ch[1]) : chatHome(); } }
   { const iv = /^inventory(?:\/(.+))?$/i.exec(h); if (iv) { setManifest(""); window.scrollTo(0, 0); return inventory(iv[1] ? STORES.find(x => slug(x) === slug(iv[1])) : ""); } }
