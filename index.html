@@ -177,6 +177,14 @@ h1,.now,.brand,.lend .ttl{overflow-wrap:anywhere}
 .mtog{display:flex;gap:6px;margin:10px 0 0}.mtog button{flex:1;padding:9px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:14px}.mtog button[disabled]{background:var(--line);color:var(--muted);border-color:var(--line);cursor:not-allowed}.mtog button small{display:block;font-size:11px;font-weight:500}.mtog button[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
 .vbox{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 0}.vbtn{display:block;text-align:center;padding:12px 6px;border-radius:10px;background:#111;color:#fff;font-weight:800;font-size:14px;cursor:pointer}.vbtn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line)}.vtip{margin:6px 0 0}
 .mkf{margin:12px 0 0;padding:10px;border:1px solid var(--line);border-radius:10px}.mkr{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line)}.mkr:first-of-type{border-top:0}.mkr small{display:block;font-size:11px;color:var(--muted)}.mkr .copy{width:auto;padding:6px 12px;margin:0}
+.sbtn.st{background:#F37A1F}
+.pstcyc{display:flex;gap:8px;align-items:center;margin:4px 0 6px}.pstcyc select{flex:1;padding:10px;border:1px solid #ccc;border-radius:10px;font-size:16px;background:#fff;color:#1d1d1f}.pstcyc .ghost{min-width:44px;text-align:center;font-size:22px;padding:6px 10px}
+.pstc{border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0}.psth{display:flex;gap:10px;align-items:center;margin-bottom:8px}.psth b{display:block}.psth small{color:var(--muted);font-size:12px}
+.pstico{padding:8px 10px;font-size:12px;min-width:56px}.pstb{margin-left:auto;font-size:12px;font-weight:700;border-radius:14px;padding:4px 9px;white-space:nowrap}
+.pstb.pend,.pstnote.pend{background:#FFF4D6;color:#7a5a00}.pstb.ok,.pstnote.ok{background:#E8F3EA;color:#1a5f2d}.pstb.no,.pstnote.no{background:#FDE8E8;color:#a12020}.pstb.done,.pstnote.done{background:#EEF1F5;color:#3a4452}
+.pstnote{border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14px;line-height:1.4}.pstnote small{display:block;margin-top:4px;opacity:.8}
+.pstpv{margin:6px 0 10px}.pstpv .pvtx{white-space:normal}
+.pstbar{position:sticky;top:0;z-index:50;display:block;text-align:center;font-weight:700;padding:12px 14px;text-decoration:none;font-size:15px}.pstbar.ok{background:#1a7f37;color:#fff}.pstbar.no{background:#a12020;color:#fff}.pstbar.pend{background:#F37A1F;color:#fff}
 .sbtn[disabled]{background:var(--line);color:var(--muted);cursor:not-allowed}
 .capbox{width:100%;min-height:150px;font:inherit;font-size:14px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);resize:vertical}
 .chk{display:flex;gap:8px;align-items:flex-start;font-size:14px}
@@ -1971,6 +1979,7 @@ function shareInit(u, name){
     if (!TOP3AMT && TOP3SP) top3Amt().then(x => { if (x) draw(); });
     const topHtml = top.length ? `<div class="top3"><div class="t3h">${esc(label("money"))}</div><div class="t3s">Oldest Fire Sale units first. Post one and the next oldest moves up.</div><ol>${top.map(i => { const t = byId[i]; return `<li>${i === u.id ? `<b>${esc(t.brand + " " + t.name)}</b> (this unit)` : `<a href="#${i}">${esc(t.brand + " " + t.name)}</a>`}<small> Unit ${esc(t.unit)}</small>${spl(i)}</li>`; }).join("")}</ol></div>` : "";
     box.innerHTML = topHtml + `<h2>Post this unit</h2>
+      ${postCamps(u.store).length ? `<a class="sbtn st" href="#post/${slug(u.store)}" style="text-decoration:none;margin-bottom:10px"><span>STIHL Black Friday post<small>Ready made Facebook post for ${esc(u.store)}. Needs Justin's OK.</small></span></a>` : ""}
       <div class="sharegrid">${PLAT.map(p => {
         const why = p.mkt ? mkBlock() : (p.market && !MARKET_OK[u.brand.toUpperCase()] ? "Not approved for " + u.brand + " yet" : "");
         return `<button class="sbtn ${p.k}" data-p="${p.k}" ${why ? "disabled" : ""} aria-pressed="${p.k===plat}"><span>${p.n}<small>${why ? esc(why) : (!VIDEO_ON && p.offsub) ? p.offsub : p.sub}</small></span></button>`; }).join("")}</div>
@@ -3671,7 +3680,7 @@ function storeHome(st){
   box.innerHTML = `<div id="shchat">${chatBtn()}</div>${feat("printbtn") ? `<a class="copy copyall prbtn" href="#store/${slug(st)}@tagq">🖨 Print tags</a>` : ""}<h2 style="margin-top:4px">Find any unit</h2>${finderHtml("sh")}
     <a class="copy copyall" href="#inventory/${slug(st)}" style="display:block;text-align:center;margin-top:8px">Inventory</a>${feat("masshome") ? `<a class="copy copyall" href="#homing/${slug(st)}" style="display:block;text-align:center;margin-top:8px;background:#1F2A5A;color:#fff">Home many units</a>` : ""}
     <p class="fine" id="snote" style="margin:6px 0 14px">Searches every unit at every Spark store on the digital tags. Your store comes first.</p>
-    <div id="shclimb"></div>
+    ${postStoreCard(st)}<div id="shclimb"></div>
     <div id="tagq"></div><div id="blkst"></div>
     ${feat("mm2") && TX_STORES.includes(st) ? (() => { const f = mmFeed(st); return `<div class="top3"><div class="t3h">${esc(label("money"))}</div><div class="t3s">Fire Sale units at ${esc(st)} that are the <b>oldest of their model in all of Texas</b>. Sell and post these first.${!FLAGS.mm2 ? " <b>Testing: only you see this rule.</b>" : ""}</div>
       <div id="bfeed"></div></div>`; })()
@@ -3872,6 +3881,181 @@ function admBtn(h){
     b.style.cssText = "position:fixed;top:10px;right:10px;z-index:60;background:#111;color:#fff;font:600 13px system-ui;padding:8px 12px;border-radius:999px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.3)";
     document.body.appendChild(b); }
 }
+/* Store social posts with approval (Brandon Nov 25 2026).
+   A store team member opens a ready made post (picture and caption), sends it to Justin for approval, Justin sees exactly how it
+   will look on Facebook and approves it or rejects it with notes, and the store can then post ONLY the approved picture and caption.
+   Pilot: Burleson. Turn on more stores by adding them to POST_ON. Backend: postlist, postsubmit, postdecide, postdone in Code.gs. */
+const POST_ON = ["Burleson"];
+const LSM_POST = ["Burleson", "Colleyville", "Denton", "Farmers Branch", "Keller", "Lewisville", "Renfro"];
+const POST_ADDR = {"Farmers Branch":["13860 N Stemmons Fwy, Farmers Branch","(972) 466 9093"], Keller:["483 N Main St, Keller","(817) 431 3341"], Burleson:["100 Syble Jean Dr, Burleson","(817) 478 3005"],
+  Renfro:["625 E Renfro St, Burleson","(817) 295 5800"], Denton:["8425 W University Dr, Denton","(940) 293 2167"], Colleyville:["3801 Colleyville Blvd, Colleyville","(817) 281 7252"], Lewisville:["985 State Hwy 121 #511, Lewisville","(972) 436 9410"]};
+const POST_CAMPS = [{
+  id: "stihl-bf-2026", title: "STIHL Black Friday", brand: "STIHL", ends: "2026-12-21",
+  img: st => "m/posts/stihl-bf-2026-" + slug(st) + ".jpg",
+  caption: st => { const a = POST_ADDR[st] || ["", ""]; return [
+    "🎄 STIHL Holiday Door Busters are here, online only! 🎄", "",
+    "BGA 50 Set battery blower: Reg $199.99, now $169.99",
+    "MSA 80 Set battery chainsaw: Reg $499.99, now $449.99",
+    "SE 33 wet/dry vac: Reg $119.99, now $99.99",
+    "SE 62 wet/dry vac: Reg $239.99, now $119.99", "",
+    "New STIHL customers get an extra 10% off.", "",
+    "Buy online at STIHLUSA.com and choose LSM Outdoor Power " + st + " for pickup. Deals end December 20.", "",
+    "📍 " + a[0], "📞 " + a[1], "",
+    "#STIHL #LSMOutdoorPower #" + st.replace(/\W/g, "") + "TX #BlackFriday"].join("\n"); }
+}];
+const postCamps = st => POST_CAMPS.filter(c => POST_ON.includes(st) && Date.now() < Date.parse(c.ends));
+const postSigned = st => !!(getCode() && (isAll() || getPin(st)));
+const postAuth = st => { if (getPin(st)) return {store: st, pin: getPin(st)}; const a = chatAuth() || {}; return {store: isAll() ? st : a.store, pin: isAll() ? "" : a.pin}; };
+async function postApi(params, post){
+  if (!post) return api(params);
+  const r = await fetch(LOC_API, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:new URLSearchParams(params).toString()});
+  return r.json();
+}
+const postWhen = t => t ? new Date(t).toLocaleString("en-US", {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}) : "";
+const postLatest = (rows, st, camp) => rows.filter(r => r.store.toLowerCase() === st.toLowerCase() && r.campaign === camp).sort((a, b) => a.time - b.time).pop();
+function postFb(st, img, text){       // the post drawn the way Facebook shows it in the feed
+  const who = "LSM Outdoor Power " + st;
+  const body = esc(text).replace(/(#[A-Za-z0-9_]+)/g, '<span class="fbl">$1</span>').replace(/\n/g, "<br>");
+  return `<div class="pv fbp pstpv"><div class="pvhd"><span class="pvav">L</span><div><b>${esc(who)}</b><small>Just now · ${ICO.globe}</small></div></div>
+    <div class="pvtx">${body}</div><img src="${esc(img)}" alt="${esc(st)} post picture" style="width:100%;display:block">
+    <div class="fbbar"><span>${ICO.like} Like</span><span>${ICO.com} Comment</span><span>${ICO.shr} Share</span></div></div>`;
+}
+const POST_BADGE = {Pending:["pend","Waiting on Justin"], Approved:["ok","Approved. Ready to post"], Rejected:["no","Sent back with notes"], Posted:["done","Posted"]};
+
+async function postPage(st){
+  document.title = "Social posts | " + st;
+  const back = `<p style="margin-top:12px"><a class="ghost" href="#store/${slug(st)}">Back to ${esc(st)}</a></p>`;
+  if (!postSigned(st)) { app.innerHTML = `<article class="card"><div class="sect"><h2>Social posts</h2><p>Sign in on the <a href="#store/${slug(st)}">${esc(st)} store page</a> first, then come back here.</p></div></article>`; return; }
+  app.innerHTML = `<article class="card"><div class="sect"><h2>${esc(st)} social posts</h2><div id="pstbox"><p class="fine">Loading...</p></div>${back}</div></article>`;
+  const box = document.getElementById("pstbox"), au = postAuth(st);
+  let r; try { r = await postApi({action:"postlist", store:st, pin:au.pin, code:getCode()}); } catch(e){}
+  if (!r || !r.ok) { box.innerHTML = `<p class="lmsg">Couldn't load posts. Check your signal and try again.</p>`; return; }
+  ls.set("sparkpostseen", String(Date.now())); POSTN = 0;
+  const camps = postCamps(st);
+  const cyc = r.approver ? `<div class="pstcyc" role="group" aria-label="Pick a store"><a class="ghost" href="#post/${slug(LSM_POST[(LSM_POST.indexOf(st) + LSM_POST.length - 1) % LSM_POST.length])}" aria-label="Previous store">‹</a>
+      <select id="pstsel" aria-label="Store">${LSM_POST.map(x => `<option${x === st ? " selected" : ""}>${esc(x)}</option>`).join("")}</select>
+      <a class="ghost" href="#post/${slug(LSM_POST[(LSM_POST.indexOf(st) + 1) % LSM_POST.length])}" aria-label="Next store">›</a></div>
+      <a class="copy copyall" href="#approve" style="display:block;text-align:center;margin:8px 0 14px">Approve posts for all LSM stores</a>` : "";
+  if (!camps.length) { box.innerHTML = cyc + `<p>No posts are ready for ${esc(st)} yet. When one is, it shows here.</p>`; postCycWire(); return; }
+  box.innerHTML = cyc + camps.map(c => `<section class="pstc" id="pst-${c.id}"></section>`).join("");
+  postCycWire();
+  camps.forEach(c => postCard(st, c, postLatest(r.posts, st, c.id), au));
+}
+function postCycWire(){ const s = document.getElementById("pstsel"); if (s) s.onchange = () => { location.hash = "post/" + slug(s.value); }; }
+function postCard(st, c, row, au){
+  const el = document.getElementById("pst-" + c.id); if (!el) return;
+  const stt = row ? row.status : "", bd = POST_BADGE[stt];
+  const head = `<div class="psth"><span class="sbtn st pstico" aria-hidden="true">${esc(c.brand)}</span><div><b>${esc(c.title)}</b><small>Facebook post for LSM Outdoor Power ${esc(st)}</small></div>${bd ? `<span class="pstb ${bd[0]}">${esc(bd[1])}</span>` : ""}</div>`;
+  if (!row || stt === "Rejected") {           // draft: the store can adjust the caption, then send it for approval
+    const cap0 = row ? row.caption : c.caption(st), img = c.img(st);
+    el.innerHTML = head + (row ? `<div class="pstnote no"><b>Justin sent this back${row.decidedBy ? "" : ""}.</b> ${esc(row.notes)}<small>${esc(row.decidedBy)}, ${esc(postWhen(row.decided))}</small></div>` : "")
+      + `<div class="pvh">Exactly how it will look on Facebook</div><div class="pstpvw"></div>
+      <label class="caplab" for="pcap-${c.id}">Caption</label><textarea class="capbox" id="pcap-${c.id}">${esc(cap0)}</textarea>
+      <button class="copy copyall pstgo">Send to Justin for approval</button>
+      <p class="fine">Once you send it you can't change it. After Justin approves, you post exactly what he approved.</p><div class="lmsg"></div>`;
+    const ta = el.querySelector("textarea"), pv = el.querySelector(".pstpvw"), paint = () => { pv.innerHTML = postFb(st, img, ta.value); };
+    ta.oninput = paint; paint();
+    el.querySelector(".pstgo").onclick = async e => { const b = e.currentTarget, m = el.querySelector(".lmsg"); if (!ta.value.trim()) { m.textContent = "Add a caption first."; return; }
+      b.disabled = true; m.textContent = "Sending...";
+      try { const q = await postApi({action:"postsubmit", store:au.store, pin:au.pin, code:getCode(), campaign:c.id, title:c.title, img, caption:ta.value}, true);
+        if (q.ok || q.error === "dup") { track("step", {store:st, d:"post:submit:" + c.id, code:getCode()}); return postPage(st); }
+        m.textContent = "Couldn't send it. Try again."; } catch(err){ m.textContent = "Couldn't connect. Check your signal and try again."; }
+      b.disabled = false; };
+    return;
+  }
+  // Pending, Approved and Posted are locked: the picture and caption come from the saved request, never from the page
+  const lock = `<div class="pvh">${stt === "Pending" ? "What you sent to Justin" : "Approved post"}</div>${postFb(st, row.img, row.caption)}`;
+  if (stt === "Pending") { el.innerHTML = head + `<div class="pstnote pend">Sent by ${esc(row.by)} ${esc(postWhen(row.time))}. Justin will approve it or send it back with notes. You'll see a notice on the DT when he does.</div>` + lock; return; }
+  const okNote = `<div class="pstnote ok"><b>Approved by ${esc(row.decidedBy)}</b> ${esc(postWhen(row.decided))}${row.notes ? `<br>Notes: ${esc(row.notes)}` : ""}</div>`;
+  if (stt === "Posted") { el.innerHTML = head + okNote + `<div class="pstnote done">Posted ${esc(postWhen(row.posted))}. Thanks!</div>` + lock; return; }
+  el.innerHTML = head + okNote + lock + `
+    <button class="copy copyall pstfb">Post to Facebook</button>
+    <ol class="fine mksteps" style="margin:8px 0 0 18px;padding:0"><li>Tap Post to Facebook. The caption is copied for you.</li><li>Pick Facebook, then post as the LSM Outdoor Power ${esc(st)} page.</li><li>If the caption is blank, press and hold, then Paste. Don't change it.</li><li>Come back and tap I posted it.</li></ol>
+    <button class="ghost pstdone" style="width:100%;margin-top:8px">I posted it</button><div class="lmsg"></div>`;
+  el.querySelector(".pstfb").dataset.label = "Post to Facebook";
+  el.querySelector(".pstfb").onclick = async e => { const b = e.currentTarget, m = el.querySelector(".lmsg"); copyText(b, row.caption); track("step", {store:st, d:"post:share:" + c.id, code:getCode()});
+    try { const bl = await fetch(row.img).then(x => x.blob()), f = new File([bl], c.id + "-" + slug(st) + ".jpg", {type:"image/jpeg"});
+      if (navigator.canShare && navigator.canShare({files:[f]})) { await navigator.share({files:[f], text:row.caption}); m.className = "lmsg ok"; m.textContent = "Pick Facebook. The caption is copied too."; return; }
+      const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+      window.open("https://www.facebook.com/", "_blank", "noopener"); m.className = "lmsg ok"; m.textContent = "The picture saved and the caption is copied. Add both to a new post on the store page."; }
+    catch(err){ if (err && err.name !== "AbortError") m.textContent = "Press and hold the picture above to save it, then post it with the copied caption."; } };
+  el.querySelector(".pstdone").onclick = async e => { const b = e.currentTarget; b.disabled = true;
+    try { const q = await postApi({action:"postdone", store:au.store, pin:au.pin, code:getCode(), id:row.id}); if (q.ok) return postPage(st); } catch(err){}
+    b.disabled = false; el.querySelector(".lmsg").textContent = "Couldn't save that. Try again."; };
+}
+
+async function approvePage(){
+  document.title = "Approve posts | Spark Digital Tags";
+  if (!getCode()) { app.innerHTML = `<article class="card"><div class="sect"><h2>Approve posts</h2><p>Sign in on any store page first, then come back here.</p></div></article>`; return; }
+  const want = sessionStorage.getItem("pststore") || "";
+  app.innerHTML = `<article class="card"><div class="sect"><h2>Approve posts</h2><div id="aprbox"><p class="fine">Loading...</p></div></div></article>`;
+  const box = document.getElementById("aprbox"), a = chatAuth() || {};
+  let r; try { r = await postApi({action:"postlist", store:a.store || "Keller", pin:a.pin || "", code:getCode(), scope:"all"}); } catch(e){}
+  if (!r || !r.ok) { box.innerHTML = `<p class="lmsg">Couldn't load posts. Check your signal and try again.</p>`; return; }
+  ls.set("sparkpostappr", r.approver ? "1" : ""); if (!r.approver) { box.innerHTML = `<p>Only Justin Houston and Brandon Anderson approve posts.</p>`; return; }
+  ls.set("sparkpostseen", String(Date.now())); POSTN = 0;
+  const rows = r.posts.filter(x => LSM_POST.includes(x.store)), pend = st => rows.filter(x => x.status === "Pending" && (!st || x.store === st)).length;
+  const draw = sel => {
+    sessionStorage.setItem("pststore", sel);
+    const i = LSM_POST.indexOf(sel), list = rows.filter(x => !sel || x.store === sel).sort((x, y) => (x.status === "Pending" ? 0 : 1) - (y.status === "Pending" ? 0 : 1) || y.time - x.time);
+    box.innerHTML = `<div class="pstcyc" role="group" aria-label="Pick a store">
+        <button class="ghost" data-go="${i <= 0 ? LSM_POST[LSM_POST.length - 1] : LSM_POST[i - 1]}" aria-label="Previous store">‹</button>
+        <select id="aprsel" aria-label="Store"><option value="">All LSM stores${pend() ? " (" + pend() + " waiting)" : ""}</option>${LSM_POST.map(x => `<option value="${esc(x)}"${x === sel ? " selected" : ""}>${esc(x)}${pend(x) ? " (" + pend(x) + " waiting)" : ""}</option>`).join("")}</select>
+        <button class="ghost" data-go="${i < 0 || i >= LSM_POST.length - 1 ? LSM_POST[0] : LSM_POST[i + 1]}" aria-label="Next store">›</button></div>
+      ${sel ? `<a class="ghost" href="#post/${slug(sel)}" style="display:block;text-align:center;margin:8px 0">Open the ${esc(sel)} post page</a>` : ""}
+      <p class="fine">${pend(sel) ? pend(sel) + " waiting for you" : "Nothing waiting"}${sel ? " at " + esc(sel) : ""}. You see the picture and caption exactly as they will post.</p>
+      ${list.length ? list.map(x => `<section class="pstc" data-id="${esc(x.id)}"><div class="psth"><span class="sbtn st pstico" aria-hidden="true">STIHL</span><div><b>${esc(x.title)}, ${esc(x.store)}</b><small>Sent by ${esc(x.by)} ${esc(postWhen(x.time))}</small></div><span class="pstb ${POST_BADGE[x.status] ? POST_BADGE[x.status][0] : ""}">${esc(x.status)}</span></div>
+        ${postFb(x.store, x.img, x.caption)}
+        ${x.status === "Pending" ? `<button class="copy copyall apryes">Approve</button>
+          <label class="caplab" for="n-${esc(x.id)}">Notes (needed to reject)</label><textarea class="capbox aprnotes" id="n-${esc(x.id)}" rows="3" placeholder="What should they change?"></textarea>
+          <button class="ghost aprno" style="width:100%;margin-top:6px;color:#a12020;border-color:#f3c0c0">Reject with notes</button><div class="lmsg"></div>`
+        : `<div class="pstnote ${POST_BADGE[x.status] ? POST_BADGE[x.status][0] : ""}">${esc(x.status)}${x.decidedBy ? " by " + esc(x.decidedBy) + " " + esc(postWhen(x.decided)) : ""}${x.notes ? `<br>Notes: ${esc(x.notes)}` : ""}${x.posted ? `<br>Posted ${esc(postWhen(x.posted))}` : ""}</div>`}</section>`).join("")
+      : `<p>No posts${sel ? " from " + esc(sel) : ""} yet.</p>`}`;
+    document.getElementById("aprsel").onchange = e => draw(e.target.value);
+    box.querySelectorAll("[data-go]").forEach(b => b.onclick = () => draw(b.dataset.go));
+    box.querySelectorAll(".pstc[data-id]").forEach(sec => {
+      const go = async (decision, btn) => { const m = sec.querySelector(".lmsg"), notes = sec.querySelector(".aprnotes").value.trim();
+        if (decision === "Rejected" && !notes) { m.textContent = "Add notes so the store knows what to fix."; sec.querySelector(".aprnotes").focus(); return; }
+        btn.disabled = true; m.textContent = "Saving...";
+        try { const q = await postApi({action:"postdecide", store:a.store || "Keller", pin:a.pin || "", code:getCode(), id:sec.dataset.id, decision, notes}, true);
+          if (q.ok || q.error === "done") { const row = rows.find(x => x.id === sec.dataset.id); if (row && q.ok) { row.status = decision; row.decidedBy = r.me; row.decided = Date.now(); row.notes = notes; } return draw(sel); }
+          m.textContent = "Couldn't save. Try again."; } catch(e){ m.textContent = "Couldn't connect. Try again."; }
+        btn.disabled = false; };
+      const y = sec.querySelector(".apryes"), n = sec.querySelector(".aprno");
+      if (y) y.onclick = () => go("Approved", y); if (n) n.onclick = () => go("Rejected", n);
+    });
+  };
+  draw(LSM_POST.includes(want) ? want : "");
+}
+
+/* Notices: the person who sent a post sees a bar when it is approved or sent back. Approvers see a bar when posts are waiting. */
+let POSTN = 0, POSTB = null;
+const postBar = () => { document.getElementById("pstbar")?.remove(); if (!POSTB || !getCode() || /^#(post\/|approve)/i.test(location.hash)) return;
+  const d = document.createElement("a"); d.id = "pstbar"; d.className = "pstbar " + POSTB[2]; d.href = POSTB[1]; d.textContent = POSTB[0]; document.body.prepend(d); };
+async function postNote(){
+  POSTN = Date.now();
+  if (!getCode()) { POSTB = null; return postBar(); }
+  const a = chatAuth(); if (!a) return;
+  const st = (STORES.find(x => getPin(x) && POST_ON.includes(x))) || a.store;
+  let r; try { r = await postApi({action:"postlist", store:st, pin:getPin(st) || a.pin, code:getCode(), scope:"all"}); } catch(e){ return; }
+  if (!r || !r.ok) return;
+  const seen = Number(ls.get("sparkpostseen") || 0); POSTB = null; ls.set("sparkpostappr", r.approver ? "1" : "");
+  if (r.approver) { const n = r.posts.filter(x => x.status === "Pending").length; if (n) POSTB = [`${n} post${n === 1 ? "" : "s"} waiting for your approval. Tap to review.`, "#approve", "pend"]; }
+  else { const mine = r.posts.filter(x => x.by === r.me && x.decided > seen && /^(Approved|Rejected)$/.test(x.status)).sort((x, y) => y.decided - x.decided)[0];
+    if (mine) POSTB = [mine.status === "Approved" ? `✓ ${mine.decidedBy.split(" ")[0]} approved your ${mine.title} post. Tap to post it.` : `${mine.decidedBy.split(" ")[0]} sent your ${mine.title} post back with notes. Tap to see them.`, "#post/" + slug(mine.store), mine.status === "Approved" ? "ok" : "no"]; }
+  postBar();
+}
+window.addEventListener("hashchange", () => setTimeout(() => { if (Date.now() - POSTN > 60000) postNote(); else postBar(); }, 300));
+setTimeout(postNote, 1500);
+
+function postStoreCard(st){            // store page: the STIHL button and, for Justin, the approval queue
+  const camps = postCamps(st), appr = ls.get("sparkpostappr") === "1";
+  if (!camps.length && !appr) return "";
+  return `<div class="top3 pstsc"><div class="t3h">Social posts</div>
+    ${camps.map(c => `<a class="sbtn st" href="#post/${slug(st)}" style="text-decoration:none;margin-top:8px"><span>${esc(c.brand)}<small>${esc(c.title)} Facebook post</small></span></a>`).join("")}
+    ${appr ? `<a class="sbtn fb" href="#approve" style="text-decoration:none;margin-top:8px"><span>Approve posts<small>All LSM stores</small></span></a>` : ""}</div>`;
+}
+
 function route(){
   const h = decodeURIComponent(location.hash.slice(1));
   try { admBtn(h); } catch(e){}
@@ -3883,6 +4067,8 @@ function route(){
   if (/^brief$/i.test(h)) { window.scrollTo(0, 0); return briefPage(); }
   { const mh = /^homing\/(.+)$/i.exec(h); if (mh) { window.scrollTo(0, 0); const st = STORES.find(x => slug(x) === slug(mh[1])); if (st) return massHome(st); } }
   if (/^today$/i.test(h)) { window.scrollTo(0, 0); return todayPage(); }
+  { const pm = /^post\/(.+)$/i.exec(h); if (pm) { window.scrollTo(0, 0); const st = STORES.find(x => slug(x) === slug(pm[1])); if (st) return postPage(st); } }
+  if (/^approve$/i.test(h)) { setManifest(""); window.scrollTo(0, 0); return approvePage(); }
   { const ch = /^chat(?:\/(.+))?$/i.exec(h); if (ch) { setManifest(""); window.scrollTo(0, 0); return ch[1] ? chatRoom(ch[1]) : chatHome(); } }
   { const iv = /^inventory(?:\/(.+))?$/i.exec(h); if (iv) { setManifest(""); window.scrollTo(0, 0); return inventory(iv[1] ? STORES.find(x => slug(x) === slug(iv[1])) : ""); } }
   { const tg = /^tags\/(.+)$/i.exec(h); if (tg) { setManifest(""); window.scrollTo(0, 0); return tagsPage(STORES.find(x => slug(x) === slug(tg[1])) || ""); } }
